@@ -3,8 +3,6 @@ import { expect } from 'chai'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { Contract } from 'ethers'
 
-// TODO: test transferTokenFromTreasury
-
 describe('Treasury', () => {
   let origin: SignerWithAddress
   let treasurer: SignerWithAddress

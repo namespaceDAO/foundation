@@ -7,6 +7,7 @@ import "../../ledger/Bank.sol";
 import "./NounsDescriptor.sol";
 
 // TODO: deep fry the horse
+// TODO: fix the gas cost for mintBatch
 
 contract NounBank is Claimable, Oracle, Bank {
     NounsDescriptor private _desc;

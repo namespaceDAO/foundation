@@ -31,14 +31,6 @@ contract Treasury is Ownable {
         return _treasurer;
     }
 
-    function transferTokenFromTreasury(
-        IERC20 token,
-        address to, 
-        uint amount
-    ) external onlyTreasurer {
-        token.transferFrom(address(this), to, amount);
-    }
-
     function transferValueFromTreasury(
         address to, 
         uint amount

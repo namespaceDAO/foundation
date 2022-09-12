@@ -26,7 +26,7 @@ describe('Found', () => {
     expect(treasurer).to.equal(origin.address)
   })
 
-  it('Mints FOUND', async () => {
+  it('Mints FOUND to minter and treasury', async () => {
     const value = ethers.utils.parseEther(`${Math.random()}`)
     const e1 = await found.treasuryBalance()
 
@@ -40,5 +40,24 @@ describe('Found', () => {
     expect(bt).to.equal(value)
     expect(e1).to.equal(0)
     expect(e2).to.equal(value)
+  })
+
+  it('Transfer ETHER and FOUND from treasury', async () => {
+    const amount = Math.random()
+    const value = ethers.utils.parseEther(`${amount}`)
+    const half = ethers.utils.parseEther(`${amount / 2}`)
+
+    const b1 = await bob.getBalance()
+    const f1 = await found.balanceOf(bob.address)
+
+    await found.mint(alice.address, { value })
+    await found.transferValueFromTreasury(bob.address, half)
+    await found.transferFoundFromTreasury(bob.address, half)
+
+    const b2 = await bob.getBalance()
+    const f2 = await found.balanceOf(bob.address)
+
+    expect(b1.add(half)).to.equal(b2)
+    expect(f1.add(half)).to.equal(f2)
   })
 })
