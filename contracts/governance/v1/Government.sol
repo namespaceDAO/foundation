@@ -1,11 +1,11 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "../../token/Found.sol";
 import "./BallotBox.sol";
 import "./PublicForum.sol";
-import "../../Found.sol";
 
 // What being has four legs, then two, and then three?
 contract GovernmentV1 is Ownable, Pausable, BallotBox, PublicForum {
