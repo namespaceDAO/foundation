@@ -24,14 +24,17 @@ describe('Found', () => {
 
   it('Mints FOUND', async () => {
     const value = ethers.utils.parseEther(`${Math.random()}`)
+    const e1 = await found.treasuryBalance()
+
     await found.mint(alice.address, { value })
 
     const ba = await found.balanceOf(alice.address)
     const bt = await found.balanceOf(found.address)
+    const e2 = await found.treasuryBalance()
 
     expect(ba).to.equal(value)
     expect(bt).to.equal(value)
-
-    // TODO: check if ether was sent correctly
+    expect(e1).to.equal(0)
+    expect(e2).to.equal(value)
   })
 })
