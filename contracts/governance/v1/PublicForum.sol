@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "./Payable.sol";
+import "./PublicFund.sol";
 
 struct PropArgs {
     string text;
@@ -20,7 +20,7 @@ struct Prop {
     bool success;
 }
 
-abstract contract Portfolio is Payable {
+abstract contract PublicForum is PublicFund {
   uint private _count;
   mapping(uint => Prop) private _props;
   mapping(uint => bool) private _success;

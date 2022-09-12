@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "../ledger/Ledger.sol";
+import "../../Found.sol";
 
 struct Convertible {
   address payee;
+  uint startToken;
   uint startCash;
+  uint endToken;
   uint endCash;
 }
 
@@ -13,30 +15,36 @@ struct Fund {
   uint id;
   address creator;
   address payee;
+  uint startToken;
   uint startCash;
+  uint endToken;
   uint endCash;
 }
 
-abstract contract Payable {
-  Ledger private _coin;
+abstract contract PublicFund {
+  Found private _found;
   mapping(uint => Fund) private _funds;
 
   event FundCreated(
     uint id,
     address payee,
+    uint startToken,
     uint startCash,
+    uint endToken,
     uint endCash
   );
 
    event PaidStart(
     uint id,
     address payee,
+    uint token,
     uint cash
   );
 
    event PaidEnd(
     uint id,
     address payee,
+    uint token,
     uint cash
   );
 
@@ -57,7 +65,9 @@ abstract contract Payable {
     emit FundCreated(
       fund.id,
       fund.payee,
+      fund.startToken,
       fund.startCash,
+      fund.endToken,
       fund.endCash
     );
   }
@@ -73,11 +83,12 @@ abstract contract Payable {
   function _payStart(uint id) internal {
     Fund storage fund = _funds[id];
 
-    _coin.transferValueFromTreasury(fund.payee, fund.startCash);
+    _found.transferValueFromTreasury(fund.payee, fund.startCash);
 
     emit PaidStart(
       id, 
       fund.payee,
+      fund.startToken,
       fund.startCash
     );
   }
@@ -85,11 +96,12 @@ abstract contract Payable {
   function _payEnd(uint id) internal {
     Fund storage fund = _funds[id];
 
-    _coin.transferValueFromTreasury(fund.payee, fund.endCash);
+    _found.transferValueFromTreasury(fund.payee, fund.endCash);
 
     emit PaidEnd(
       id, 
       fund.payee, 
+      fund.endToken,
       fund.endCash
     );
   }

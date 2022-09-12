@@ -5,12 +5,12 @@ import { Contract } from 'ethers'
 
 const parseEther = ethers.utils.parseEther
 
-describe('AdventureFund', () => {
+describe('Government V1', () => {
   let origin: SignerWithAddress
   let alice: SignerWithAddress
   let bob: SignerWithAddress
   let govt: Contract
-  let coin: Contract
+  let found: Contract
   let oracle: Contract
   let descriptor: Contract
   const COIN_URI = 'https://nouns.express/_/api/tokens/{id}.json'
@@ -30,28 +30,24 @@ describe('AdventureFund', () => {
 
   before(async () => {
     [origin, alice, bob] = await ethers.getSigners()
-    const MockDescriptor = await ethers.getContractFactory('MockDescriptor')
-    const Oracle = await ethers.getContractFactory('DollarOracle')
-    const NounCoin = await ethers.getContractFactory('NounBank')
-    const VentureFund = await ethers.getContractFactory('AdventureFund')
-    descriptor = await MockDescriptor.deploy(2)
-    oracle = await Oracle.deploy()
-    coin = await NounCoin.deploy(oracle.address, COIN_URI, descriptor.address)
-    govt = await VentureFund.deploy(coin.address)
+    const Found = await ethers.getContractFactory('Found')
+    const GovernmentV1 = await ethers.getContractFactory('GovernmentV1')
+    found = await Found.deploy()
+    govt = await GovernmentV1.deploy(found.address)
   })
 
-  it('Creates prop', async () => {
-    const count1 = await govt.propCount()
-    await createProp()
-    const count2 = await govt.propCount()
-    expect(count1).to.equal(0)
-    expect(count2.toNumber()).to.equal(1)
-  })
+  // it('Creates prop', async () => {
+  //   const count1 = await govt.propCount()
+  //   await createProp()
+  //   const count2 = await govt.propCount()
+  //   expect(count1).to.equal(0)
+  //   expect(count2.toNumber()).to.equal(1)
+  // })
 
-  it('Starts prop', async () => {
-    await createProp()
-    await expect(
-      govt.startProp(1)
-    ).to.revertedWith('Government: prop cannot be started')
-  })
+  // it('Starts prop', async () => {
+  //   await createProp()
+  //   await expect(
+  //     govt.startProp(1)
+  //   ).to.revertedWith('Government: prop cannot be started')
+  // })
 })

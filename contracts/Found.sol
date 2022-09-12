@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "../../shared/Claimable.sol";
-import "../../shared/Treasury.sol";
+import "./shared/Claimable.sol";
+import "./shared/Treasury.sol";
 
 contract Found is ERC20, Claimable, Treasury {
     function mint(address to) public payable {
