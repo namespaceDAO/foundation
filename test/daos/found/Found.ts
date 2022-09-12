@@ -18,8 +18,12 @@ describe('Found', () => {
   it('Create FOUND with getters', async () => {
     const name = await found.name()
     const symbol = await found.symbol()
+    const balance = await found.treasuryBalance()
+    const treasurer = await found.treasurerAddress()
     expect(name).to.equal('FOUND')
     expect(symbol).to.equal('FOUND')
+    expect(balance).to.equal(0)
+    expect(treasurer).to.equal(origin.address)
   })
 
   it('Mints FOUND', async () => {
