@@ -17,7 +17,7 @@ describe('Treasury', () => {
     const Treasury = await ethers.getContractFactory('Treasury')
     treasury = await Treasury.deploy()
 
-    const seed = ethers.utils.parseEther(`${1 + Math.random()}`)
+    const seed = ethers.utils.parseEther(`${5 * Math.random()}`)
     await origin.sendTransaction({ to: treasury.address, value: seed })
 
     const balance = await treasury.treasuryBalance()
@@ -86,6 +86,15 @@ describe('Treasury', () => {
 
   it('Transfers when locked', async () => {
     const transfer = ethers.utils.parseEther(`${Math.random() / 10}`)
-    await treasury.connect(treasurer).transferValueFromTreasury(bob.address, transfer)
+    const b1 = await bob.getBalance()
+
+    await treasury.connect(treasurer).transferValueFromTreasury(
+      bob.address,
+      transfer
+    )
+
+    const b2 = await bob.getBalance()
+
+    expect(b1.add(transfer)).to.equal(b2)
   })
 })
