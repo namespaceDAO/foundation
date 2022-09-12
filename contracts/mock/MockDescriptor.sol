@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 
 import { ERC721 } from '@openzeppelin/contracts/token/ERC721/ERC721.sol';
-import "../nouns/NounsDescriptor.sol";
+import "../daos/nouns/NounsDescriptor.sol";
 
 contract MockDescriptor is NounsDescriptor {
     uint private _heads;
