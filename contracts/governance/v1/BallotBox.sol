@@ -16,16 +16,21 @@ abstract contract BallotBox {
     mapping(address => mapping(uint => Vote)) _votes;
     mapping(uint => uint) _totalSupport;
     mapping(uint => uint) _totalAgainst;
+    
+    function castVote(Vote memory vote) external {
+        return _castVote(vote);
+    }
 
-    function currentTally(uint id) public view returns (uint) {
+    function castManyVotes(Vote[] memory votes) external {
+        for (uint i = 0; i < votes.length; i += 1) {
+            _castVote(votes[i]);
+        }
+    }
+
+    function _meetsQuorum(uint id) public view returns (bool) {
         uint support = _totalSupport[id];
         uint against = _totalAgainst[id];
-
-        if (against >= support) {
-            return 0;
-        }
-
-        return support - against;
+        return support >= against;
     }
 
     function _requireBalance(address account, uint amount) internal view {

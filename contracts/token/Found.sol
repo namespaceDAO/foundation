@@ -22,5 +22,11 @@ contract Found is ERC20, Claimable, Treasury {
         _transfer(address(this), to, amount);
     }
 
+    function transferFoundToTreasury(
+        address from, uint amount
+    ) external onlyTreasurer {
+        _transfer(from, address(this), amount);
+    }
+
     constructor() ERC20("FOUND", "FOUND") {}
 }

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./PublicFund.sol";
 
 struct PropArgs {
@@ -20,7 +22,7 @@ struct Prop {
     bool success;
 }
 
-abstract contract PublicForum is PublicFund {
+abstract contract PublicForum is Ownable, Pausable, PublicFund {
   uint private _count;
   mapping(uint => Prop) private _props;
   mapping(uint => bool) private _success;
@@ -32,9 +34,34 @@ abstract contract PublicForum is PublicFund {
     uint expiresAt,
     uint createdAt
   );
+
+  function _isStartable(uint prop) virtual internal view returns (bool);
+  function _isCompleted(uint prop) virtual internal view returns (bool);
   
   function propCount() public view returns (uint) { 
     return _count; 
+  }
+
+  function createProp(PropArgs memory prop) external whenNotPaused {
+      _createProp(prop);
+  }
+
+  function startProp(uint id) external {
+    require(_isStartable(id), "Government: prop cannot be started");
+    _startProp(id);
+  }
+
+  function completeProp(uint id) external {
+    bool completed = _isCompleted(id);
+    _completeProp(id, completed);
+  }
+
+  function pause() external onlyOwner {
+    _pause();
+  }
+
+  function unpause() external onlyOwner {
+    _unpause();
   }
 
   function _createProp(PropArgs memory args) internal returns (uint) {
