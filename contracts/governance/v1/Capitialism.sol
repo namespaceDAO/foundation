@@ -6,7 +6,7 @@ import "../../token/Found.sol";
 import "./PublicForum.sol";
 
 struct StakeProps {
-    uint[] goals;
+    uint prop;
     uint amount;
 }
 
@@ -14,11 +14,10 @@ struct Stake {
     uint id;
     uint amount;
     address creator;
-    uint[] goals;
+    uint prop;
     uint startedAt;
     uint endedAt;
     uint interest;
-    bool success;
 }
 
 contract Capitialism is PublicForum, ERC721 {
@@ -30,7 +29,7 @@ contract Capitialism is PublicForum, ERC721 {
     mapping (uint => Stake) private _stakes;
     mapping (uint => uint) private _stakedOnGoal;
 
-    event StakeCreated(uint indexed id, uint[] indexed goals, uint amount);
+    event StakeCreated(uint indexed id, uint indexed prop, uint amount);
 
     function _isStartable(uint id) override internal view returns (bool) {
         return totalStaked(id) > _proposalAsk(id);
@@ -39,56 +38,39 @@ contract Capitialism is PublicForum, ERC721 {
     // stake FOUND on any goal. successful goals pay interest.
     // start stake mints an NFT that is used to redeem the FOUND. 
     function startStake(StakeProps memory props) external returns (uint id) {
-        require(props.goals.length > 0, "Must stake on at least one goal");
         require(props.amount > 0, "Must stake some FOUND");
 
         _found.transferFoundToTreasury(msg.sender, props.amount);
         
         Stake storage stake = _stakes[_stakeCount++];
         stake.id = id;
-        stake.goals = props.goals;
+        stake.prop = props.prop;
         stake.creator = msg.sender;
         stake.amount = props.amount;
 
-        _updateStakeCounters(stake.amount, stake.goals, true);
+        _stakedOnGoal[stake.prop] += stake.amount;
         _mint(msg.sender, stake.id);
 
-        emit StakeCreated(stake.id, stake.goals, stake.amount);
+        emit StakeCreated(stake.id, stake.prop, stake.amount);
         return _stakeCount;
     }
 
     // end stake burns the NFT and returns you the FOUND from the treasury.
     // you are paid intreset proportional net duration of the stake's goals.
     // stakes that do not have a net positive duration remain in the treasury.
-    function endStake(uint stakeId, uint threshold) external {
+    function endStake(uint stakeId) external {
         Stake storage stake = _stakes[stakeId];
         
         address owner = ownerOf(stakeId);
         require(msg.sender == owner, "You are not the stake owner");
 
-        uint duration = _resolveStake(stake);
-        bool success = duration > threshold;
 
         _burn(stakeId);
-        _updateStakeCounters(stake.amount, stake.goals, false);
-
+        _stakedOnGoal[stake.prop] -= stake.amount;
         stake.endedAt = block.timestamp;
-        stake.success = success;
 
-        if (success) {
-            stake.interest = _payStake(owner, stake.amount, duration);
-        }
-    }
-
-    function _resolveStake(Stake memory stake) internal view returns (uint) {
-        uint score = 0;
-
-        for (uint i = 0; i < stake.goals.length; i += 1) {
-            uint id = stake.goals[i];
-            score += propDuration(id);
-        }
-
-        return score;
+        uint duration = propDuration(stake.prop);
+        stake.interest = _payStake(owner, stake.amount, duration);
     }
 
     // Start Stake 
@@ -115,29 +97,6 @@ contract Capitialism is PublicForum, ERC721 {
         uint interest = _calculateInterest(amount, duration);
         _found.transferFoundFromTreasury(payee, amount + interest);
         return interest;
-    }
-
-    function _updateStakeCounters(
-        uint amount,
-        uint[] memory goals, 
-        bool increment
-    ) internal {
-        if (increment) {
-            _stakeTotal += amount;
-        } else {
-            _stakeTotal -= amount;
-        }
-
-        for (uint i = 0; i < goals.length; i += 1) {
-            uint delta = amount / goals.length;
-            uint goalId = goals[i];
-            
-            if (increment) {
-                _stakedOnGoal[goalId] += delta;
-            } else {
-                _stakedOnGoal[goalId] -= delta;
-            }
-        }
     }
 
     function totalStaked() public view returns (uint) {
