@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "../../token/Found.sol";
 import "./PublicForum.sol";
@@ -22,7 +21,7 @@ struct Stake {
     bool success;
 }
 
-abstract contract Capitialist is Ownable, ERC721 {
+contract Capitialism is PublicForum, ERC721 {
     Found private _found;
     uint private _stakeCount;
     uint private _stakeTotal;
@@ -32,6 +31,10 @@ abstract contract Capitialist is Ownable, ERC721 {
     mapping (uint => uint) private _stakedOnGoal;
 
     event StakeCreated(uint indexed id, uint[] indexed goals, uint amount);
+
+    function _isStartable(uint id) override internal view returns (bool) {
+        return totalStaked(id) > _proposalAsk(id);
+    }
 
     // stake FOUND on any goal. successful goals pay interest.
     // start stake mints an NFT that is used to redeem the FOUND. 
@@ -77,18 +80,15 @@ abstract contract Capitialist is Ownable, ERC721 {
         }
     }
 
-    function _resolveStake(Stake memory stake) internal view returns (uint score) {
-        uint timeServed = 0;
+    function _resolveStake(Stake memory stake) internal view returns (uint) {
+        uint score = 0;
 
         for (uint i = 0; i < stake.goals.length; i += 1) {
             uint id = stake.goals[i];
-            bool success = false;
-            uint duration = 0;
-
-            if (success) timeServed += duration;
+            score += propDuration(id);
         }
 
-        return timeServed;
+        return score;
     }
 
     // Start Stake 
