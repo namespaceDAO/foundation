@@ -40,7 +40,7 @@ describe('Treasury', () => {
     const treasury1 = await treasury.treasuryBalance()
 
     const transfer = ethers.utils.parseEther(`${Math.random()}`)
-    await treasury.connect(treasurer).transferValueFromTreasury(bob.address, transfer)
+    await treasury.connect(treasurer).transferValue(bob.address, transfer)
 
     const balance2 = await bob.getBalance()
     const treasury2 = await treasury.treasuryBalance()
@@ -52,14 +52,14 @@ describe('Treasury', () => {
     const balance = await treasury.treasuryBalance()
     const tooMuch = balance.mul(2)
     await expect(
-      treasury.connect(treasurer).transferValueFromTreasury(origin.address, tooMuch)
+      treasury.connect(treasurer).transferValue(origin.address, tooMuch)
     ).to.revertedWith('Treasury: transfer exceeds treasury balance')
   })
 
   it('Fails to transfer funds when not treasurer', async () => {
     const value = ethers.utils.parseEther(`${Math.random()}`)
     await expect(
-      treasury.transferValueFromTreasury(bob.address, value)
+      treasury.transferValue(bob.address, value)
     ).to.revertedWith('Treasury: caller is not the treasurer')
   })
 
@@ -86,7 +86,7 @@ describe('Treasury', () => {
     const transfer = ethers.utils.parseEther(`${Math.random() / 10}`)
     const b1 = await bob.getBalance()
 
-    await treasury.connect(treasurer).transferValueFromTreasury(
+    await treasury.connect(treasurer).transferValue(
       bob.address,
       transfer
     )

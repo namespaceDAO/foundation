@@ -43,7 +43,15 @@ abstract contract PublicFund {
 
   function _payFund(uint id) internal {
     Fund storage fund = _funds[id];
-    _found.transferValueFromTreasury(fund.payee, fund.value);
+    
+    if (fund.value > 0) {
+      _found.transferValue(fund.payee, fund.value);
+    }
+    
+    if (fund.found > 0) {
+      _found.transferFound(address(_found), fund.payee, fund.found);
+    }
+
     emit FundPaid(id, fund.payee, fund.found, fund.value);
   }
 

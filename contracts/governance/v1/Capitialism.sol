@@ -35,7 +35,7 @@ contract Capitialism is PublicForum, ERC721 {
     function startStake(StakeProps memory props) external returns (uint id) {
         require(props.amount > 0, "Must stake some FOUND");
 
-        _found.transferFoundToTreasury(msg.sender, props.amount);
+        _found.transferFound(msg.sender, address(this), props.amount);
         
         Stake storage stake = _stakes[_stakeCount++];
         stake.id = id;
@@ -57,7 +57,8 @@ contract Capitialism is PublicForum, ERC721 {
     // stakes that do not have a net positive duration remain in the treasury.
     function endStake(uint stakeId) external {
         Stake storage stake = _stakes[stakeId];
-        
+        // TODO: make sure the prop is complete
+
         address owner = ownerOf(stakeId);
         require(msg.sender == owner, "You are not the stake owner");
 
@@ -88,7 +89,11 @@ contract Capitialism is PublicForum, ERC721 {
 
     function _payStake(address payee, Stake memory stake) internal returns (uint) {
         uint interest = _calculateInterest(stake);
-        _found.transferFoundFromTreasury(payee, stake.amount + interest);
+
+        // TODO: late penalty
+
+        _found.transferFound(address(this), msg.sender, stake.amount);
+        _found.mintFound(payee, interest);
         return interest;
     }
 
@@ -103,7 +108,7 @@ contract Capitialism is PublicForum, ERC721 {
     function _setRate(uint rate) internal {
         _inflationRate = rate;
     }
-    
+
     function _isStartable(uint id) override internal view returns (bool) {
         return totalStaked(id) > _proposalAsk(id);
     }

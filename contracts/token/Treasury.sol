@@ -30,7 +30,7 @@ contract Treasury is Ownable {
         return _treasurer;
     }
 
-    function transferValueFromTreasury(
+    function transferValue(
         address to, 
         uint amount
     ) external onlyTreasurer {

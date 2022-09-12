@@ -51,8 +51,8 @@ describe('Found', () => {
     const f1 = await found.balanceOf(bob.address)
 
     await found.mint(alice.address, { value })
-    await found.transferValueFromTreasury(bob.address, half)
-    await found.transferFoundFromTreasury(bob.address, half)
+    await found.transferValue(bob.address, half)
+    await found.transferFound(bob.address, half)
 
     const b2 = await bob.getBalance()
     const f2 = await found.balanceOf(bob.address)
