@@ -64,7 +64,6 @@ contract Capitialism is PublicForum, ERC721 {
         address owner = ownerOf(stakeId);
         require(msg.sender == owner, "You are not the stake owner");
 
-
         _burn(stakeId);
         _stakedOnGoal[stake.prop] -= stake.amount;
         stake.endedAt = block.timestamp;
