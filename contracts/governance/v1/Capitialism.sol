@@ -12,28 +12,23 @@ struct StakeProps {
 
 struct Stake {
     uint id;
+    uint prop;
     uint amount;
     address creator;
-    uint prop;
-    uint startedAt;
-    uint endedAt;
-    uint interest;
+    uint totalStaked;
+    uint totalSupply;
 }
 
 contract Capitialism is PublicForum, ERC721 {
     Found private _found;
     uint private _stakeCount;
     uint private _stakeTotal;
-    uint private _inflationRate = 10;
+    uint private _inflationRate = 20;
 
     mapping (uint => Stake) private _stakes;
     mapping (uint => uint) private _stakedOnGoal;
 
     event StakeCreated(uint indexed id, uint indexed prop, uint amount);
-
-    function _isStartable(uint id) override internal view returns (bool) {
-        return totalStaked(id) > _proposalAsk(id);
-    }
 
     // stake FOUND on any goal. successful goals pay interest.
     // start stake mints an NFT that is used to redeem the FOUND. 
@@ -47,6 +42,8 @@ contract Capitialism is PublicForum, ERC721 {
         stake.prop = props.prop;
         stake.creator = msg.sender;
         stake.amount = props.amount;
+        stake.totalSupply = _found.totalSupply();
+        stake.totalStaked = totalStaked();
 
         _stakedOnGoal[stake.prop] += stake.amount;
         _mint(msg.sender, stake.id);
@@ -66,10 +63,8 @@ contract Capitialism is PublicForum, ERC721 {
 
         _burn(stakeId);
         _stakedOnGoal[stake.prop] -= stake.amount;
-        stake.endedAt = block.timestamp;
 
-        uint duration = propDuration(stake.prop);
-        stake.interest = _payStake(owner, stake.amount, duration);
+        _payStake(owner, stake);
     }
 
     // Start Stake 
@@ -80,21 +75,20 @@ contract Capitialism is PublicForum, ERC721 {
     // - for every project that has been completed,
     // - add the duration to the time served
 
-    function _calculateInterest(
-        uint amount, uint duration
-    ) internal view returns (uint) {
+    function _calculateInterest(Stake memory stake) internal view returns (uint) {
+        uint duration = propDuration(stake.prop);
         uint age = duration / 60 / 60 / 24 / 365;  // in years
 
-        uint fraction = _stakeTotal / _found.totalSupply();
+        uint fraction = stake.totalStaked / stake.totalSupply;
         uint bonus = 2 * _inflationRate * fraction + _inflationRate;
 
         uint rate = age ** 2 / bonus + age / bonus;
-        return amount * rate;
+        return stake.amount * rate;
     }
 
-    function _payStake(address payee, uint amount, uint duration) internal returns (uint) {
-        uint interest = _calculateInterest(amount, duration);
-        _found.transferFoundFromTreasury(payee, amount + interest);
+    function _payStake(address payee, Stake memory stake) internal returns (uint) {
+        uint interest = _calculateInterest(stake);
+        _found.transferFoundFromTreasury(payee, stake.amount + interest);
         return interest;
     }
 
@@ -108,6 +102,10 @@ contract Capitialism is PublicForum, ERC721 {
 
     function _setRate(uint rate) internal {
         _inflationRate = rate;
+    }
+    
+    function _isStartable(uint id) override internal view returns (bool) {
+        return totalStaked(id) > _proposalAsk(id);
     }
 
     constructor(Found found_) ERC721("FOUND STAKE", "FOUND STAKE") {

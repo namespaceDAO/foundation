@@ -37,6 +37,7 @@ abstract contract PublicForum is Ownable, Pausable, PublicFund {
 
   function propDuration(uint id) public view returns (uint) {
     Prop storage prop = _props[id];
+
     return prop.expiresAt - prop.createdAt;
   }
 
