@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "../token/Oracle.sol";
+import "../oracles/PriceOracle.sol";
 
 contract DollarOracle is OracleInterface {
     function decimals() external pure returns (uint8) {
@@ -43,6 +43,6 @@ contract DollarOracle is OracleInterface {
     }
 }
 
-contract MockOracle is Oracle {
-    constructor() Oracle(new DollarOracle()) {}
+contract MockOracle is PriceOracle {
+    constructor() PriceOracle(new DollarOracle()) {}
 }

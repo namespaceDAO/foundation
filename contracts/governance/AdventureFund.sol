@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../token/Ledger.sol";
+import "../ledger/Ledger.sol";
 import "./Board.sol";
 import "./Portfolio.sol";
 

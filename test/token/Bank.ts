@@ -43,9 +43,5 @@ describe('Bank', () => {
 
     expect(balanceA).to.equal(0)
     expect(balanceB).to.equal(balanceA1)
-
-    console.log({
-      balanceA, balanceB
-    })
   })
 })

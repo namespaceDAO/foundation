@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "../token/Ledger.sol";
+import "../ledger/Ledger.sol";
 
 contract MockLedger is Ledger {
     function mint(

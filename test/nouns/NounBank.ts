@@ -170,7 +170,7 @@ describe('NounBank', () => {
   })
 })
 
-describe('NounBank games 1', () => {
+describe('NounBank game theory', () => {
   let origin: SignerWithAddress
   let alice: SignerWithAddress
   let bob: SignerWithAddress

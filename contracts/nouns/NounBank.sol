@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "../token/Claimable.sol";
-import "../token/Oracle.sol";
-import "../token/Bank.sol";
+import "../shared/Claimable.sol";
+import "../shared/Oracle.sol";
+import "../ledger/Bank.sol";
 import "./NounsDescriptor.sol";
 
 // TODO: deep fry the horse

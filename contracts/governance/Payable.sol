@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "../token/Ledger.sol";
+import "../ledger/Ledger.sol";
 
 struct Convertible {
   address payee;

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "../token/Bank.sol";
+import "../ledger/Bank.sol";
 
 contract MockBank is Bank {
     function mint(
