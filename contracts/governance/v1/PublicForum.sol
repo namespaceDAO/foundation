@@ -17,26 +17,19 @@ struct Prop {
     address creator;
     uint createdAt;
     uint startedAt;
-    uint endedAt;
     uint expiresAt;
-    bool success;
 }
 
 abstract contract PublicForum is Ownable, Pausable, PublicFund {
   uint private _count;
   mapping(uint => Prop) private _props;
-  mapping(uint => bool) private _success;
 
   event PropCreated(
-    uint id,
-    string text,
-    address creator,
-    uint expiresAt,
-    uint createdAt
+    uint indexed id, address indexed creator, 
+    uint expiresAt, uint createdAt, string text
   );
 
   function _isStartable(uint prop) virtual internal view returns (bool);
-  function _isCompleted(uint prop) virtual internal view returns (bool);
   
   function propCount() public view returns (uint) { 
     return _count; 
@@ -49,11 +42,6 @@ abstract contract PublicForum is Ownable, Pausable, PublicFund {
   function startProp(uint id) external {
     require(_isStartable(id), "Government: prop cannot be started");
     _startProp(id);
-  }
-
-  function completeProp(uint id) external {
-    bool completed = _isCompleted(id);
-    _completeProp(id, completed);
   }
 
   function pause() external onlyOwner {
@@ -75,11 +63,9 @@ abstract contract PublicForum is Ownable, Pausable, PublicFund {
     _addFunding(prop.id, args.note);
 
     emit PropCreated(
-      prop.id,
-      prop.text,
-      prop.creator,
-      prop.expiresAt,
-      prop.createdAt
+      prop.id, prop.creator,
+      prop.expiresAt, prop.createdAt,
+      prop.text
     );
 
     return _count;
@@ -89,30 +75,10 @@ abstract contract PublicForum is Ownable, Pausable, PublicFund {
     require(id <= _count, "Prop not found");
     Prop storage prop = _props[id];
   
-    require(prop.endedAt == 0, "Prop already ended");
+    require(prop.startedAt == 0, "Prop already ended");
     require(prop.expiresAt > block.timestamp, "Prop is past the expiresAt");
 
     prop.startedAt = block.timestamp;
-    _payStart(id);
-  }
-
-  function _completeProp(uint id, bool success) internal returns (bool) {
-    require(id <= _count, "Prop not found");
-    Prop storage prop = _props[id];
-  
-    require(prop.startedAt > 0, "Prop not started");
-    require(prop.endedAt == 0, "Prop already ended");
-
-    if (prop.endedAt < prop.expiresAt) {
-      prop.success = success;
-    }
-
-    prop.endedAt = block.timestamp;
-    
-    if (prop.success) {
-      _payEnd(id);
-    }
-
-    return prop.success;
+    _payFund(id);
   }
 }

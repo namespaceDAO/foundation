@@ -5,52 +5,28 @@ import "../../token/Found.sol";
 
 struct Convertible {
   address payee;
-  uint startFound;
-  uint startValue;
-  uint endFound;
-  uint endValue;
+  uint found;
+  uint value;
 }
 
 struct Fund {
   uint id;
   address creator;
   address payee;
-  uint startFound;
-  uint startValue;
-  uint endFound;
-  uint endValue;
+  uint found;
+  uint value;
 }
 
 abstract contract PublicFund {
   Found private _found;
   mapping(uint => Fund) private _funds;
 
-  event FundCreated(
-    uint id,
-    address payee,
-    uint startFound,
-    uint startValue,
-    uint endFound,
-    uint endValue
-  );
-
-   event PaidStart(
-    uint id,
-    address payee,
-    uint found,
-    uint value
-  );
-
-   event PaidEnd(
-    uint id,
-    address payee,
-    uint found,
-    uint value
-  );
+  event FundCreated(uint indexed id, address indexed payee, uint found, uint value);
+  event FundPaid(uint indexed id, address indexed payee, uint found, uint value);
 
   function _addFunding(uint id, Convertible memory note) internal {
     require(
-      note.startValue > 0 || note.endValue > 0, 
+      note.value > 0 || note.found > 0, 
       "You must request some funding"
     );
 
@@ -59,57 +35,25 @@ abstract contract PublicFund {
     fund.id = id;
     fund.creator = msg.sender;
     fund.payee = note.payee;
-    fund.startValue = note.startValue;
-    fund.endValue = note.endValue;
+    fund.value = note.value;
+    fund.found = note.found;
 
-    emit FundCreated(
-      fund.id,
-      fund.payee,
-      fund.startFound,
-      fund.startValue,
-      fund.endFound,
-      fund.endValue
-    );
+    emit FundCreated(id, fund.payee, fund.value, fund.found);
   }
 
-  function _payStart(uint id) internal {
+  function _payFund(uint id) internal {
     Fund storage fund = _funds[id];
-
-    _found.transferValueFromTreasury(fund.payee, fund.startValue);
-
-    emit PaidStart(
-      id, 
-      fund.payee,
-      fund.startFound,
-      fund.startValue
-    );
+    _found.transferValueFromTreasury(fund.payee, fund.value);
+    emit FundPaid(id, fund.payee, fund.found, fund.value);
   }
 
-  function _payEnd(uint id) internal {
-    Fund storage fund = _funds[id];
+  function _proposalAsk(uint id) internal view returns (uint) {
+      address treasury = address(_found);
+      uint treasuryValue = treasury.balance;
+      uint treasuryFound = _found.balanceOf(treasury);
 
-    _found.transferValueFromTreasury(fund.payee, fund.endValue);
-
-    emit PaidEnd(
-      id, 
-      fund.payee, 
-      fund.endFound,
-      fund.endValue
-    );
-  }
-
-  function _getFundTotal(uint id) internal view returns (uint) {
       Fund storage fund = _funds[id];
-      uint fnd = fund.startFound + fund.endFound;
-      uint val = fund.startValue + fund.endValue;
-      return fnd + _etherToFound(val);
-  }
-
-  // convert ether to found to maintain balance in the treasury
-  function _etherToFound(uint value) internal view returns (uint) {
-    address treasury = address(_found);
-    uint treasuryValue = treasury.balance;
-    uint treasuryFound = _found.balanceOf(treasury);
-    return value * (treasuryFound / treasuryValue);
+      uint value = fund.value * (treasuryFound / treasuryValue);
+      return fund.found + value;
   }
 }
