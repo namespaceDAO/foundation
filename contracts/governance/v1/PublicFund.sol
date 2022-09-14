@@ -22,6 +22,11 @@ abstract contract PublicFund is Arch {
   event FundCreated(uint indexed id, address indexed payee, uint found, uint value);
   event FundPaid(uint indexed id, address indexed payee, uint found, uint value);
 
+  function _totalRequest(uint propId) public view returns (uint) {
+    Fund storage fund = _funds[propId];
+    return fund.found + _convertValueToFound(fund.value);
+  }
+  
   function _addFunding(uint id, Convertible memory note) internal {
     require(
       note.value > 0 || note.found > 0, 
@@ -50,10 +55,5 @@ abstract contract PublicFund is Arch {
     }
 
     emit FundPaid(id, fund.payee, fund.found, fund.value);
-  }
-
-  function _getTotalAsk(uint fundId) internal view returns (uint) {
-    Fund storage fund = _funds[fundId];
-    return fund.found + _convertValueToFound(fund.value);
   }
 }

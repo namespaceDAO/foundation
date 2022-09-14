@@ -33,7 +33,7 @@ contract Government is Capitalism {
 
         uint day = currentDay();
         uint stakeRate = stakedPerDay(day) / dailyBudget();
-        uint shareRate = _getTotalAsk(propId) * stakedPerProp(propId);
+        uint shareRate = _totalRequest(propId) * stakedPerProp(propId);
 
         return shareRate > stakeRate;
     }

@@ -19,7 +19,7 @@ struct Prop {
 }
 
 abstract contract PublicForum is PublicFund {
-  uint private _count;
+  uint private _propCount;
   mapping(uint => Prop) private _props;
 
   event PropCreated(
@@ -36,7 +36,7 @@ abstract contract PublicForum is PublicFund {
   }
 
   function propCount() public view returns (uint) { 
-    return _count; 
+    return _propCount; 
   }
 
   function _createProp(PropParams memory params) internal returns (uint) {
@@ -45,8 +45,8 @@ abstract contract PublicForum is PublicFund {
       "Proposal expiration must be at least 7 days in the future"
     );
 
-    Prop storage prop = _props[_count++];
-    prop.id = _count;
+    Prop storage prop = _props[_propCount++];
+    prop.id = _propCount;
     prop.author = msg.sender;
     prop.text = params.text;
     prop.expiresAt = params.expiresAt;
@@ -62,7 +62,7 @@ abstract contract PublicForum is PublicFund {
 
     _addFunding(prop.id, params.note);
 
-    return _count;
+    return _propCount;
   }
 
   function _startProp(uint propId) internal {
@@ -76,7 +76,7 @@ abstract contract PublicForum is PublicFund {
     _payFund(propId);
   }
 
-  function _requiresProp(uint id) internal view {
-    require(id <= _count, "Prop not found");
+  function _requiresProp(uint propId) internal view {
+    require(propId <= _propCount, "Prop not found");
   }
 }

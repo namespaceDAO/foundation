@@ -131,11 +131,11 @@ abstract contract Capitalism is PublicForum, ERC721 {
         return stake.amount * rate;
     }
 
-    function _requireStake(uint stakeId) internal returns (address) {
+    function _requireStake(uint stakeId) internal view {
         require(stakeId <= _stakeCount, "Stake not found");
     }
 
-    function _requireOwner(uint stakeId) internal returns (address) {
+    function _requireOwner(uint stakeId) internal view returns (address) {
         require(msg.sender == ownerOf(stakeId), "You are not the stake owner");
         return msg.sender;
     }
