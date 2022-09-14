@@ -5,33 +5,35 @@ import "./Arch.sol";
 import "./Capitalism.sol";
 
 contract Government is Capitalism {
-    function startStake(StakeProps memory props) external {
-        _startStake(props);
+    function createProp(PropParams memory params) external whenNotPaused {
+        _createProp(params);
     }
 
-    function endStake(uint id) external {
-        _endStake(id);
+    function startStake(StakeParams memory params) external {
+        _startStake(params);
     }
 
-    function createProp(PropArgs memory prop) external whenNotPaused {
-        _createProp(prop);
+    function startProp(uint propId) external {
+        require(_isStartable(propId), "Prop cannot be started");
+        _startProp(propId);
     }
 
-    function startProp(uint id) external {
-        require(_isStartable(id), "Government: prop cannot be started");
-        _startProp(id);
+    function endStake(uint propId) external {
+        _endStake(propId);
     }
 
-    function currentSpendingLimit() public view returns (uint) {
-        return _treasuryNetBalance() / weeklyLimit();
+    function dailyBudget() public view returns (uint) {
+        return _treasuryNetBalance() / budgetRate();
     }
 
-    function _isStartable(uint id) internal view returns (bool) {
-        _requiresDelay(id);
+    function _isStartable(uint propId) internal view returns (bool) {
 
-        uint week = currentWeek();
-        uint stakeRate = totalStakedByWeek(week) / currentSpendingLimit();
-        uint shareRate = propAsk(id) * totalStakedByGoal(id);
+        // TODO: make sure prop cannot be started past it's due date
+        // TODO: avoid a backlog of proposals by setting an expiration
+
+        uint day = currentDay();
+        uint stakeRate = stakedPerDay(day) / dailyBudget();
+        uint shareRate = _getTotalAsk(propId) * stakedPerProp(propId);
 
         return shareRate > stakeRate;
     }

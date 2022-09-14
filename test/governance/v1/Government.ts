@@ -23,13 +23,13 @@ describe('Government', () => {
   })
 
   it('Creates govt', async () => {
-    const currentWeek = await govt.currentWeek()
+    const currentDay = await govt.currentDay()
     const inflationRate = await govt.inflationRate()
-    const weeklyLimit = await govt.weeklyLimit()
+    const budgetRate = await govt.budgetRate()
 
-    expect(currentWeek).to.greaterThan(0)
+    expect(currentDay).to.greaterThan(0)
     expect(inflationRate).to.equal(20)
-    expect(weeklyLimit).to.equal(52)
+    expect(budgetRate).to.equal(52)
   })
 
   it('Creates prop', async () => {
@@ -50,13 +50,11 @@ describe('Government', () => {
 
     const count = await govt.propCount()
     const prop = await govt.getProp(0)
-    const currentWeek = await govt.currentWeek()
 
     expect(count).to.equal(1)
     expect(prop.id).to.equal(1)
-    expect(prop.week).to.equal(currentWeek)
     expect(prop.text).to.equal('hello world')
-    expect(prop.creator).to.equal(origin.address)
+    expect(prop.author).to.equal(origin.address)
     expect(prop.createdAt).to.greaterThanOrEqual(createdAt)
     expect(prop.expiresAt).to.equal(expiresAt)
   })

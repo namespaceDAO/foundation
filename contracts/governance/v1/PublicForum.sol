@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 
 import "./PublicFund.sol";
 
-struct PropArgs {
+struct PropParams {
     string text;
     uint expiresAt;
     Convertible note;
@@ -11,9 +11,8 @@ struct PropArgs {
 
 struct Prop {
     uint id;
-    uint week;
     string text;
-    address creator;
+    address author;
     uint createdAt;
     uint startedAt;
     uint expiresAt;
@@ -25,66 +24,56 @@ abstract contract PublicForum is PublicFund {
 
   event PropCreated(
     uint indexed id, 
-    address indexed creator, 
+    address indexed author, 
     uint expiresAt, 
     uint createdAt, 
     string text
   );
 
-  function getProp(uint id) public view returns (Prop memory) {
-    _requiresProp(id);
-    Prop storage prop = _props[id];
-    return prop;
+  function getProp(uint propId) public view returns (Prop memory) {
+    _requiresProp(propId);
+    return _props[propId];
   }
 
   function propCount() public view returns (uint) { 
     return _count; 
   }
 
-  function _requiresDelay(uint id) internal view {
-    _requiresProp(id);
+  function _createProp(PropParams memory params) internal returns (uint) {
     require(
-        _props[id].week + 1 >= currentWeek(), 
-        "Proposals must be started the following week"
-    );
-  }
-
-  function _createProp(PropArgs memory args) internal returns (uint) {
-    require(
-      args.expiresAt > block.timestamp + 7 days,
+      params.expiresAt > block.timestamp + 7 days,
       "Proposal expiration must be at least 7 days in the future"
     );
 
     Prop storage prop = _props[_count++];
     prop.id = _count;
-    prop.creator = msg.sender;
-    prop.text = args.text;
-    prop.week = currentWeek();
-    prop.expiresAt = args.expiresAt;
+    prop.author = msg.sender;
+    prop.text = params.text;
+    prop.expiresAt = params.expiresAt;
     prop.createdAt = block.timestamp;
 
     emit PropCreated(
       prop.id, 
-      prop.creator,
+      prop.author,
       prop.expiresAt, 
       prop.createdAt,
       prop.text
     );
 
-    _addFunding(prop.id, args.note);
+    _addFunding(prop.id, params.note);
 
     return _count;
   }
 
-  function _startProp(uint id) internal {
-    _requiresProp(id);
-    Prop storage prop = _props[id];
+  function _startProp(uint propId) internal {
+    _requiresProp(propId);
+    Prop storage prop = _props[propId];
   
     require(prop.startedAt == 0, "Prop already ended");
     require(prop.expiresAt > block.timestamp, "Prop is past the expiresAt");
 
     prop.startedAt = block.timestamp;
-    _payFund(id);
+    _payFund(propId);
   }
 
   function _requiresProp(uint id) internal view {

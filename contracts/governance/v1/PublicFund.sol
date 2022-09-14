@@ -11,7 +11,6 @@ struct Convertible {
 
 struct Fund {
   uint id;
-  address creator;
   address payee;
   uint found;
   uint value;
@@ -32,7 +31,6 @@ abstract contract PublicFund is Arch {
     Fund storage fund = _funds[id];
 
     fund.id = id;
-    fund.creator = msg.sender;
     fund.payee = note.payee;
     fund.value = note.value;
     fund.found = note.found;
@@ -54,8 +52,8 @@ abstract contract PublicFund is Arch {
     emit FundPaid(id, fund.payee, fund.found, fund.value);
   }
 
-  function propAsk(uint id) public view returns (uint) {
-    Fund storage fund = _funds[id];
+  function _getTotalAsk(uint fundId) internal view returns (uint) {
+    Fund storage fund = _funds[fundId];
     return fund.found + _convertValueToFound(fund.value);
   }
 }

@@ -56,35 +56,20 @@ contract FoundArch {
 
 contract Arch is Ownable, Pausable, FoundArch {
     uint private _inflationRate = 20;
-    uint private _weeklyLimit = 52;
+    uint private _budgetRate = 52;
+    bool private _goodAccounting = true;
     
-    function currentWeek() public view returns (uint) {
-        return block.timestamp / 7 days;
-    }
+    function currentDay() public view returns (uint) { return block.timestamp / 1 days; }
+    function inflationRate() public view returns (uint) { return _inflationRate; }
+    function goodAccounting() public view returns (bool) { return _goodAccounting; }
+    function budgetRate() public view returns (uint) {return _budgetRate; }
 
-    function inflationRate() public view returns (uint) {
-        return _inflationRate;
-    }
+    function setInflationRate(uint inflationRate_) external onlyOwner { _inflationRate = inflationRate_; }
+    function setGoodAccounting(bool goodAccounting_) external onlyOwner {_goodAccounting = goodAccounting_; }
+    function setBudgetRate(uint budgetRate_) external onlyOwner { _budgetRate = budgetRate_; }
 
-    function setInflationRate(uint rate) external onlyOwner {
-        _inflationRate = rate;
-    }
-
-    function weeklyLimit() public view returns (uint) {
-        return _weeklyLimit;
-    }
-
-    function setWeeklyLimit(uint limit) external onlyOwner {
-        _weeklyLimit = limit;
-    }
-
-    function pause() external onlyOwner {
-        _pause();
-    }
-
-    function unpause() external onlyOwner {
-        _unpause();
-    }
+    function pause() external onlyOwner { _pause(); }
+    function unpause() external onlyOwner { _unpause(); }
 
     constructor(Found found_) FoundArch(found_) {}
 }

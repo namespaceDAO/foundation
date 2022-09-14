@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "./PublicForum.sol";
 
-struct StakeProps {
+struct StakeParams {
     uint prop;
     uint amount;
 }
@@ -12,9 +12,12 @@ struct StakeProps {
 struct Stake {
     uint id;
     uint prop;
-    uint week;
+    address staker;
+    address redeemer;
     uint amount;
-    address creator;
+    uint createdAt;
+    uint expiresAt;
+    uint completedAt;
     uint totalStaked;
     uint totalSupply;
 }
@@ -24,64 +27,98 @@ abstract contract Capitalism is PublicForum, ERC721 {
     uint private _stakeTotal;
 
     mapping (uint => Stake) private _stakes;
-    mapping (uint => uint) private _stakedOnGoal;
-    mapping (uint => uint) private _stakedPerWeek;
+    mapping (uint => uint) private _stakedPerProp;
+    mapping (uint => uint) private _stakedPerDay;
 
-    event StakeCreated(uint indexed id, uint indexed prop, uint amount);
+    event StakeCreated(
+        uint indexed id, 
+        uint indexed prop, 
+        address staker,
+        uint amount,
+        uint totalStaked,
+        uint totalSupply
+    );
+
+    event StakeEnded(
+        uint indexed id, 
+        uint indexed prop, 
+        address redeemer,
+        uint amount,
+        uint penalty,
+        uint interest
+    );
 
     function totalStaked() public view returns (uint) {
         return _stakeTotal;
     }
 
-    function totalStakedByGoal(uint bitId) public view returns (uint) {
-        return _stakedOnGoal[bitId];
+    function stakedPerProp(uint prop) public view returns (uint) {
+        return _stakedPerProp[prop];
     }
 
-    function totalStakedByWeek(uint week) public view returns (uint) {
-        return _stakedPerWeek[week];
+    function stakedPerDay(uint day) public view returns (uint) {
+        return _stakedPerDay[day];
     }
 
-    // stake FOUND on any goal. successful goals pay interest.
-    // start stake mints an NFT that is used to redeem the FOUND. 
-    function _startStake(StakeProps memory props) internal {
-        require(props.amount > 0, "Must stake some FOUND");
-        uint week = currentWeek();
+    function _startStake(StakeParams memory params) internal {
+        require(params.amount > 0, "Must stake some FOUND");
 
-        // TODO: ensure that this prop was started last week
-        _depositTreasuryFound(msg.sender, props.amount);
+        Prop memory prop = getProp(params.prop);
+        _depositTreasuryFound(msg.sender, params.amount);
         
         Stake storage stake = _stakes[_stakeCount++];
         stake.id = _stakeCount;
-        stake.prop = props.prop;
-        stake.week = week;
-        stake.creator = msg.sender;
-        stake.amount = props.amount;
+        stake.prop = params.prop;
+        stake.staker = msg.sender;
+        stake.amount = params.amount;
+        stake.createdAt = currentDay();
+        stake.expiresAt = prop.expiresAt;
         stake.totalStaked = totalStaked();
         stake.totalSupply = _totalFoundSupply();
 
-        _stakedPerWeek[week] += stake.amount;
-        _stakedOnGoal[stake.prop] += stake.amount;
-        _mint(msg.sender, stake.id);
+        _stakedPerDay[stake.createdAt] += stake.amount;
+        _stakedPerProp[stake.prop] += stake.amount;
+        _mint(stake.staker, stake.id);
 
-        emit StakeCreated(stake.id, stake.prop, stake.amount);
+        emit StakeCreated(
+            stake.id,
+            stake.prop,
+            stake.staker,
+            stake.amount,
+            stake.totalStaked,
+            stake.totalSupply
+        );
     }
 
-    // end stake burns the NFT and returns you the FOUND from the treasury.
-    // you are paid intreset proportional net duration of the stake's goals.
-    // stakes that do not have a net positive duration remain in the treasury.
     function _endStake(uint stakeId) internal {
-        address owner = ownerOf(stakeId);
-        require(msg.sender == owner, "You are not the stake owner");
-        _payStake(owner, stakeId);
+        _requireStake(stakeId);
+
+        Stake storage stake = _stakes[stakeId];
+        stake.redeemer = _requireOwner(stakeId);
+
+        uint duration = stake.expiresAt - stake.createdAt;
+        uint interest = _calculateInterest(stake, duration);
+
+        // TODO: calculate late penalty
+        uint penalty = 0;
+
+        _transferFound(stake.redeemer, stake.amount);
+        _mintTreasuryFound(stake.redeemer, interest);
+        
+        // TODO: make sure the stake cannot be ended the same week it is started, 
+        // could cause a problem by over incrementing _stakedPerDay
+
+        _burn(stakeId);
+
+        emit StakeEnded(
+            stake.id,
+            stake.prop,
+            stake.redeemer,
+            stake.amount,
+            penalty,
+            interest
+        );
     }
-
-    // Start Stake 
-    // - choose N projects to stake on
-    // - choose X amount of FOUND to stake
-
-    // End Stake
-    // - for every project that has been completed,
-    // - add the duration to the time served
 
     function _calculateInterest(Stake memory stake, uint duration) internal view returns (uint) {
         uint age = duration / 60 / 60 / 24 / 365;  // in years
@@ -94,21 +131,13 @@ abstract contract Capitalism is PublicForum, ERC721 {
         return stake.amount * rate;
     }
 
-    function _payStake(address payee, uint stakeId) internal {
-        // TODO: make sure the stake cannot be ended the same week it is started, 
-        // could cause a problem by over incrementing _stakedPerWeek
-        
-        Stake storage stake = _stakes[stakeId];
-        Prop memory prop = getProp(stake.prop);
+    function _requireStake(uint stakeId) internal returns (address) {
+        require(stakeId <= _stakeCount, "Stake not found");
+    }
 
-        // TODO: make sure the prop is complete
-        uint duration = prop.expiresAt - prop.createdAt;
-        uint interest = _calculateInterest(stake, duration);
-
-        // TODO: late penalty
-        _transferFound(payee, stake.amount);
-        _mintTreasuryFound(payee, interest);
-        _burn(stakeId);
+    function _requireOwner(uint stakeId) internal returns (address) {
+        require(msg.sender == ownerOf(stakeId), "You are not the stake owner");
+        return msg.sender;
     }
 
     constructor() ERC721("FOUND STAKE", "FOUND STAKE") {}
