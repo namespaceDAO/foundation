@@ -29,7 +29,7 @@ describe('Treasury', () => {
     const address1 = await treasury.treasurerAddress()
     expect(address1).to.equal(origin.address)
 
-    await treasury.changeTreasurer(treasurer.address)
+    await treasury.setTreasurer(treasurer.address)
 
     const address2 = await treasury.treasurerAddress()
     expect(address2).to.equal(treasurer.address)
@@ -65,20 +65,20 @@ describe('Treasury', () => {
 
   it('Fails to change treasurer', async () => {
     await expect(
-      treasury.connect(alice).changeTreasurer(alice.address)
+      treasury.connect(alice).setTreasurer(alice.address)
     ).to.revertedWith('Ownable: caller is not the owner')
   })
 
   it('Locks treasury', async () => {
     await treasury.lockTreasury()
     await expect(
-      treasury.changeTreasurer(origin.address)
+      treasury.setTreasurer(origin.address)
     ).to.revertedWith('Treasury: treasury is locked')
   })
 
   it('Fails to change treasurer when locked', async () => {
     await expect(
-      treasury.changeTreasurer(origin.address)
+      treasury.setTreasurer(origin.address)
     ).to.revertedWith('Treasury: treasury is locked')
   })
 

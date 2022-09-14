@@ -8,7 +8,7 @@ contract Treasury is Ownable {
     address private _treasurer;  // authorized operator
 
     event LockTreasury(address provenance);
-    event ChangeTreasurer(address indexed from, address indexed to);
+    event SetTreasurer(address indexed from, address indexed to);
 
     receive() external payable {}
 
@@ -43,9 +43,9 @@ contract Treasury is Ownable {
         require(success, "Treasury: transfer failed");
     }
 
-    function changeTreasurer(address to) external onlyOwner {
+    function setTreasurer(address to) external onlyOwner {
         require(!_locked, "Treasury: treasury is locked");
-        emit ChangeTreasurer(_treasurer, to);
+        emit SetTreasurer(_treasurer, to);
         _treasurer = to;
     }
 

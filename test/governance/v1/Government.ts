@@ -20,6 +20,9 @@ describe('Government', () => {
     const Government = await ethers.getContractFactory('Government')
     found = await Found.deploy()
     govt = await Government.deploy(found.address)
+
+    await found.setTreasurer(govt.address)
+    await found.mint(origin.address, { value: parseEther('100') })
   })
 
   it('Creates govt', async () => {
@@ -49,7 +52,7 @@ describe('Government', () => {
     })
 
     const count = await govt.propCount()
-    const prop = await govt.getProp(0)
+    const prop = await govt.getProp(1)
 
     expect(count).to.equal(1)
     expect(prop.id).to.equal(1)
@@ -57,5 +60,24 @@ describe('Government', () => {
     expect(prop.author).to.equal(origin.address)
     expect(prop.createdAt).to.greaterThanOrEqual(createdAt)
     expect(prop.expiresAt).to.equal(expiresAt)
+  })
+
+  it('Starts stake', async () => {
+    const value = parseEther('1')
+    const amount = parseEther(`${Math.random()}`)
+
+    await found.mint(alice.address, { value })
+    await govt.connect(alice).startStake({ prop: 1, amount })
+
+    const owner = await govt.ownerOf(1)
+    expect(owner).to.equal(alice.address)
+  })
+
+  it('Starts prop', async () => {
+    await govt.startProp(1)
+  })
+
+  it('Ends stake', async () => {
+    await govt.connect(alice).endStake(1)
   })
 })

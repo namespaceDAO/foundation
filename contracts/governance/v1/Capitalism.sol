@@ -66,7 +66,7 @@ abstract contract Capitalism is PublicForum, ERC721 {
         Prop memory prop = getProp(params.prop);
         _depositTreasuryFound(msg.sender, params.amount);
         
-        Stake storage stake = _stakes[_stakeCount++];
+        Stake storage stake = _stakes[++_stakeCount];
         stake.id = _stakeCount;
         stake.prop = params.prop;
         stake.staker = msg.sender;

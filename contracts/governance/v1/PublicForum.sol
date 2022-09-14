@@ -45,7 +45,7 @@ abstract contract PublicForum is PublicFund {
       "Proposal expiration must be at least 7 days in the future"
     );
 
-    Prop storage prop = _props[_propCount++];
+    Prop storage prop = _props[++_propCount];
     prop.id = _propCount;
     prop.author = msg.sender;
     prop.text = params.text;
