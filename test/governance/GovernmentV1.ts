@@ -5,7 +5,7 @@ import { Contract } from 'ethers'
 
 const parseEther = ethers.utils.parseEther
 
-describe('Capitialism V1', () => {
+describe('Capitalism V1', () => {
   let origin: SignerWithAddress
   let alice: SignerWithAddress
   let bob: SignerWithAddress
@@ -31,12 +31,12 @@ describe('Capitialism V1', () => {
   before(async () => {
     [origin, alice, bob] = await ethers.getSigners()
     const Found = await ethers.getContractFactory('Found')
-    const Capitialism = await ethers.getContractFactory('Capitialism')
+    const Capitalism = await ethers.getContractFactory('Government')
     found = await Found.deploy()
-    govt = await Capitialism.deploy(found.address)
+    govt = await Capitalism.deploy(found.address)
   })
 
-  it('Creates capitalism', async () => {
+  it('Creates government', async () => {
     const count1 = await govt.propCount()
     expect(count1).to.equal(0)
   })

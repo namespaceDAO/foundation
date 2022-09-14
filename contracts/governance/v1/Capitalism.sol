@@ -2,7 +2,6 @@
 pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "../../token/Found.sol";
 import "./PublicForum.sol";
 
 struct StakeProps {
@@ -13,59 +12,72 @@ struct StakeProps {
 struct Stake {
     uint id;
     uint prop;
+    uint week;
     uint amount;
     address creator;
     uint totalStaked;
     uint totalSupply;
 }
 
-contract Capitialism is PublicForum, ERC721 {
-    Found private _found;
+abstract contract Capitalism is PublicForum, ERC721 {
     uint private _stakeCount;
     uint private _stakeTotal;
-    uint private _inflationRate = 20;
 
     mapping (uint => Stake) private _stakes;
     mapping (uint => uint) private _stakedOnGoal;
+    mapping (uint => uint) private _stakedPerWeek;
 
     event StakeCreated(uint indexed id, uint indexed prop, uint amount);
 
+    function totalStaked() public view returns (uint) {
+        return _stakeTotal;
+    }
+
+    function totalStakedByGoal(uint bitId) public view returns (uint) {
+        return _stakedOnGoal[bitId];
+    }
+
+    function totalStakedByWeek(uint week) public view returns (uint) {
+        return _stakedPerWeek[week];
+    }
+
     // stake FOUND on any goal. successful goals pay interest.
     // start stake mints an NFT that is used to redeem the FOUND. 
-    function startStake(StakeProps memory props) external returns (uint id) {
+    function _startStake(StakeProps memory props, uint week) internal {
         require(props.amount > 0, "Must stake some FOUND");
 
-        _found.transferFound(msg.sender, address(this), props.amount);
+        // TODO: ensure that this prop was started last week
+        _depositTreasuryFound(msg.sender, props.amount);
         
         Stake storage stake = _stakes[_stakeCount++];
-        stake.id = id;
+        stake.id = _stakeCount;
         stake.prop = props.prop;
+        stake.week = week;
         stake.creator = msg.sender;
         stake.amount = props.amount;
-        stake.totalSupply = _found.totalSupply();
         stake.totalStaked = totalStaked();
+        stake.totalSupply = _totalFoundSupply();
 
+        _stakedPerWeek[week] += stake.amount;
         _stakedOnGoal[stake.prop] += stake.amount;
         _mint(msg.sender, stake.id);
 
         emit StakeCreated(stake.id, stake.prop, stake.amount);
-        return _stakeCount;
     }
 
     // end stake burns the NFT and returns you the FOUND from the treasury.
     // you are paid intreset proportional net duration of the stake's goals.
     // stakes that do not have a net positive duration remain in the treasury.
-    function endStake(uint stakeId) external {
-        Stake storage stake = _stakes[stakeId];
+    function _endStake(uint stakeId) internal {
         // TODO: make sure the prop is complete
+        // TODO: make sure the stake cannot be ended the same week it is started, 
+        // could cause a problem by over incrementing _stakedPerWeek
 
         address owner = ownerOf(stakeId);
         require(msg.sender == owner, "You are not the stake owner");
 
         _burn(stakeId);
-        _stakedOnGoal[stake.prop] -= stake.amount;
-
-        _payStake(owner, stake);
+        _payStake(owner, stakeId);
     }
 
     // Start Stake 
@@ -81,39 +93,21 @@ contract Capitialism is PublicForum, ERC721 {
         uint age = duration / 60 / 60 / 24 / 365;  // in years
 
         uint fraction = stake.totalStaked / stake.totalSupply;
-        uint bonus = 2 * _inflationRate * fraction + _inflationRate;
+        uint inflation = inflationRate();
+        uint bonus = 2 * inflation * fraction + inflation;
 
         uint rate = age ** 2 / bonus + age / bonus;
         return stake.amount * rate;
     }
 
-    function _payStake(address payee, Stake memory stake) internal returns (uint) {
+    function _payStake(address payee, uint stakeId) internal {
+        Stake storage stake = _stakes[stakeId];
         uint interest = _calculateInterest(stake);
 
         // TODO: late penalty
-
-        _found.transferFound(address(this), msg.sender, stake.amount);
-        _found.mintFound(payee, interest);
-        return interest;
+        _transferFound(payee, stake.amount);
+        _mintTreasuryFound(payee, interest);
     }
 
-    function totalStaked() public view returns (uint) {
-        return _stakeTotal;
-    }
-
-    function totalStaked(uint bitId) public view returns (uint) {
-        return _stakedOnGoal[bitId];
-    }
-
-    function _setRate(uint rate) internal {
-        _inflationRate = rate;
-    }
-
-    function _isStartable(uint id) override internal view returns (bool) {
-        return totalStaked(id) > _proposalAsk(id);
-    }
-
-    constructor(Found found_) ERC721("FOUND STAKE", "FOUND STAKE") {
-        _found = found_;
-    }
+    constructor() ERC721("FOUND STAKE", "FOUND STAKE") {}
 }

@@ -6,7 +6,7 @@ import "./Claimable.sol";
 import "./Treasury.sol";
 
 contract Found is ERC20, Claimable, Treasury {
-    function mint(address to) public payable {
+    function mint(address to) external payable {
         require(msg.value > 0, "Must send more than 0 ETH");
         
         uint amount = msg.value;        // 1 token = 1 ETH
@@ -21,7 +21,11 @@ contract Found is ERC20, Claimable, Treasury {
         _mint(address(this), amount);   // 1 to treasury
     }
 
-    function transferFound(address from, address to, uint amount) external onlyTreasurer {
+    function transferFound(
+        address from, 
+        address to, 
+        uint amount
+    ) external onlyTreasurer {
         _transfer(from, to, amount);
     }
 

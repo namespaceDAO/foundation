@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "./PublicFund.sol";
 
 struct PropArgs {
@@ -13,6 +11,7 @@ struct PropArgs {
 
 struct Prop {
     uint id;
+    uint week;
     string text;
     address creator;
     uint createdAt;
@@ -20,42 +19,29 @@ struct Prop {
     uint expiresAt;
 }
 
-abstract contract PublicForum is Ownable, Pausable, PublicFund {
+abstract contract PublicForum is PublicFund {
   uint private _count;
   mapping(uint => Prop) private _props;
 
   event PropCreated(
-    uint indexed id, address indexed creator, 
-    uint expiresAt, uint createdAt, string text
+    uint indexed id, 
+    address indexed creator, 
+    uint expiresAt, 
+    uint createdAt, 
+    string text
   );
 
-  function _isStartable(uint prop) virtual internal view returns (bool);
-  
   function propCount() public view returns (uint) { 
     return _count; 
   }
 
   function propDuration(uint id) public view returns (uint) {
     Prop storage prop = _props[id];
-
     return prop.expiresAt - prop.createdAt;
   }
 
-  function createProp(PropArgs memory prop) external whenNotPaused {
-      _createProp(prop);
-  }
-
-  function startProp(uint id) external {
-    require(_isStartable(id), "Government: prop cannot be started");
-    _startProp(id);
-  }
-
-  function pause() external onlyOwner {
-    _pause();
-  }
-
-  function unpause() external onlyOwner {
-    _unpause();
+  function propWeek(uint id) internal view returns (uint) {
+    return _props[id].week;
   }
 
   function _createProp(PropArgs memory args) internal returns (uint) {
@@ -63,14 +49,17 @@ abstract contract PublicForum is Ownable, Pausable, PublicFund {
     prop.id = _count;
     prop.creator = msg.sender;
     prop.text = args.text;
+    prop.week = currentWeek();
     prop.expiresAt = args.expiresAt;
     prop.createdAt = block.timestamp;
 
     _addFunding(prop.id, args.note);
 
     emit PropCreated(
-      prop.id, prop.creator,
-      prop.expiresAt, prop.createdAt,
+      prop.id, 
+      prop.creator,
+      prop.expiresAt, 
+      prop.createdAt,
       prop.text
     );
 

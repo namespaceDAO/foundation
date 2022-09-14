@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "../../token/Found.sol";
+import "./Arch.sol";
 
 struct Convertible {
   address payee;
@@ -17,8 +17,7 @@ struct Fund {
   uint value;
 }
 
-abstract contract PublicFund {
-  Found private _found;
+abstract contract PublicFund is Arch {
   mapping(uint => Fund) private _funds;
 
   event FundCreated(uint indexed id, address indexed payee, uint found, uint value);
@@ -45,23 +44,18 @@ abstract contract PublicFund {
     Fund storage fund = _funds[id];
     
     if (fund.value > 0) {
-      _found.transferValue(fund.payee, fund.value);
+      _transferTreasuryValue(fund.payee, fund.value);
     }
     
     if (fund.found > 0) {
-      _found.transferFound(address(_found), fund.payee, fund.found);
+      _transferFound(fund.payee, fund.value);
     }
 
     emit FundPaid(id, fund.payee, fund.found, fund.value);
   }
 
-  function _proposalAsk(uint id) internal view returns (uint) {
-      address treasury = address(_found);
-      uint treasuryValue = treasury.balance;
-      uint treasuryFound = _found.balanceOf(treasury);
-
-      Fund storage fund = _funds[id];
-      uint value = fund.value * (treasuryFound / treasuryValue);
-      return fund.found + value;
+  function propAsk(uint id) public view returns (uint) {
+    Fund storage fund = _funds[id];
+    return fund.found + _convertValueToFound(fund.value);
   }
 }
