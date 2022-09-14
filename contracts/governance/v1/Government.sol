@@ -27,12 +27,9 @@ contract Government is Capitalism {
     }
 
     function _isStartable(uint id) internal view returns (bool) {
-        uint week = currentWeek();
-        require(
-            propWeek(id) + 1 == week, 
-            "Proposals must be started the following week"
-        );
+        _requiresDelay(id);
 
+        uint week = currentWeek();
         uint stakeRate = totalStakedByWeek(week) / currentSpendingLimit();
         uint shareRate = propAsk(id) * totalStakedByGoal(id);
 

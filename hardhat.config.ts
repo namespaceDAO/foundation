@@ -13,13 +13,13 @@ const config: HardhatUserConfig = {
     version: '0.8.10',
     settings: {
       optimizer: {
-        enabled: true,
+        enabled: false,
         runs: 10000
       }
     }
   },
   gasReporter: {
-    enabled: true,
+    enabled: false,
     coinmarketcap: process.env.COIN_MARKET_CAP_API_KEY,
     currency: 'USD',
     gasPrice: 26

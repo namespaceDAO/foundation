@@ -31,20 +31,30 @@ abstract contract PublicForum is PublicFund {
     string text
   );
 
+  function getProp(uint id) public view returns (Prop memory) {
+    _requiresProp(id);
+    Prop storage prop = _props[id];
+    return prop;
+  }
+
   function propCount() public view returns (uint) { 
     return _count; 
   }
 
-  function propDuration(uint id) public view returns (uint) {
-    Prop storage prop = _props[id];
-    return prop.expiresAt - prop.createdAt;
-  }
-
-  function propWeek(uint id) internal view returns (uint) {
-    return _props[id].week;
+  function _requiresDelay(uint id) internal view {
+    _requiresProp(id);
+    require(
+        _props[id].week + 1 >= currentWeek(), 
+        "Proposals must be started the following week"
+    );
   }
 
   function _createProp(PropArgs memory args) internal returns (uint) {
+    require(
+      args.expiresAt > block.timestamp + 7 days,
+      "Proposal expiration must be at least 7 days in the future"
+    );
+
     Prop storage prop = _props[_count++];
     prop.id = _count;
     prop.creator = msg.sender;
@@ -52,8 +62,6 @@ abstract contract PublicForum is PublicFund {
     prop.week = currentWeek();
     prop.expiresAt = args.expiresAt;
     prop.createdAt = block.timestamp;
-
-    _addFunding(prop.id, args.note);
 
     emit PropCreated(
       prop.id, 
@@ -63,11 +71,13 @@ abstract contract PublicForum is PublicFund {
       prop.text
     );
 
+    _addFunding(prop.id, args.note);
+
     return _count;
   }
 
   function _startProp(uint id) internal {
-    require(id <= _count, "Prop not found");
+    _requiresProp(id);
     Prop storage prop = _props[id];
   
     require(prop.startedAt == 0, "Prop already ended");
@@ -75,5 +85,9 @@ abstract contract PublicForum is PublicFund {
 
     prop.startedAt = block.timestamp;
     _payFund(id);
+  }
+
+  function _requiresProp(uint id) internal view {
+    require(id <= _count, "Prop not found");
   }
 }

@@ -41,6 +41,7 @@
     "@chainlink/contracts": "^0.4.1",
     "@ethersproject/bytes": "^5.7.0",
     "@openzeppelin/contracts": "^4.7.3",
+    "date-fns": "^2.29.3",
     "dotenv": "^16.0.2"
   }
 }

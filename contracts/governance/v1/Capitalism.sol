@@ -70,14 +70,8 @@ abstract contract Capitalism is PublicForum, ERC721 {
     // you are paid intreset proportional net duration of the stake's goals.
     // stakes that do not have a net positive duration remain in the treasury.
     function _endStake(uint stakeId) internal {
-        // TODO: make sure the prop is complete
-        // TODO: make sure the stake cannot be ended the same week it is started, 
-        // could cause a problem by over incrementing _stakedPerWeek
-
         address owner = ownerOf(stakeId);
         require(msg.sender == owner, "You are not the stake owner");
-
-        _burn(stakeId);
         _payStake(owner, stakeId);
     }
 
@@ -89,8 +83,7 @@ abstract contract Capitalism is PublicForum, ERC721 {
     // - for every project that has been completed,
     // - add the duration to the time served
 
-    function _calculateInterest(Stake memory stake) internal view returns (uint) {
-        uint duration = propDuration(stake.prop);
+    function _calculateInterest(Stake memory stake, uint duration) internal view returns (uint) {
         uint age = duration / 60 / 60 / 24 / 365;  // in years
 
         uint fraction = stake.totalStaked / stake.totalSupply;
@@ -102,12 +95,20 @@ abstract contract Capitalism is PublicForum, ERC721 {
     }
 
     function _payStake(address payee, uint stakeId) internal {
+        // TODO: make sure the stake cannot be ended the same week it is started, 
+        // could cause a problem by over incrementing _stakedPerWeek
+        
         Stake storage stake = _stakes[stakeId];
-        uint interest = _calculateInterest(stake);
+        Prop memory prop = getProp(stake.prop);
+
+        // TODO: make sure the prop is complete
+        uint duration = prop.expiresAt - prop.createdAt;
+        uint interest = _calculateInterest(stake, duration);
 
         // TODO: late penalty
         _transferFound(payee, stake.amount);
         _mintTreasuryFound(payee, interest);
+        _burn(stakeId);
     }
 
     constructor() ERC721("FOUND STAKE", "FOUND STAKE") {}
