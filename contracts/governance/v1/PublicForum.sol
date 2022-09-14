@@ -45,6 +45,12 @@ abstract contract PublicForum is PublicFund {
       "Proposal expiration must be at least 7 days in the future"
     );
 
+    uint maxExpiry = block.timestamp + maximumDuration();
+    require(
+      params.expiresAt <= maxExpiry, 
+      "Proposal window is too long"
+    );
+
     Prop storage prop = _props[++_propCount];
     prop.id = _propCount;
     prop.author = msg.sender;
