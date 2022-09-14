@@ -8,18 +8,20 @@ export * from './tasks'
 
 dotenv.config()
 
+const isProduction = process.env.ENV === 'prod'
+
 const config: HardhatUserConfig = {
   solidity: {
     version: '0.8.10',
     settings: {
       optimizer: {
-        enabled: false,
+        enabled: isProduction,
         runs: 10000
       }
     }
   },
   gasReporter: {
-    enabled: false,
+    enabled: isProduction,
     coinmarketcap: process.env.COIN_MARKET_CAP_API_KEY,
     currency: 'USD',
     gasPrice: 26
