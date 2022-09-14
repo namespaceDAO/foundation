@@ -26,12 +26,12 @@ contract Foundation {
         return _found.totalSupply();
     }
 
-    function _treasuryValueBalance() internal view returns (uint) {
-        return address(_found).balance;
-    }
-
     function _treasuryFoundBalance() internal view returns (uint) {
         return  _found.balanceOf(address(_found));
+    }
+
+    function _treasuryValueBalance() internal view returns (uint) {
+        return address(_found).balance;
     }
 
     function _treasuryNetBalance() internal view returns (uint) {
