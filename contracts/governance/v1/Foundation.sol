@@ -7,19 +7,19 @@ contract Foundation {
     Found private _found;
 
     function _treasuryTransferValue(address payee, uint value) internal {
-        _found.sendValue(payee, value);
+        _found.transferValue(payee, value);
     }
 
     function _treasuryTransferFound(address payee, uint value) internal {
-        _found.transferFound(address(_found), payee, value);
+        _found.treasuryTransfer(address(_found), payee, value);
     }
 
     function _treasuryDepositFound(address depositor, uint value) internal {
-        _found.transferFound(depositor, address(_found), value);
+        _found.treasuryTransfer(depositor, address(_found), value);
     }
 
     function _treasuryMintFound(address to, uint amount) internal {
-        _found.mintFound(to, amount);
+        _found.treasuryMint(to, amount);
     }
 
     function _treasuryFoundSupply() internal view returns (uint) {

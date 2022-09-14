@@ -16,12 +16,12 @@ contract Found is ERC20, Claimable, Treasury {
         _addValue(amount);
     }
 
-    function mintFound(address to, uint amount) external onlyTreasurer {
+    function treasuryMint(address to, uint amount) external onlyTreasurer {
         _mint(to, amount);              // 1 to minter
         _mint(address(this), amount);   // 1 to treasury
     }
 
-    function transferFound(
+    function treasuryTransfer(
         address from, 
         address to, 
         uint amount
