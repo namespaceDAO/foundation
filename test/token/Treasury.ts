@@ -19,20 +19,16 @@ describe('Treasury', () => {
     await origin.sendTransaction({ to: treasury.address, value: seed })
 
     const balance = await treasury.treasuryBalance()
-    const address = await treasury.treasurerAddress()
-
     expect(balance).to.equal(seed)
-    expect(address).to.equal(origin.address)
+
+    const isTreasurer = await treasury.isTreasurer(origin.address)
+    expect(isTreasurer).to.equal(false)
   })
 
   it('Change treasurer', async () => {
-    const address1 = await treasury.treasurerAddress()
-    expect(address1).to.equal(origin.address)
-
-    await treasury.setTreasurer(treasurer.address)
-
-    const address2 = await treasury.treasurerAddress()
-    expect(address2).to.equal(treasurer.address)
+    await treasury.setTreasurer(treasurer.address, true)
+    const isTreasurer = await treasury.isTreasurer(treasurer.address)
+    expect(isTreasurer).to.equal(true)
   })
 
   it('Transfers funds for treasurer', async () => {
@@ -63,36 +59,9 @@ describe('Treasury', () => {
     ).to.revertedWith('Treasury: caller is not the treasurer')
   })
 
-  it('Fails to change treasurer', async () => {
+  it('Fails to change treasurer when not owner', async () => {
     await expect(
-      treasury.connect(alice).setTreasurer(alice.address)
+      treasury.connect(alice).setTreasurer(alice.address, true)
     ).to.revertedWith('Ownable: caller is not the owner')
-  })
-
-  it('Locks treasury', async () => {
-    await treasury.lockTreasury()
-    await expect(
-      treasury.setTreasurer(origin.address)
-    ).to.revertedWith('Treasury: treasury is locked')
-  })
-
-  it('Fails to change treasurer when locked', async () => {
-    await expect(
-      treasury.setTreasurer(origin.address)
-    ).to.revertedWith('Treasury: treasury is locked')
-  })
-
-  it('Transfers when locked', async () => {
-    const transfer = ethers.utils.parseEther(`${Math.random() / 10}`)
-    const b1 = await bob.getBalance()
-
-    await treasury.connect(treasurer).transferValue(
-      bob.address,
-      transfer
-    )
-
-    const b2 = await bob.getBalance()
-
-    expect(b1.add(transfer)).to.equal(b2)
   })
 })

@@ -21,7 +21,7 @@ describe('Government', () => {
     found = await Found.deploy()
     govt = await Government.deploy(found.address)
 
-    await found.setTreasurer(govt.address)
+    await found.setTreasurer(govt.address, true)
     await found.mint(origin.address, { value: parseEther('100') })
   })
 

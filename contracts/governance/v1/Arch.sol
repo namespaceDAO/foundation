@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../../token/Found.sol";
 
-contract FoundArch {
+contract Foundation {
     Found private _found;
 
     function _transferTreasuryValue(address payee, uint value) internal {
@@ -54,7 +54,7 @@ contract FoundArch {
     }
 }
 
-contract Arch is Ownable, Pausable, FoundArch {
+contract Arch is Ownable, Pausable, Foundation {
     uint private _inflationRate = 20;
     uint private _budgetRate = 52;
     bool private _goodAccounting = true;
@@ -71,5 +71,5 @@ contract Arch is Ownable, Pausable, FoundArch {
     function pause() external onlyOwner { _pause(); }
     function unpause() external onlyOwner { _unpause(); }
 
-    constructor(Found found_) FoundArch(found_) {}
+    constructor(Found found_) Foundation(found_) {}
 }

@@ -4,30 +4,32 @@ pragma solidity ^0.8.10;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Treasury is Ownable {
-    bool private _locked;
-    address private _treasurer;  // authorized operator
-
-    event LockTreasury(address provenance);
-    event SetTreasurer(address indexed from, address indexed to);
+    mapping(address => bool) private _treasurers;  // authorized operators
+    event SetTreasurer(address indexed treasurer, bool indexed active);
 
     receive() external payable {}
-
     fallback() external payable {}
 
-    function treasuryBalance() public view returns (uint) {
-        return address(this).balance;
-    }
 
     modifier onlyTreasurer() {
         require(
-            _treasurer == msg.sender && _treasurer != address(0), 
+            _treasurers[msg.sender] && msg.sender != address(0), 
             "Treasury: caller is not the treasurer"
         );
         _;
     }
 
-    function treasurerAddress() public view returns (address) {
-        return _treasurer;
+    function treasuryBalance() public view returns (uint) {
+        return address(this).balance;
+    }
+
+    function isTreasurer(address treasurer) public view returns (bool) {
+        return _treasurers[treasurer];
+    }
+
+    function setTreasurer(address treasurer, bool active) external onlyOwner {
+        _treasurers[treasurer] = active;
+        emit SetTreasurer(treasurer, active);
     }
 
     function transferValue(
@@ -41,20 +43,5 @@ contract Treasury is Ownable {
 
         (bool success, ) = to.call{value:amount}("");
         require(success, "Treasury: transfer failed");
-    }
-
-    function setTreasurer(address to) external onlyOwner {
-        require(!_locked, "Treasury: treasury is locked");
-        emit SetTreasurer(_treasurer, to);
-        _treasurer = to;
-    }
-
-    function lockTreasury() external onlyOwner {
-        _locked = true;
-        emit LockTreasury(_treasurer);
-    }
-
-    constructor() {
-        _treasurer = owner();
     }
 }

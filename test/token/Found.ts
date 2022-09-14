@@ -13,17 +13,18 @@ describe('Found', () => {
     [origin, alice, bob] = await ethers.getSigners()
     const Found = await ethers.getContractFactory('Found')
     found = await Found.deploy()
+    await found.setTreasurer(origin.address, true)
   })
 
   it('Create FOUND with getters', async () => {
     const name = await found.name()
     const symbol = await found.symbol()
     const balance = await found.treasuryBalance()
-    const treasurer = await found.treasurerAddress()
+    const isTreasurer = await found.isTreasurer(origin.address)
     expect(name).to.equal('FOUND')
     expect(symbol).to.equal('FOUND')
     expect(balance).to.equal(0)
-    expect(treasurer).to.equal(origin.address)
+    expect(isTreasurer).to.equal(true)
   })
 
   it('Mints FOUND to minter and treasury', async () => {
@@ -43,7 +44,7 @@ describe('Found', () => {
   })
 
   it('Transfer ETHER and FOUND from treasury', async () => {
-    const amount = Math.random()
+    const amount = Math.floor(Math.random() * 1000) / 1000
     const value = ethers.utils.parseEther(`${amount}`)
     const half = ethers.utils.parseEther(`${amount / 2}`)
 
