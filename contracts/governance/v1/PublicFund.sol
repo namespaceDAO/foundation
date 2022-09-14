@@ -2,6 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "./Arch.sol";
+import "./Foundation.sol";
 
 struct Convertible {
   address payee;
@@ -16,7 +17,7 @@ struct Fund {
   uint value;
 }
 
-abstract contract PublicFund is Arch {
+abstract contract PublicFund is Arch, Foundation {
   mapping(uint => Fund) private _funds;
 
   event FundCreated(uint indexed id, address indexed payee, uint found, uint value);

@@ -3,9 +3,8 @@ pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./Foundation.sol";
 
-contract Arch is Ownable, Pausable, Foundation {
+contract Arch is Ownable, Pausable {
     uint private _budgetRate = 52;
     uint private _inflationRate = 20;
     uint private _maximumDuration = 2048 weeks;
@@ -24,6 +23,4 @@ contract Arch is Ownable, Pausable, Foundation {
 
     function pause() external onlyOwner { _pause(); }
     function unpause() external onlyOwner { _unpause(); }
-
-    constructor(Found found_) Foundation(found_) {}
 }
