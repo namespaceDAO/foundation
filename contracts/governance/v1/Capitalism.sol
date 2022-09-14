@@ -102,8 +102,12 @@ abstract contract Capitalism is PublicForum, ERC721 {
         // TODO: calculate late penalty
         uint penalty = 0;
 
-        _transferFound(stake.redeemer, stake.amount);
-        _mintTreasuryFound(stake.redeemer, interest);
+        if (goodAccounting()) {
+            _transferFound(stake.redeemer, stake.amount + interest);
+        } else {
+            _transferFound(stake.redeemer, stake.amount);
+            _mintTreasuryFound(stake.redeemer, interest);
+        }
         
         // TODO: make sure the stake cannot be ended the same week it is started, 
         // could cause a problem by over incrementing _stakedPerDay
