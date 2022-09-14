@@ -6,7 +6,7 @@ import "./Capitalism.sol";
 
 contract Government is Capitalism {
     function startStake(StakeProps memory props) external {
-        _startStake(props, currentWeek());
+        _startStake(props);
     }
 
     function endStake(uint id) external {
@@ -22,14 +22,18 @@ contract Government is Capitalism {
         _startProp(id);
     }
 
-    function limitByWeek(uint) public pure returns (uint) {
-        return 2 ether;
+    function currentSpendingLimit() public view returns (uint) {
+        return _treasuryNetBalance() / weeklyLimit();
     }
 
     function _isStartable(uint id) internal view returns (bool) {
-        uint week = propWeek(id);
+        uint week = currentWeek();
+        require(
+            propWeek(id) + 1 == week, 
+            "Proposals must be started the following week"
+        );
 
-        uint stakeRate = totalStakedByWeek(week) / limitByWeek(week);
+        uint stakeRate = totalStakedByWeek(week) / currentSpendingLimit();
         uint shareRate = propAsk(id) * totalStakedByGoal(id);
 
         return shareRate > stakeRate;

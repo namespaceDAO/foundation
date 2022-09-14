@@ -28,10 +28,24 @@ contract FoundArch {
         return _found.totalSupply();
     }
 
+    function _treasuryValueBalance() internal view returns (uint) {
+        return address(_found).balance;
+    }
+
+    function _treasuryFoundBalance() internal view returns (uint) {
+        return  _found.balanceOf(address(_found));
+    }
+
+    function _treasuryNetBalance() internal view returns (uint) {
+        uint treasuryValue = _treasuryValueBalance();
+        uint treasuryFound = _treasuryFoundBalance();
+        uint converted = treasuryValue * (treasuryFound / treasuryValue);
+        return treasuryFound + converted;
+    }
+
     function _convertValueToFound(uint value) internal view returns (uint) {
-        address treasury = address(_found);
-        uint treasuryValue = treasury.balance;
-        uint treasuryFound = _found.balanceOf(treasury);
+        uint treasuryValue = _treasuryValueBalance();
+        uint treasuryFound = _treasuryFoundBalance();
         return value * (treasuryFound / treasuryValue);
     }
 
@@ -42,6 +56,7 @@ contract FoundArch {
 
 contract Arch is Ownable, Pausable, FoundArch {
     uint private _inflationRate = 20;
+    uint private _weeklyLimit = 52;
     
     function currentWeek() public view returns (uint) {
         return block.timestamp / 7 days;
@@ -53,6 +68,14 @@ contract Arch is Ownable, Pausable, FoundArch {
 
     function setInflationRate(uint rate) external onlyOwner {
         _inflationRate = rate;
+    }
+
+    function weeklyLimit() public view returns (uint) {
+        return _weeklyLimit;
+    }
+
+    function setWeeklyLimit(uint limit) external onlyOwner {
+        _weeklyLimit = limit;
     }
 
     function pause() external onlyOwner {

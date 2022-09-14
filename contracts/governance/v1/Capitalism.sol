@@ -43,8 +43,9 @@ abstract contract Capitalism is PublicForum, ERC721 {
 
     // stake FOUND on any goal. successful goals pay interest.
     // start stake mints an NFT that is used to redeem the FOUND. 
-    function _startStake(StakeProps memory props, uint week) internal {
+    function _startStake(StakeProps memory props) internal {
         require(props.amount > 0, "Must stake some FOUND");
+        uint week = currentWeek();
 
         // TODO: ensure that this prop was started last week
         _depositTreasuryFound(msg.sender, props.amount);
