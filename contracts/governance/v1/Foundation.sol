@@ -6,23 +6,23 @@ import "../../token/Found.sol";
 contract Foundation {
     Found private _found;
 
-    function _transferTreasuryValue(address payee, uint value) internal {
-        _found.transferValue(payee, value);
+    function _treasuryTransferValue(address payee, uint value) internal {
+        _found.sendValue(payee, value);
     }
 
-    function _transferFound(address payee, uint value) internal {
+    function _treasuryTransferFound(address payee, uint value) internal {
         _found.transferFound(address(_found), payee, value);
     }
 
-    function _depositTreasuryFound(address depositor, uint value) internal {
+    function _treasuryDepositFound(address depositor, uint value) internal {
         _found.transferFound(depositor, address(_found), value);
     }
 
-    function _mintTreasuryFound(address to, uint amount) internal {
+    function _treasuryMintFound(address to, uint amount) internal {
         _found.mintFound(to, amount);
     }
 
-    function _totalFoundSupply() internal view returns (uint) {
+    function _treasuryFoundSupply() internal view returns (uint) {
         return _found.totalSupply();
     }
 

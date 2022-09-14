@@ -32,7 +32,7 @@ contract Treasury is Ownable {
         emit SetTreasurer(treasurer, active);
     }
 
-    function transferValue(
+    function sendValue(
         address to, 
         uint amount
     ) external onlyTreasurer {

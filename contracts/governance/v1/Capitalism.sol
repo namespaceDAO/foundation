@@ -64,7 +64,7 @@ abstract contract Capitalism is PublicForum, ERC721 {
         require(params.amount > 0, "Must stake some FOUND");
 
         Prop memory prop = getProp(params.prop);
-        _depositTreasuryFound(msg.sender, params.amount);
+        _treasuryDepositFound(msg.sender, params.amount);
         
         Stake storage stake = _stakes[++_stakeCount];
         stake.id = _stakeCount;
@@ -74,7 +74,7 @@ abstract contract Capitalism is PublicForum, ERC721 {
         stake.createdAt = currentDay();
         stake.expiresAt = prop.expiresAt;
         stake.totalStaked = totalStaked();
-        stake.totalSupply = _totalFoundSupply();
+        stake.totalSupply = _treasuryFoundSupply();
 
         _stakedPerDay[stake.createdAt] += stake.amount;
         _stakedPerProp[stake.prop] += stake.amount;
@@ -103,10 +103,10 @@ abstract contract Capitalism is PublicForum, ERC721 {
         uint penalty = 0;
 
         if (goodAccounting()) {
-            _transferFound(stake.redeemer, stake.amount + interest);
+            _treasuryTransferFound(stake.redeemer, stake.amount + interest);
         } else {
-            _transferFound(stake.redeemer, stake.amount);
-            _mintTreasuryFound(stake.redeemer, interest);
+            _treasuryTransferFound(stake.redeemer, stake.amount);
+            _treasuryMintFound(stake.redeemer, interest);
         }
         
         // TODO: make sure the stake cannot be ended the same week it is started, 
