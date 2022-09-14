@@ -121,14 +121,12 @@ abstract contract Capitalism is PublicForum, ERC721 {
     }
 
     function _calculateInterest(Stake memory stake, uint duration) internal view returns (uint) {
-        uint age = duration / 60 / 60 / 24 / 365;  // in years
-
-        uint fraction = stake.totalStaked / stake.totalSupply;
         uint inflation = inflationRate();
-        uint bonus = 2 * inflation * fraction + inflation;
-
-        uint rate = age ** 2 / bonus + age / bonus;
-        return stake.amount * rate;
+        uint age = duration / 60 / 60 / 24 / 365;  // in years
+        uint fraction = stake.totalStaked / stake.totalSupply;
+        uint rate = 2 * inflation * fraction + inflation;
+        uint bonus = age ** 2 / rate + age / rate;
+        return bonus * stake.amount;
     }
 
     function _requireStake(uint stakeId) internal view {
