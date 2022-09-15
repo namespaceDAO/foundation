@@ -25,7 +25,7 @@ describe('PublicForum', () => {
 
   it('Successfully creates prop', async () => {
     const { date, time } = await getCurrentDateTime()
-    const expiresAt = dateToTime(add(date, { days: 7 + Math.random() * 7 }))
+    const expiresAt = dateToTime(add(date, { days: 8 + Math.random() * 7 }))
 
     const text = 'hello world'
     const found = parseEther(`${Math.random()}`)
