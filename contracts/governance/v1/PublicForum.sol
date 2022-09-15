@@ -42,13 +42,12 @@ abstract contract PublicForum is PublicFund {
 
   function _createProp(PropParams memory params) internal returns (uint) {
     require(
-      params.expiresAt > block.timestamp + 1 days,
-      "Proposal expiration must be at least 1 day in the future"
+      params.expiresAt >= block.timestamp + minimumDuration(),
+      "Proposal window is too short"
     );
 
-    uint maxExpiry = block.timestamp + maximumDuration();
     require(
-      params.expiresAt <= maxExpiry, 
+      params.expiresAt <= block.timestamp + maximumDuration(), 
       "Proposal window is too long"
     );
 

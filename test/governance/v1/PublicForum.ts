@@ -60,7 +60,7 @@ describe('PublicForum', () => {
           value: parseEther('1')
         }
       })
-    ).to.rejectedWith('Proposal expiration must be at least 1 day in the future')
+    ).to.rejectedWith('Proposal window is too short')
   })
 
   it('Fails to create prop that expires in 2049 weeks', async () => {
@@ -89,7 +89,7 @@ describe('PublicForum', () => {
           value: parseEther('1')
         }
       })
-    ).to.rejectedWith('Proposal expiration must be at least 1 day in the future')
+    ).to.rejectedWith('Proposal window is too short')
   })
 
   it('Fails to create prop without a funding request', async () => {

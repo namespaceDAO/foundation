@@ -27,13 +27,13 @@ abstract contract Capitalism is PublicForum, ERC721 {
     uint private _stakeTotal;
     string private _tokenURI;
 
-    mapping (uint => Stake) private _stakes;
-    mapping (uint => uint) private _stakedOnProp;
-    mapping (uint => uint) private _stakedPerDay;
+    mapping(uint => Stake) private _stakes;
+    mapping(uint => uint) private _stakedOnProp;
+    mapping(uint => uint) private _stakedPerDay;
 
     event StakeStarted(
-        uint indexed id, 
-        uint indexed prop, 
+        uint indexed id,
+        uint indexed prop,
         address staker,
         uint amount,
         uint totalStaked,
@@ -41,8 +41,8 @@ abstract contract Capitalism is PublicForum, ERC721 {
     );
 
     event StakeEnded(
-        uint indexed id, 
-        uint indexed prop, 
+        uint indexed id,
+        uint indexed prop,
         address redeemer,
         uint amount,
         uint penalty,
@@ -72,19 +72,25 @@ abstract contract Capitalism is PublicForum, ERC721 {
     function stakedPerDay(uint day) public view returns (uint) {
         return _stakedPerDay[day];
     }
-    
+
     function getStake(uint stakeId) public view returns (Stake memory) {
         _requireStake(stakeId);
         return _stakes[stakeId];
     }
 
     function _startStake(StakeParams memory params) internal {
-        require(params.amount > 0, "Must stake some FOUND");
+        require(
+            params.amount > 0, 
+            "Must stake some FOUND"
+        );
 
         Prop memory prop = getProp(params.prop);
         _treasuryDepositFound(msg.sender, params.amount);
-        
-        require(prop.expiresAt > block.timestamp, "Prop has expired");
+
+        require(
+            prop.expiresAt > block.timestamp, 
+            "Prop has expired"
+        );
 
         Stake storage stake = _stakes[++_stakeCount];
         stake.id = _stakeCount;
@@ -112,15 +118,30 @@ abstract contract Capitalism is PublicForum, ERC721 {
 
     function _endStake(uint stakeId) internal {
         _requireStake(stakeId);
-
         Stake storage stake = _stakes[stakeId];
         stake.redeemer = _requireOwner(stakeId);
 
-        uint duration = stake.expiresAt - stake.createdAt;
-        uint interest = _calculateInterest(stake, duration);
+        require(
+            block.timestamp >= stake.createdAt + minimumDuration(),
+            "Stake is too early"
+        );
 
-        // TODO: calculate late penalty
-        uint penalty = 0;
+        uint duration;
+        uint penalty;
+
+        if (stake.expiresAt > block.timestamp) {
+            duration = block.timestamp - stake.createdAt;
+            uint undershot = stake.expiresAt - block.timestamp;
+            penalty = _calculateInterest(stake, undershot);
+        } else {
+            duration = stake.expiresAt - stake.createdAt;
+            uint overshot = stake.expiresAt - block.timestamp;
+            if (overshot > 2 weeks) {
+                penalty = _calculateInterest(stake, overshot - 2 weeks);
+            }
+        }
+
+        uint interest = _calculateInterest(stake, duration);
 
         if (goodAccounting()) {
             _treasuryTransferFound(stake.redeemer, stake.amount + interest);
@@ -128,8 +149,8 @@ abstract contract Capitalism is PublicForum, ERC721 {
             _treasuryTransferFound(stake.redeemer, stake.amount);
             _treasuryMintFound(stake.redeemer, interest);
         }
-        
-        // TODO: make sure the stake cannot be ended the same week it is started, 
+
+        // TODO: make sure the stake cannot be ended the same week it is started,
         // could cause a problem by over incrementing _stakedPerDay
 
         _burn(stakeId);
@@ -144,12 +165,15 @@ abstract contract Capitalism is PublicForum, ERC721 {
         );
     }
 
-    function _calculateInterest(Stake memory stake, uint duration) internal view returns (uint) {
+    function _calculateInterest(
+        Stake memory stake, 
+        uint duration
+    ) internal view returns (uint) {
         uint inflation = inflationRate();
-        uint age = duration / 60 / 60 / 24 / 365;  // in years
+        uint age = duration / 60 / 60 / 24 / 365; // in years
         uint fraction = stake.totalStaked / stake.totalSupply;
         uint rate = 2 * inflation * fraction + inflation;
-        uint bonus = age ** 2 / rate + age / rate;
+        uint bonus = age**2 / rate + age / rate;
         return bonus * stake.amount;
     }
 
