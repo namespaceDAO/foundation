@@ -25,6 +25,7 @@ struct Stake {
 abstract contract Capitalism is PublicForum, ERC721 {
     uint private _stakeCount;
     uint private _stakeTotal;
+    string private _tokenURI;
 
     mapping (uint => Stake) private _stakes;
     mapping (uint => uint) private _stakedOnProp;
@@ -47,6 +48,14 @@ abstract contract Capitalism is PublicForum, ERC721 {
         uint penalty,
         uint interest
     );
+
+    function setTokenURI(string memory tokenURI_) external onlyOwner {
+        _tokenURI = tokenURI_;
+    }
+
+    function _baseURI() internal view override returns (string memory) {
+        return _tokenURI;
+    }
 
     function stakeCount() public view returns (uint) {
         return _stakeCount;
