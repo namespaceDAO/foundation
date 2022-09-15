@@ -27,14 +27,9 @@ contract Government is Capitalism {
     }
 
     function _isStartable(uint propId) internal view returns (bool) {
-
-        // TODO: make sure prop cannot be started past it's due date
-        // TODO: avoid a backlog of proposals by setting an expiration
-
         uint day = currentDay();
         uint stakeRate = stakedPerDay(day) / dailyBudget();
         uint shareRate = _totalRequest(propId) * stakedOnProp(propId);
-
         return shareRate > stakeRate;
     }
 
