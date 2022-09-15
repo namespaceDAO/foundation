@@ -20,6 +20,8 @@ struct Stake {
     uint completedAt;
     uint totalStaked;
     uint totalSupply;
+    uint penalty;
+    uint interest;
 }
 
 abstract contract Capitalism is PublicForum, ERC721 {
@@ -116,39 +118,24 @@ abstract contract Capitalism is PublicForum, ERC721 {
         );
     }
 
+
     function _endStake(uint stakeId) internal {
         _requireStake(stakeId);
         Stake storage stake = _stakes[stakeId];
-        stake.redeemer = _requireOwner(stakeId);
+
+        require(
+            stake.completedAt == 0,
+            "Stake has already been completed"
+        );
 
         require(
             block.timestamp >= stake.createdAt + minimumDuration(),
             "Stake is too early"
         );
 
-        uint duration;
-        uint penalty;
-
-        if (stake.expiresAt > block.timestamp) {
-            duration = block.timestamp - stake.createdAt;
-            // uint undershot = stake.expiresAt - block.timestamp;
-            // penalty = _calculateInterest(stake, undershot);
-        } else {
-            duration = stake.expiresAt - stake.createdAt;
-            // uint overshot = stake.expiresAt - block.timestamp;
-            // if (overshot > 2 weeks) {
-            //     penalty = _calculateInterest(stake, overshot - 2 weeks);
-            // }
-        }
-
-        uint interest = _calculateInterest(stake, duration);
-
-        if (goodAccounting()) {
-            _treasuryTransferFound(stake.redeemer, stake.amount + interest);
-        } else {
-            _treasuryTransferFound(stake.redeemer, stake.amount);
-            _treasuryMintFound(stake.redeemer, interest);
-        }
+        stake.completedAt = block.timestamp;
+        stake.redeemer = _requireOwner(stakeId);
+        (stake.penalty, stake.interest) = _payStake(stake);
 
         _burn(stakeId);
 
@@ -157,21 +144,62 @@ abstract contract Capitalism is PublicForum, ERC721 {
             stake.prop,
             stake.redeemer,
             stake.amount,
-            penalty,
-            interest
+            stake.penalty,
+            stake.interest
         );
     }
 
-    function _calculateInterest(
-        Stake memory stake, 
-        uint duration
-    ) internal view returns (uint) {
+    function _payStake(Stake memory stake) internal returns (uint, uint) {
+        uint penalty = _calculatePenalty(stake);
+        uint duration = _calculateDuration(stake);
+        uint interest = _calculateInterest(stake, duration);
+
+        if (interest > penalty) {
+            if (goodAccounting()) {
+                _treasuryTransferFound(stake.redeemer, stake.amount + interest - penalty);
+            } else {
+                _treasuryTransferFound(stake.redeemer, stake.amount);
+                _treasuryMintFound(stake.redeemer, interest - penalty);
+            }
+        } else if (stake.amount > penalty) {
+            _treasuryTransferFound(stake.redeemer, stake.amount - penalty);
+        }
+
+        return (penalty, interest);
+    }
+
+    function _calculateDuration(Stake memory stake) internal view returns (uint) {
+        if (stake.expiresAt > block.timestamp) {
+            return block.timestamp - stake.createdAt;
+        } else {
+            return stake.expiresAt - stake.createdAt;
+        }
+    }
+
+    function _calculateInterest(Stake memory stake, uint time) internal view returns (uint) {
         uint inflation = inflationRate();
-        uint age = duration / 60 / 60 / 24 / 365; // in years
+
+        uint age = time / 60 / 60 / 24 / 365; // in years
         uint fraction = stake.totalStaked / stake.totalSupply;
         uint rate = 2 * inflation * fraction + inflation;
         uint bonus = age ** 2 / rate + age / rate;
         return bonus * stake.amount;
+    }
+
+    function _calculatePenalty(Stake memory stake) internal view returns (uint) {
+        if (stake.expiresAt > block.timestamp) {
+            uint early = stake.expiresAt - block.timestamp;
+            return _calculateInterest(stake, early);
+        } else {
+            uint extra = block.timestamp - stake.expiresAt;
+            uint limit = penaltyDuration();
+
+            if (extra > limit) {
+                return _calculateInterest(stake, extra - limit);
+            }
+        }
+
+        return 0;
     }
 
     function _requireStake(uint stakeId) internal view {
