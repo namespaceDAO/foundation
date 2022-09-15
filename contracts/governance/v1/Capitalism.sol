@@ -27,10 +27,10 @@ abstract contract Capitalism is PublicForum, ERC721 {
     uint private _stakeTotal;
 
     mapping (uint => Stake) private _stakes;
-    mapping (uint => uint) private _stakedPerProp;
+    mapping (uint => uint) private _stakedOnProp;
     mapping (uint => uint) private _stakedPerDay;
 
-    event StakeCreated(
+    event StakeStarted(
         uint indexed id, 
         uint indexed prop, 
         address staker,
@@ -48,16 +48,25 @@ abstract contract Capitalism is PublicForum, ERC721 {
         uint interest
     );
 
+    function stakeCount() public view returns (uint) {
+        return _stakeCount;
+    }
+
     function totalStaked() public view returns (uint) {
         return _stakeTotal;
     }
 
-    function stakedPerProp(uint prop) public view returns (uint) {
-        return _stakedPerProp[prop];
+    function stakedOnProp(uint propId) public view returns (uint) {
+        return _stakedOnProp[propId];
     }
 
     function stakedPerDay(uint day) public view returns (uint) {
         return _stakedPerDay[day];
+    }
+    
+    function getStake(uint stakeId) public view returns (Stake memory) {
+        _requireStake(stakeId);
+        return _stakes[stakeId];
     }
 
     function _startStake(StakeParams memory params) internal {
@@ -66,21 +75,23 @@ abstract contract Capitalism is PublicForum, ERC721 {
         Prop memory prop = getProp(params.prop);
         _treasuryDepositFound(msg.sender, params.amount);
         
+        require(prop.expiresAt > block.timestamp, "Prop has expired");
+
         Stake storage stake = _stakes[++_stakeCount];
         stake.id = _stakeCount;
         stake.prop = params.prop;
         stake.staker = msg.sender;
         stake.amount = params.amount;
-        stake.createdAt = currentDay();
+        stake.createdAt = block.timestamp;
         stake.expiresAt = prop.expiresAt;
         stake.totalStaked = totalStaked();
-        stake.totalSupply = _treasuryFoundSupply();
+        stake.totalSupply = _totalFoundSupply();
 
-        _stakedPerDay[stake.createdAt] += stake.amount;
-        _stakedPerProp[stake.prop] += stake.amount;
+        _stakedPerDay[currentDay()] += stake.amount;
+        _stakedOnProp[stake.prop] += stake.amount;
         _mint(stake.staker, stake.id);
 
-        emit StakeCreated(
+        emit StakeStarted(
             stake.id,
             stake.prop,
             stake.staker,

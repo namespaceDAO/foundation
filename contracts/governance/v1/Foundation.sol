@@ -6,6 +6,10 @@ import "../../token/Found.sol";
 contract Foundation {
     Found private _found;
 
+    function _totalFoundSupply() internal view returns (uint) {
+        return _found.totalSupply();
+    }
+
     function _treasuryTransferValue(address payee, uint value) internal {
         _found.transferValue(payee, value);
     }
@@ -20,10 +24,6 @@ contract Foundation {
 
     function _treasuryMintFound(address to, uint amount) internal {
         _found.treasuryMint(to, amount);
-    }
-
-    function _treasuryFoundSupply() internal view returns (uint) {
-        return _found.totalSupply();
     }
 
     function _treasuryFoundBalance() internal view returns (uint) {

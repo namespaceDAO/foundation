@@ -4,9 +4,10 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { Contract } from 'ethers'
 import { parseEther } from 'ethers/lib/utils'
 import { add } from 'date-fns'
-import { dateToTime, getCurrentDate, getCurrentDateTime } from '../../../utils'
+import { dateToTime, getCurrentDateTime } from '../../../utils'
 
 describe('Capitalism', () => {
+  const seed = parseEther('100')
   let origin: SignerWithAddress
   let alice: SignerWithAddress
   let bob: SignerWithAddress
@@ -20,8 +21,9 @@ describe('Capitalism', () => {
     found = await Found.deploy()
     govt = await Government.deploy(found.address)
 
+    // seed the treasury with some ether and found
+    await found.mint(origin.address, { value: seed })
     await found.setTreasurer(govt.address, true)
-    await found.mint(origin.address, { value: parseEther('100') })
   })
 
   it('Creates govt', async () => {
@@ -34,47 +36,67 @@ describe('Capitalism', () => {
     expect(budgetRate).to.equal(52)
   })
 
-  it('Creates prop', async () => {
+  it('Successfully starts stake', async () => {
     const { date, time } = await getCurrentDateTime()
-    const expiresAt = dateToTime(add(date, { days: 7 + Math.random() * 7 }))
+    const duration = { days: 7 + Math.random() * 7 }
+    const expiresAt = dateToTime(add(date, duration))
 
-    await govt.createProp({
-      text: 'hello world',
-      expiresAt,
-      note: {
-        payee: alice.address,
-        found: parseEther('1'),
-        value: parseEther('1')
-      }
-    })
+    const text = 'hello world'
+    const note = {
+      payee: alice.address,
+      found: parseEther(`${Math.random()}`),
+      value: parseEther(`${Math.random()}`)
+    }
 
-    const count = await govt.propCount()
-    const prop = await govt.getProp(1)
+    const prop = { text, note, expiresAt }
+    await govt.connect(alice).createProp(prop)
 
-    expect(count).to.equal(1)
-    expect(prop.id).to.equal(1)
-    expect(prop.text).to.equal('hello world')
-    expect(prop.author).to.equal(origin.address)
-    expect(prop.createdAt).to.greaterThanOrEqual(time)
-    expect(prop.expiresAt).to.equal(expiresAt)
-  })
-
-  it('Starts stake', async () => {
     const value = parseEther('1')
-    const amount = parseEther(`${Math.random()}`)
-
     await found.mint(alice.address, { value })
-    await govt.connect(alice).startStake({ prop: 1, amount })
+    const count1 = await govt.stakeCount()
 
-    const owner = await govt.ownerOf(1)
+    const params = { prop: 1, amount: parseEther(`${Math.random()}`) }
+    await govt.connect(alice).startStake(params)
+
+    const count2 = await govt.stakeCount()
+    const stake = await govt.getStake(1)
+
+    expect(count1.add(1)).to.equal(count2)
+    expect(stake.id).to.equal(count2)
+    expect(stake.prop).to.equal(params.prop)
+    expect(stake.staker).to.equal(alice.address)
+    expect(stake.amount).to.equal(params.amount)
+    expect(stake.createdAt).to.greaterThanOrEqual(time)
+    expect(stake.expiresAt).to.equal(expiresAt)
+    expect(stake.totalStaked).to.equal(0)
+    expect(stake.totalSupply).to.equal(seed.mul(2).add(value.mul(2)))
+
+    const currentDay = await govt.currentDay()
+    const stakedToday = await govt.stakedPerDay(currentDay)
+    const stakedOnProp = await govt.stakedOnProp(stake.prop)
+
+    expect(stakedToday).to.equal(stake.amount)
+    expect(stakedOnProp).to.equal(stake.amount)
+
+    const owner = await govt.ownerOf(stake.id)
     expect(owner).to.equal(alice.address)
   })
 
-  it('Starts prop', async () => {
-    await govt.startProp(1)
+  it('Fails to stake without FOUND', async () => {
+    await expect(
+      govt.startStake({ prop: 1, amount: parseEther('0') })
+    ).to.rejectedWith('Must stake some FOUND')
+
+    await expect(
+      govt.connect(bob).startStake({ prop: 1, amount: parseEther('1') })
+    ).to.rejectedWith('ERC20: transfer amount exceeds balance')
   })
 
-  it('Ends stake', async () => {
-    await govt.connect(alice).endStake(1)
-  })
+  // it('Starts prop', async () => {
+  //   await govt.startProp(1)
+  // })
+
+  // it('Ends stake', async () => {
+  //   await govt.connect(alice).endStake(1)
+  // })
 })
