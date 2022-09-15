@@ -31,13 +31,13 @@ abstract contract PublicForum is PublicFund {
     string text
   );
 
+  function propCount() public view returns (uint) { 
+    return _propCount; 
+  }
+
   function getProp(uint propId) public view returns (Prop memory) {
     _requiresProp(propId);
     return _props[propId];
-  }
-
-  function propCount() public view returns (uint) { 
-    return _propCount; 
   }
 
   function _createProp(PropParams memory params) internal returns (uint) {
