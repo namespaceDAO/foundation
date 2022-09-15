@@ -5,22 +5,23 @@ import { Contract } from 'ethers'
 
 describe('Found', () => {
   let origin: SignerWithAddress
+  let treasurer: SignerWithAddress
   let alice: SignerWithAddress
   let bob: SignerWithAddress
   let found: Contract
 
   beforeEach(async () => {
-    [origin, alice, bob] = await ethers.getSigners()
+    [origin, treasurer, alice, bob] = await ethers.getSigners()
     const Found = await ethers.getContractFactory('Found')
     found = await Found.deploy()
-    await found.setTreasurer(origin.address, true)
+    await found.setTreasurer(treasurer.address, true)
   })
 
   it('Create FOUND with getters', async () => {
     const name = await found.name()
     const symbol = await found.symbol()
     const balance = await found.treasuryBalance()
-    const isTreasurer = await found.isTreasurer(origin.address)
+    const isTreasurer = await found.isTreasurer(treasurer.address)
     expect(name).to.equal('FOUND')
     expect(symbol).to.equal('FOUND')
     expect(balance).to.equal(0)
@@ -52,8 +53,8 @@ describe('Found', () => {
     const f1 = await found.balanceOf(bob.address)
 
     await found.mint(alice.address, { value })
-    await found.transferValue(bob.address, half)
-    await found.treasuryTransfer(found.address, bob.address, half)
+    await found.connect(treasurer).transferValue(bob.address, half)
+    await found.connect(treasurer).treasuryTransfer(found.address, bob.address, half)
 
     const b2 = await bob.getBalance()
     const f2 = await found.balanceOf(bob.address)
