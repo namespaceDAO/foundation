@@ -92,11 +92,16 @@ describe('Capitalism', () => {
     ).to.rejectedWith('ERC20: transfer amount exceeds balance')
   })
 
-  // it('Starts prop', async () => {
-  //   await govt.startProp(1)
-  // })
+  it('Starts prop', async () => {
+    await govt.startProp(1)
+  })
 
-  // it('Ends stake', async () => {
-  //   await govt.connect(alice).endStake(1)
-  // })
+  it('Ends stake', async () => {
+    const { date } = await getCurrentDateTime()
+    const endingAt = dateToTime(add(date, { days: 20 }))
+
+    await ethers.provider.send('evm_mine', [endingAt])
+
+    await govt.connect(alice).endStake(1)
+  })
 })
