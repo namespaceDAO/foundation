@@ -10,7 +10,6 @@ contract Treasury is Ownable {
     receive() external payable {}
     fallback() external payable {}
 
-
     modifier onlyTreasurer() {
         require(
             _treasurers[msg.sender] && msg.sender != address(0), 
@@ -32,10 +31,11 @@ contract Treasury is Ownable {
         emit SetTreasurer(treasurer, active);
     }
 
-    function transferValue(
-        address to, 
-        uint amount
-    ) external onlyTreasurer {
+    function transferValue(address to, uint amount) external onlyTreasurer {
+       _transferValue(to, amount);
+    }
+
+    function _transferValue(address to, uint amount) internal {
         require(
             treasuryBalance() >= amount, 
             "Treasury: transfer exceeds treasury balance"
