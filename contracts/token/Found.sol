@@ -37,18 +37,16 @@ contract Found is ERC20, Origin, Treasury {
         uint value,
         uint found
     ) external onlyOrigin {
-        uint maxValue = _totalValue / 10 - _claimValue; 
-        uint maxFound = _totalValue / 10 - _claimFound;
-
-        require(maxValue >= value, "Claim is too large");
-        require(maxFound >= found, "Claim is too large");
-
         if (value > 0) {
+            uint maxValue = _totalValue / 10 - _claimValue;
+            require(maxValue >= value, "Claim is too large");
             _transferValue(to, value);
             _claimValue += value;
         }
 
         if (found > 0) {
+            uint maxFound = totalSupply() / 20 - _claimFound;
+            require(maxFound >= found, "Claim is too large");
             _transfer(address(this), to, found);
             _claimFound += found;
         }
