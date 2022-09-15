@@ -106,4 +106,11 @@ describe('PublicForum', () => {
       })
     ).to.rejectedWith('You must request some funding')
   })
+
+  it('Fails to get a prop that doesn\'t exist', async () => {
+    const count = await govt.propCount()
+    await expect(
+      govt.getProp(count.add(100))
+    ).to.rejectedWith('Prop not found')
+  })
 })
