@@ -7,6 +7,7 @@ import "./PublicForum.sol";
 struct StakeParams {
     uint prop;
     uint amount;
+    string reason;
 }
 
 struct Stake {
@@ -14,6 +15,7 @@ struct Stake {
     uint prop;
     address staker;
     address redeemer;
+    string reason;
     uint amount;
     uint createdAt;
     uint expiresAt;
@@ -98,6 +100,7 @@ abstract contract Capitalism is PublicForum, ERC721 {
         stake.id = _stakeCount;
         stake.prop = params.prop;
         stake.staker = msg.sender;
+        stake.reason = params.reason;
         stake.amount = params.amount;
         stake.createdAt = block.timestamp;
         stake.expiresAt = prop.expiresAt;
@@ -117,7 +120,6 @@ abstract contract Capitalism is PublicForum, ERC721 {
             stake.totalSupply
         );
     }
-
 
     function _endStake(uint stakeId) internal {
         _requireStake(stakeId);
