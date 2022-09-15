@@ -10,6 +10,8 @@ contract Found is ERC20, Origin, Treasury {
     uint private _claimValue;
     uint private _claimFound;
 
+    event Claim(address indexed to, uint value, uint found);
+
     function mint(address to) external payable {
         require(msg.value > 0, "Must send more than 0 ETH");
         uint amount = msg.value;        // 1 token = 1 ETH
@@ -31,6 +33,17 @@ contract Found is ERC20, Origin, Treasury {
         _transfer(from, to, amount);
     }
 
+    function treasuryFoundBalance() public view returns (uint) {
+        return balanceOf(address(this));
+    }
+
+    function treasuryNetBalance() public view returns (uint) {
+        uint treasuryValue = treasuryValueBalance();
+        uint treasuryFound = treasuryFoundBalance();
+        uint converted = treasuryValue * (treasuryFound / treasuryValue);
+        return treasuryFound + converted;
+    }
+
     function originClaim(
         address to, 
         uint value,
@@ -38,17 +51,19 @@ contract Found is ERC20, Origin, Treasury {
     ) external onlyOrigin {
         if (value > 0) {
             uint maxValue = _totalValue / 10 - _claimValue;
-            require(maxValue >= value, "Claim is too large");
+            require(maxValue >= value, "Value claim is too large");
             _transferValue(to, value);
             _claimValue += value;
         }
 
         if (found > 0) {
             uint maxFound = totalSupply() / 20 - _claimFound;
-            require(maxFound >= found, "Claim is too large");
+            require(maxFound >= found, "Found claim is too large");
             _transfer(address(this), to, found);
             _claimFound += found;
         }
+
+        emit Claim(to, value, found);
     }
 
     constructor() ERC20("FOUND", "FOUND") {}

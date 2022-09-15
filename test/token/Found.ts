@@ -2,6 +2,7 @@ import { ethers } from 'hardhat'
 import { expect } from 'chai'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { Contract } from 'ethers'
+import { parseEther } from 'ethers/lib/utils'
 
 describe('Found', () => {
   let origin: SignerWithAddress
@@ -20,7 +21,7 @@ describe('Found', () => {
   it('Create FOUND with getters', async () => {
     const name = await found.name()
     const symbol = await found.symbol()
-    const balance = await found.treasuryBalance()
+    const balance = await found.treasuryValueBalance()
     const isTreasurer = await found.isTreasurer(treasurer.address)
     expect(name).to.equal('FOUND')
     expect(symbol).to.equal('FOUND')
@@ -29,14 +30,14 @@ describe('Found', () => {
   })
 
   it('Mints FOUND to minter and treasury', async () => {
-    const value = ethers.utils.parseEther(`${Math.random()}`)
-    const e1 = await found.treasuryBalance()
+    const value = ethers.utils.parseEther(`${Math.random() + 1}`)
+    const e1 = await found.treasuryValueBalance()
 
     await found.mint(alice.address, { value })
 
     const ba = await found.balanceOf(alice.address)
     const bt = await found.balanceOf(found.address)
-    const e2 = await found.treasuryBalance()
+    const e2 = await found.treasuryValueBalance()
 
     expect(ba).to.equal(value)
     expect(bt).to.equal(value)
@@ -61,5 +62,35 @@ describe('Found', () => {
 
     expect(b1.add(half)).to.equal(b2)
     expect(f1.add(half)).to.equal(f2)
+  })
+
+  it('Origin claim found and value', async () => {
+    await found.mint(alice.address, { value: parseEther('20') })
+
+    const foundClaim = parseEther(`${Math.random()}`)
+    const valueClaim = parseEther(`${Math.random()}`)
+
+    const bf1 = await found.balanceOf(bob.address)
+    const bv1 = await bob.getBalance()
+
+    await found.originClaim(bob.address, valueClaim, foundClaim)
+
+    const bf2 = await found.balanceOf(bob.address)
+    const bv2 = await bob.getBalance()
+
+    expect(bf1.add(foundClaim)).to.equal(bf2)
+    expect(bv1.add(valueClaim)).to.equal(bv2)
+  })
+
+  it('Fails to claim too much', async () => {
+    await found.mint(alice.address, { value: parseEther('10') })
+
+    await expect(
+      found.originClaim(bob.address, parseEther('1.0000001'), 0)
+    ).to.rejectedWith('Value claim is too large')
+
+    await expect(
+      found.originClaim(bob.address, 0, parseEther('1.0000001'))
+    ).to.rejectedWith('Found claim is too large')
   })
 })

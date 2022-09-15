@@ -18,7 +18,7 @@ describe('Treasury', () => {
     const seed = ethers.utils.parseEther(`${5 * Math.random()}`)
     await origin.sendTransaction({ to: treasury.address, value: seed })
 
-    const balance = await treasury.treasuryBalance()
+    const balance = await treasury.treasuryValueBalance()
     expect(balance).to.equal(seed)
 
     const isTreasurer = await treasury.isTreasurer(origin.address)
@@ -33,19 +33,19 @@ describe('Treasury', () => {
 
   it('Transfers funds for treasurer', async () => {
     const balance1 = await bob.getBalance()
-    const treasury1 = await treasury.treasuryBalance()
+    const treasury1 = await treasury.treasuryValueBalance()
 
     const transfer = ethers.utils.parseEther(`${Math.random()}`)
     await treasury.connect(treasurer).transferValue(bob.address, transfer)
 
     const balance2 = await bob.getBalance()
-    const treasury2 = await treasury.treasuryBalance()
+    const treasury2 = await treasury.treasuryValueBalance()
     expect(balance2.sub(balance1)).to.equal(transfer)
     expect(treasury1.sub(transfer)).to.equal(treasury2)
   })
 
   it('Fails to overspend funds', async () => {
-    const balance = await treasury.treasuryBalance()
+    const balance = await treasury.treasuryValueBalance()
     const tooMuch = balance.mul(2)
     await expect(
       treasury.connect(treasurer).transferValue(origin.address, tooMuch)
