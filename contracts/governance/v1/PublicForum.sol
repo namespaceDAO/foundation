@@ -16,6 +16,7 @@ struct Prop {
     uint createdAt;
     uint startedAt;
     uint expiresAt;
+    Fund fund;
 }
 
 abstract contract PublicForum is PublicFund {
@@ -41,8 +42,8 @@ abstract contract PublicForum is PublicFund {
 
   function _createProp(PropParams memory params) internal returns (uint) {
     require(
-      params.expiresAt > block.timestamp + 7 days,
-      "Proposal expiration must be at least 7 days in the future"
+      params.expiresAt > block.timestamp + 1 days,
+      "Proposal expiration must be at least 1 day in the future"
     );
 
     uint maxExpiry = block.timestamp + maximumDuration();
@@ -66,7 +67,7 @@ abstract contract PublicForum is PublicFund {
       prop.text
     );
 
-    _addFunding(prop.id, params.note);
+    prop.fund = _addFunding(prop.id, params.note);
 
     return _propCount;
   }

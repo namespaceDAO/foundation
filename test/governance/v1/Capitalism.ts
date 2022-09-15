@@ -4,10 +4,9 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { Contract } from 'ethers'
 import { parseEther } from 'ethers/lib/utils'
 import { add } from 'date-fns'
+import { dateToTime, getCurrentDate, getCurrentDateTime } from '../../../utils'
 
-const dateToTime = (date: Date): number => Math.floor(date.getTime() / 1000)
-
-describe('Government', () => {
+describe('Capitalism', () => {
   let origin: SignerWithAddress
   let alice: SignerWithAddress
   let bob: SignerWithAddress
@@ -36,11 +35,9 @@ describe('Government', () => {
   })
 
   it('Creates prop', async () => {
-    const date = add(new Date(), { days: 1 })
+    const { date, time } = await getCurrentDateTime()
     const expiresAt = dateToTime(add(date, { days: 7 + Math.random() * 7 }))
-    const createdAt = dateToTime(date)
 
-    await ethers.provider.send('evm_mine', [createdAt])
     await govt.createProp({
       text: 'hello world',
       expiresAt,
@@ -58,7 +55,7 @@ describe('Government', () => {
     expect(prop.id).to.equal(1)
     expect(prop.text).to.equal('hello world')
     expect(prop.author).to.equal(origin.address)
-    expect(prop.createdAt).to.greaterThanOrEqual(createdAt)
+    expect(prop.createdAt).to.greaterThanOrEqual(time)
     expect(prop.expiresAt).to.equal(expiresAt)
   })
 

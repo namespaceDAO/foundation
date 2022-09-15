@@ -28,7 +28,7 @@ abstract contract PublicFund is Arch, Foundation {
     return fund.found + _convertValueToFound(fund.value);
   }
   
-  function _addFunding(uint id, Convertible memory note) internal {
+  function _addFunding(uint id, Convertible memory note) internal returns (Fund memory) {
     require(
       note.value > 0 || note.found > 0, 
       "You must request some funding"
@@ -42,6 +42,8 @@ abstract contract PublicFund is Arch, Foundation {
     fund.found = note.found;
 
     emit FundCreated(id, fund.payee, fund.value, fund.found);
+
+    return fund;
   }
 
   function _payFund(uint id) internal {
