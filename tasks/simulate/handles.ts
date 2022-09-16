@@ -13,9 +13,9 @@ export interface HandleOpts {
 export interface Handles {
   props: Prop[]
   stakes: Stake[]
-  createProp: () => Promise<Prop>
-  createStake: () => Promise<Stake>
-  mintFound: () => Promise<BigNumber>
+  createProp: (time: number) => Promise<{ actor: SignerWithAddress, prop: Prop }>
+  createStake: (time: number) => Promise<{ actor: SignerWithAddress, stake: Stake }>
+  mintFound: (time: number) => Promise<{ actor: SignerWithAddress, amount: BigNumber }>
 }
 
 export const handles = ({ govt, signers, found }: HandleOpts): Handles => {
@@ -30,56 +30,54 @@ export const handles = ({ govt, signers, found }: HandleOpts): Handles => {
     return acc
   }, {})
 
-  const createProp = async (): Promise<Prop> => {
-    const creator = pickRandom(signers)
-    const prop = randomProp(creator.address, {
+  const createProp: Handles['createProp'] = async (time) => {
+    const actor = pickRandom(signers)
+    const prop = randomProp(actor.address, {
       maxFound: 5,
       maxValue: 5,
       maxTextLength: 200
     })
 
-    await govt.connect(creator).createProp(prop)
+    await govt.connect(actor).createProp(prop)
     prop.id = await govt.propCount()
 
-    accounts[creator.address].props[prop.id] = prop
+    accounts[actor.address].props[prop.id] = prop
     props[prop.id - 1] = prop
 
-    return prop
+    return { actor, prop }
   }
 
-  const mintFound = async (): Promise<BigNumber> => {
-    const creator = pickRandom(signers)
+  const mintFound: Handles['mintFound'] = async (time) => {
+    const actor = pickRandom(signers)
     const value = randomMint()
-    await found.connect(creator).mint(creator.address, { value })
-    return value
+    await found.connect(actor).mint(actor.address, { value })
+    return { actor, amount: value }
   }
 
-  const createStake = async (): Promise<Stake> => {
+  const createStake: Handles['createStake'] = async (time) => {
     const prop = Math.floor(Math.random() * props.length)
 
     // TODO: pass time through the simulation
     const now = Math.floor(add(new Date(), { days: 7 }).getTime() / 1000)
     const possible = props.filter(p => p.expiresAt > now)
 
-    console.log(props)
-
     const stake = randomStake(prop)
 
-    const creator = pickRandom(signers)
-    const balance = await found.balanceOf(creator.address)
+    const actor = pickRandom(signers)
+    const balance = await found.balanceOf(actor.address)
 
     if (balance < stake.amount) {
       const value = stake.amount.sub(balance)
-      await found.connect(creator).mint(creator.address, { value })
+      await found.connect(actor).mint(actor.address, { value })
     }
 
-    await govt.connect(creator).createStake(stake)
+    await govt.connect(actor).createStake(stake)
     stake.id = await govt.stakeCount()
 
-    accounts[creator.address].stakes[stake.id] = stake
+    accounts[actor.address].stakes[stake.id] = stake
     stakes[stake.id - 1] = stake
 
-    return stake
+    return { actor, stake }
   }
 
   return {

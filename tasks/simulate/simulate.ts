@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/restrict-plus-operands */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+import chalk from 'chalk'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { Contract } from 'ethers'
 import { HandleOpts, handles } from './handles'
-import { formatEther } from 'ethers/lib/utils'
+import { formatEther, parseEther } from 'ethers/lib/utils'
 
 interface SimulateOpts extends HandleOpts {
   duration: number
@@ -9,11 +12,16 @@ interface SimulateOpts extends HandleOpts {
   signers: SignerWithAddress[]
   found: Contract
   govt: Contract
+  verbose: boolean
 }
 
+type Step = (time: number) => Promise<void>
+
 export const simulate = async (opts: SimulateOpts): Promise<void> => {
-  const { found, duration, stepsPerDay } = opts
+  const { verbose, found, duration, stepsPerDay } = opts
   const time = Array.from(Array(duration).keys())
+
+  const errors: any[] = []
 
   const {
     props,
@@ -23,35 +31,53 @@ export const simulate = async (opts: SimulateOpts): Promise<void> => {
     mintFound
   } = handles(opts)
 
-  const step = async (t: number): Promise<void> => {
-    const day = Math.floor(t / stepsPerDay)
+  const start = Math.floor(new Date().getTime() / 1000)
 
-    if (t % stepsPerDay === 0) {
-      console.log(`Day ${day}`)
-    }
+  const getDateString = (time: number): string => {
+    const date = new Date(time * 1000)
+    return date.toISOString()
+  }
 
-    // actions:
-    // create prop
-    // create stake
-    // end stake
-    // start prop
+  const catchError = (step: string, e: Error): void => {
+    console.log(chalk.bold(step) + ': ' + chalk.red(e as any))
+    errors.push(e)
+  }
 
+  const stepCreateProp: Step = async (time) => {
     if (Math.random() < 1 / stepsPerDay) {
-      const prop = await createProp()
-      console.log(`Prop created: ${new Date(prop.expiresAt * 1000).toISOString()}`)
+      return await createProp(time).then(({ prop }) => {
+        if (verbose) {
+          console.log(`${chalk.bold(getDateString(time))} Prop created expires at: ${new Date(prop.expiresAt * 1000).toISOString()}`)
+        }
+      }).catch(e => catchError('createProp', e))
     }
+  }
 
-    // TODO: currently time doesnt move forward, it always assumes your in the current moment
-    // to fix this pass a t into the `createStake` function and the `createProp` function
+  const stepCreateStake: Step = async (time) => {
     if (Math.random() < 1 / stepsPerDay) {
-      const stake = await createStake()
-      console.log(`Stake created: ${stake.prop}`)
+      return await createStake(time).then(({ stake }) => {
+        if (verbose) {
+          console.log(`${chalk.bold(getDateString(time))} Stake created: ${formatEther(stake.amount)} FOUND`)
+        }
+      }).catch(e => catchError('createStake', e))
     }
+  }
 
+  const stepMintFound: Step = async (time) => {
     if (Math.random() < 1 / stepsPerDay) {
-      const amount = await mintFound()
-      console.log(`Found minted: ${formatEther(amount)}`)
+      return await mintFound(time).then(({ amount }) => {
+        if (verbose) {
+          console.log(`${chalk.bold(getDateString(time))} Found minted: ${formatEther(amount)} FOUND`)
+        }
+      }).catch(e => catchError('mintFound', e))
     }
+  }
+
+  const step = async (step: number): Promise<void> => {
+    const t = Math.floor((step + Math.random()) * 3600) + start
+    await stepCreateProp(t)
+    await stepCreateStake(t)
+    await stepMintFound(t)
   }
 
   await time.reduce(async (acc, cur) => {
@@ -63,4 +89,5 @@ export const simulate = async (opts: SimulateOpts): Promise<void> => {
   console.log(`FOUND supply: ${formatEther(totalSupply)}`)
   console.log(`Total props: ${props.length}`)
   console.log(`Total stakes: ${stakes.length}`)
+  console.log(`Total errors: ${errors.length}`)
 }

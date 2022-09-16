@@ -20,6 +20,7 @@ task('simulate', 'Simulates contract interactions', async (_, { ethers }) => {
     stepsPerDay: 24,
     signers,
     found,
-    govt
+    govt,
+    verbose: true
   })
 })
