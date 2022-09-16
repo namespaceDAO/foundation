@@ -39,7 +39,9 @@ abstract contract Capitalism is PublicForum, ERC721 {
         uint indexed id,
         uint indexed prop,
         address staker,
+        string reason,
         uint amount,
+        uint expiresAt,
         uint totalStaked,
         uint totalSupply
     );
@@ -115,7 +117,9 @@ abstract contract Capitalism is PublicForum, ERC721 {
             stake.id,
             stake.prop,
             stake.staker,
+            stake.reason,
             stake.amount,
+            stake.expiresAt,
             stake.totalStaked,
             stake.totalSupply
         );
