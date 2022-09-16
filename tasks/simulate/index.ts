@@ -7,6 +7,7 @@ task('simulate', 'Simulates contract interactions', async (_, { ethers }) => {
 
   const Govt = await ethers.getContractFactory('Government')
   const govt = await Govt.deploy(found.address)
+  await found.setTreasurer(govt.address, true)
 
   const [origin, ...signers] = await ethers.getSigners()
 

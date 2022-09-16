@@ -61,7 +61,7 @@ describe('Capitalism', () => {
       reason: ''
     }
 
-    await govt.connect(alice).startStake(params)
+    await govt.connect(alice).createStake(params)
 
     const count2 = await govt.stakeCount()
     const stake = await govt.getStake(1)
@@ -89,11 +89,11 @@ describe('Capitalism', () => {
 
   it('Fails to stake without FOUND', async () => {
     await expect(
-      govt.startStake({ prop: 1, amount: parseEther('0'), reason: '' })
+      govt.createStake({ prop: 1, amount: parseEther('0'), reason: '' })
     ).to.rejectedWith('Must stake some FOUND')
 
     await expect(
-      govt.connect(bob).startStake({ prop: 1, amount: parseEther('1'), reason: '' })
+      govt.connect(bob).createStake({ prop: 1, amount: parseEther('1'), reason: '' })
     ).to.rejectedWith('ERC20: transfer amount exceeds balance')
   })
 

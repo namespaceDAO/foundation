@@ -9,8 +9,8 @@ contract Government is Capitalism {
         _createProp(params);
     }
 
-    function startStake(StakeParams memory params) external {
-        _startStake(params);
+    function createStake(StakeParams memory params) external {
+        _createStake(params);
     }
 
     function startProp(uint propId) external {

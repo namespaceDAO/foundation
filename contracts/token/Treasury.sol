@@ -3,6 +3,8 @@ pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+// TODO: setTreasurer to activateTreasurer
+
 contract Treasury is Ownable {
     mapping(address => bool) private _treasurers;  // authorized operators
     event SetTreasurer(address indexed treasurer, bool indexed active);

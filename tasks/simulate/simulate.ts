@@ -1,9 +1,8 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { Contract } from 'ethers'
-import { Prop, randomProp, randomStake, Stake } from './data'
-import { pickRandom } from './utils'
+import { HandleOpts, handles } from './handles'
 
-interface SimulateOpts {
+interface SimulateOpts extends HandleOpts {
   duration: number
   stepsPerDay: number
   signers: SignerWithAddress[]
@@ -11,53 +10,16 @@ interface SimulateOpts {
   govt: Contract
 }
 
-export const simulate = async ({
-  duration,
-  stepsPerDay,
-  govt,
-  signers
-}: SimulateOpts): Promise<void> => {
+export const simulate = async (opts: SimulateOpts): Promise<void> => {
+  const { duration, stepsPerDay } = opts
   const time = Array.from(Array(duration).keys())
 
-  const props: Prop[] = []
-  const stakes: Stake[] = []
-
-  const accounts = signers.reduce<Record<string, {
-    props: Record<number, Prop>
-    stakes: Record<number, Stake>
-  }>>((acc, cur) => {
-    acc[cur.address] = { props: {}, stakes: {} }
-    return acc
-  }, {})
-
-  const createProp = async (): Promise<Prop> => {
-    const creator = pickRandom(signers)
-    const prop = randomProp(creator.address, {
-      maxFound: 5,
-      maxValue: 5,
-      maxTextLength: 200
-    })
-
-    await govt.createProp(prop)
-    prop.id = await govt.propCount()
-
-    accounts[creator.address].props[prop.id] = prop
-    props[prop.id] = prop
-
-    return prop
-  }
-
-  const createStake = async (): Promise<Stake> => {
-    const prop = Math.floor(Math.random() * props.length)
-    const stake = randomStake(prop)
-
-    const creator = pickRandom(signers)
-
-    accounts[creator.address].stakes[stake.id] = stake
-    stakes[stake.id] = stake
-
-    return stake
-  }
+  const {
+    props,
+    stakes,
+    createProp,
+    createStake
+  } = handles(opts)
 
   const step = async (t: number): Promise<void> => {
     const day = Math.floor(t / stepsPerDay)

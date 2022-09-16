@@ -35,7 +35,7 @@ abstract contract Capitalism is PublicForum, ERC721 {
     mapping(uint => uint) private _stakedOnProp;
     mapping(uint => uint) private _stakedPerDay;
 
-    event StakeStarted(
+    event StakeCreated(
         uint indexed id,
         uint indexed prop,
         address staker,
@@ -84,7 +84,7 @@ abstract contract Capitalism is PublicForum, ERC721 {
         return _stakes[stakeId];
     }
 
-    function _startStake(StakeParams memory params) internal {
+    function _createStake(StakeParams memory params) internal {
         require(
             params.amount > 0, 
             "Must stake some FOUND"
@@ -113,7 +113,7 @@ abstract contract Capitalism is PublicForum, ERC721 {
         _stakedOnProp[stake.prop] += stake.amount;
         _mint(stake.staker, stake.id);
 
-        emit StakeStarted(
+        emit StakeCreated(
             stake.id,
             stake.prop,
             stake.staker,
