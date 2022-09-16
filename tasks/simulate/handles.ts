@@ -1,6 +1,7 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
-import { Contract } from 'ethers'
-import { Prop, randomProp, randomStake, Stake } from './data'
+import { add } from 'date-fns'
+import { BigNumber, Contract } from 'ethers'
+import { Prop, randomMint, randomProp, randomStake, Stake } from './data'
 import { pickRandom } from './utils'
 
 export interface HandleOpts {
@@ -14,9 +15,10 @@ export interface Handles {
   stakes: Stake[]
   createProp: () => Promise<Prop>
   createStake: () => Promise<Stake>
+  mintFound: () => Promise<BigNumber>
 }
 
-export const handles = ({ govt, signers }: HandleOpts): Handles => {
+export const handles = ({ govt, signers, found }: HandleOpts): Handles => {
   const props: Prop[] = []
   const stakes: Stake[] = []
 
@@ -40,22 +42,42 @@ export const handles = ({ govt, signers }: HandleOpts): Handles => {
     prop.id = await govt.propCount()
 
     accounts[creator.address].props[prop.id] = prop
-    props[prop.id] = prop
+    props[prop.id - 1] = prop
 
     return prop
   }
 
+  const mintFound = async (): Promise<BigNumber> => {
+    const creator = pickRandom(signers)
+    const value = randomMint()
+    await found.connect(creator).mint(creator.address, { value })
+    return value
+  }
+
   const createStake = async (): Promise<Stake> => {
     const prop = Math.floor(Math.random() * props.length)
+
+    // TODO: pass time through the simulation
+    const now = Math.floor(add(new Date(), { days: 7 }).getTime() / 1000)
+    const possible = props.filter(p => p.expiresAt > now)
+
+    console.log(props)
+
     const stake = randomStake(prop)
 
     const creator = pickRandom(signers)
+    const balance = await found.balanceOf(creator.address)
+
+    if (balance < stake.amount) {
+      const value = stake.amount.sub(balance)
+      await found.connect(creator).mint(creator.address, { value })
+    }
 
     await govt.connect(creator).createStake(stake)
     stake.id = await govt.stakeCount()
 
     accounts[creator.address].stakes[stake.id] = stake
-    stakes[stake.id] = stake
+    stakes[stake.id - 1] = stake
 
     return stake
   }
@@ -64,49 +86,7 @@ export const handles = ({ govt, signers }: HandleOpts): Handles => {
     props,
     stakes,
     createProp,
-    createStake
+    createStake,
+    mintFound
   }
-}
-
-export const simulate = async (opts: SimulateOpts): Promise<void> => {
-  const { duration, stepsPerDay } = opts
-  const time = Array.from(Array(duration).keys())
-
-  const {
-    props,
-    stakes,
-    createProp,
-    createStake
-  } = handles(opts)
-
-  const step = async (t: number): Promise<void> => {
-    const day = Math.floor(t / stepsPerDay)
-
-    if (t % stepsPerDay === 0) {
-      console.log(`Day ${day}`)
-    }
-
-    // actions:
-    // create prop
-    // create stake
-    // end stake
-    // start prop
-
-    if (Math.random() < 1 / stepsPerDay) {
-      const prop = await createProp()
-      console.log(`Prop created: ${new Date(prop.expiresAt * 1000).toISOString()}`)
-    }
-
-    if (Math.random() < 1 / stepsPerDay) {
-      const stake = await createStake()
-      console.log(`Stake created: ${stake.prop}`)
-    }
-  }
-
-  await time.reduce(async (acc, cur) => {
-    return await acc.then(async () => await step(cur))
-  }, Promise.resolve())
-
-  console.log(`Total props: ${props.length}`)
-  console.log(`Total stakes: ${stakes.length}`)
 }

@@ -1,6 +1,7 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { Contract } from 'ethers'
 import { HandleOpts, handles } from './handles'
+import { formatEther } from 'ethers/lib/utils'
 
 interface SimulateOpts extends HandleOpts {
   duration: number
@@ -11,14 +12,15 @@ interface SimulateOpts extends HandleOpts {
 }
 
 export const simulate = async (opts: SimulateOpts): Promise<void> => {
-  const { duration, stepsPerDay } = opts
+  const { found, duration, stepsPerDay } = opts
   const time = Array.from(Array(duration).keys())
 
   const {
     props,
     stakes,
     createProp,
-    createStake
+    createStake,
+    mintFound
   } = handles(opts)
 
   const step = async (t: number): Promise<void> => {
@@ -39,9 +41,16 @@ export const simulate = async (opts: SimulateOpts): Promise<void> => {
       console.log(`Prop created: ${new Date(prop.expiresAt * 1000).toISOString()}`)
     }
 
+    // TODO: currently time doesnt move forward, it always assumes your in the current moment
+    // to fix this pass a t into the `createStake` function and the `createProp` function
     if (Math.random() < 1 / stepsPerDay) {
       const stake = await createStake()
       console.log(`Stake created: ${stake.prop}`)
+    }
+
+    if (Math.random() < 1 / stepsPerDay) {
+      const amount = await mintFound()
+      console.log(`Found minted: ${formatEther(amount)}`)
     }
   }
 
@@ -49,6 +58,9 @@ export const simulate = async (opts: SimulateOpts): Promise<void> => {
     return await acc.then(async () => await step(cur))
   }, Promise.resolve())
 
+  const totalSupply = await found.totalSupply()
+
+  console.log(`FOUND supply: ${formatEther(totalSupply)}`)
   console.log(`Total props: ${props.length}`)
   console.log(`Total stakes: ${stakes.length}`)
 }
