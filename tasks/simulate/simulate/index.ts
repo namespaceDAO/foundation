@@ -4,8 +4,10 @@ import chalk from 'chalk'
 import { formatEther } from 'ethers/lib/utils'
 import { Actor } from './actors'
 import { createActions } from './actions'
-import { Setup } from './initialize'
-import { parseTime, shuffle } from './utils'
+import { Setup } from '../initialize'
+import { parseTime, shuffle } from '../utils'
+
+export * from './actors'
 
 interface SimulateOpts extends Setup {
   duration: number

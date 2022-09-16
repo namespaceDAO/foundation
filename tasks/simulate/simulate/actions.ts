@@ -1,7 +1,7 @@
 import { BigNumber } from 'ethers'
-import { Actor } from './actors'
-import { Prop, Stake } from './data'
-import { Setup } from './initialize'
+import { Actor } from '../actors'
+import { Prop, Stake } from '../data'
+import { Setup } from '../initialize'
 
 export interface Actions {
   props: Prop[]
