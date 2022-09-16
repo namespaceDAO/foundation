@@ -6,10 +6,15 @@ export interface Setup {
   found: Contract
   govt: Contract
   origin: SignerWithAddress
+}
+
+export interface Initialization extends Setup {
   signers: SignerWithAddress[]
 }
 
-export const initialize = async (ethers: HardhatEthersHelpers): Promise<Setup> => {
+interface Init { ethers: HardhatEthersHelpers }
+
+export const initialize = async ({ ethers }: Init): Promise<Initialization> => {
   const Found = await ethers.getContractFactory('Found')
   const found = await Found.deploy()
 

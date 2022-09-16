@@ -2,20 +2,20 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import chalk from 'chalk'
 import { formatEther } from 'ethers/lib/utils'
-import { handles } from './handles'
+import { Actor } from './actors'
+import { createActions } from './actions'
 import { Setup } from './initialize'
+import { parseTime, shuffle } from './utils'
 
 interface SimulateOpts extends Setup {
   duration: number
-  stepsPerDay: number
+  secondsPerStep: number
   verbose: boolean
+  actors: Actor[]
 }
 
-type Step = (time: number) => Promise<void>
-
 export const simulate = async (opts: SimulateOpts): Promise<void> => {
-  const { verbose, found, duration, stepsPerDay } = opts
-  const time = Array.from(Array(duration).keys())
+  const { verbose, found, duration, actors } = opts
 
   const errors: any[] = []
 
@@ -25,60 +25,57 @@ export const simulate = async (opts: SimulateOpts): Promise<void> => {
     createProp,
     createStake,
     mintFound
-  } = handles(opts)
+  } = createActions(opts)
 
   const start = Math.floor(new Date().getTime() / 1000)
-
-  const getDateString = (time: number): string => {
-    const date = new Date(time * 1000)
-    return date.toISOString()
-  }
 
   const catchError = (step: string, e: Error): void => {
     console.log(chalk.bold(step) + ': ' + chalk.red(e as any))
     errors.push(e)
   }
 
-  const stepCreateProp: Step = async (time) => {
-    if (Math.random() < 1 / stepsPerDay) {
-      return await createProp(time).then(({ prop }) => {
-        if (verbose) {
-          console.log(`${chalk.bold(getDateString(time))} Prop created expires at: ${new Date(prop.expiresAt * 1000).toISOString()}`)
-        }
-      }).catch(e => catchError('createProp', e))
-    }
+  const time = Array.from(Array(duration).keys()).map(step => (
+    Math.floor(step * opts.secondsPerStep) + start
+  ))
+
+  const step = async (time: number): Promise<void> => {
+    await Promise.all(
+      shuffle(actors).map(async (actor) => {
+        // CREATE PROP
+        await createProp(actor, time).then(prop => {
+          if (verbose && prop != null) {
+            console.log(`${chalk.bold(parseTime(time))} Prop created: Expires ${new Date(prop.expiresAt * 1000).toISOString()}`)
+          }
+        }).catch(e => catchError('createProp: ' + actor.signer.address, e))
+
+        // CREATE STAKE
+        await createStake(actor, time).then(stake => {
+          if (verbose && stake != null) {
+            console.log(`${chalk.bold(parseTime(time))} Stake created: ${formatEther(stake.amount)}`)
+          }
+        }).catch(e => catchError('createStake: ' + actor.signer.address, e))
+
+        // MINT
+        await mintFound(actor, time).then(found => {
+          if (verbose && found != null) {
+            console.log(`${chalk.bold(parseTime(time))} Found minted: ${formatEther(found)}`)
+          }
+        }).catch(e => catchError('mintFound: ' + actor.signer.address, e))
+      })
+    )
   }
 
-  const stepCreateStake: Step = async (time) => {
-    if (Math.random() < 1 / stepsPerDay) {
-      return await createStake(time).then(({ stake }) => {
-        if (verbose) {
-          console.log(`${chalk.bold(getDateString(time))} Stake created: ${formatEther(stake.amount)} FOUND`)
-        }
-      }).catch(e => catchError('createStake', e))
-    }
-  }
-
-  const stepMintFound: Step = async (time) => {
-    if (Math.random() < 1 / stepsPerDay) {
-      return await mintFound(time).then(({ amount }) => {
-        if (verbose) {
-          console.log(`${chalk.bold(getDateString(time))} Found minted: ${formatEther(amount)} FOUND`)
-        }
-      }).catch(e => catchError('mintFound', e))
-    }
-  }
-
-  const step = async (step: number): Promise<void> => {
-    const t = Math.floor((step + Math.random()) * 3600) + start
-    await stepCreateProp(t)
-    await stepCreateStake(t)
-    await stepMintFound(t)
+  if (verbose) {
+    console.log(`${chalk.bold(parseTime(time[0]))} Simulation begins`)
   }
 
   await time.reduce(async (acc, cur) => {
     return await acc.then(async () => await step(cur))
   }, Promise.resolve())
+
+  if (verbose) {
+    console.log(`${chalk.bold(parseTime(time[time.length - 1]))} Simulation complete`)
+  }
 
   const totalSupply = await found.totalSupply()
 
