@@ -4,7 +4,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { Contract } from 'ethers'
 import { parseEther } from 'ethers/lib/utils'
 import { add } from 'date-fns'
-import { dateToTime, getCurrentDateTime } from '../../../utils'
+import { dateToTime, getCurrentDateTime } from '../../utils'
 
 describe('PublicForum', () => {
   let origin: SignerWithAddress
