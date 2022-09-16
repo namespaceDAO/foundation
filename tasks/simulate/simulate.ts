@@ -1,17 +1,13 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import chalk from 'chalk'
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
-import { Contract } from 'ethers'
-import { HandleOpts, handles } from './handles'
-import { formatEther, parseEther } from 'ethers/lib/utils'
+import { formatEther } from 'ethers/lib/utils'
+import { handles } from './handles'
+import { Setup } from './initialize'
 
-interface SimulateOpts extends HandleOpts {
+interface SimulateOpts extends Setup {
   duration: number
   stepsPerDay: number
-  signers: SignerWithAddress[]
-  found: Contract
-  govt: Contract
   verbose: boolean
 }
 

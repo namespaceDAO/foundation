@@ -1,14 +1,9 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { add } from 'date-fns'
-import { BigNumber, Contract } from 'ethers'
+import { BigNumber } from 'ethers'
 import { Prop, randomMint, randomProp, randomStake, Stake } from './data'
+import { Setup } from './setup'
 import { pickRandom } from './utils'
-
-export interface HandleOpts {
-  signers: SignerWithAddress[]
-  found: Contract
-  govt: Contract
-}
 
 export interface Handles {
   props: Prop[]
@@ -18,7 +13,7 @@ export interface Handles {
   mintFound: (time: number) => Promise<{ actor: SignerWithAddress, amount: BigNumber }>
 }
 
-export const handles = ({ govt, signers, found }: HandleOpts): Handles => {
+export const handles = ({ govt, signers, found }: Setup): Handles => {
   const props: Prop[] = []
   const stakes: Stake[] = []
 
