@@ -32,6 +32,10 @@ contract Government is Capitalism {
 
     function isCapitalized(uint propId) public view returns (bool) {
         uint day = currentDay();
+        uint budget = dailyBudget();
+        
+        if (budget == 0) return false;
+
         uint stakeRate = stakedPerDay(day) / dailyBudget();
         uint shareRate = _totalRequest(propId) * stakedOnProp(propId);
         return shareRate > stakeRate;
