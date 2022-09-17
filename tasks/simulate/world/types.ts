@@ -1,6 +1,5 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { Mint, Prop, Stake } from '../data'
-import { Bit } from '../utils'
 
 export interface State {
   time: number

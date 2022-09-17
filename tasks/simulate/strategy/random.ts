@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import { randomMint, randomProp, randomStake, Stake } from '../data'
 import { Actor, State, Initialization, Step } from '../world'
-import { Bit, parseTime, pickRandom } from '../utils'
+import { parseTime, pickRandom } from '../utils'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { formatEther } from 'ethers/lib/utils'
 
