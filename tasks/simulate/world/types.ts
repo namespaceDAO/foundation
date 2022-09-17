@@ -7,6 +7,10 @@ export interface State {
   stakes: Stake[]
   actors: Actor[]
   accounts: Record<string, Account>
+  treasury: {
+    value: number
+    found: number
+  }
 }
 
 export interface Actions {
@@ -27,4 +31,9 @@ export interface Actor {
 export interface Account {
   props: Record<number, Prop>
   stakes: Record<number, Stake>
+}
+
+export interface Treasury {
+  value: number
+  found: number
 }

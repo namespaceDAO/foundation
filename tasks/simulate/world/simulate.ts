@@ -17,10 +17,11 @@ interface SimulateOpts extends Setup {
   secondsPerStep: number
   verbose: boolean
   actors: Actor[]
+  afterStep?: (state: State) => Promise<void>
 }
 
 export const simulate = async (opts: SimulateOpts): Promise<void> => {
-  const { verbose, found, duration, actors, ethers } = opts
+  const { verbose, found, govt, duration, actors, ethers, afterStep } = opts
   const date = add(new Date(), { days: 1 })
   const start = Math.floor(date.getTime() / 1000)
   const errors: any[] = []
@@ -46,12 +47,27 @@ export const simulate = async (opts: SimulateOpts): Promise<void> => {
     await ethers.provider.send('evm_mine', [time])
     await Promise.all(
       shuffle(actors).map(async (actor) => {
-        const state: State = { time, props, stakes, accounts, actors }
+        const state: State = {
+          time,
+          props,
+          stakes,
+          accounts,
+          actors,
+          treasury: {
+            value: await govt.treasuryValueBalance(),
+            found: await govt.treasuryFoundBalance()
+          }
+        }
+
         const actions = createActions(actor, opts, state)
 
         await actor.step({ ...actions, ...state }).catch((e: any) => (
           catchError(actor.signer.address, e)
         ))
+
+        if (afterStep != null) {
+          await afterStep(state)
+        }
       })
     )
   }
