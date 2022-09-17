@@ -6,6 +6,7 @@ import { Actor } from './actors'
 import { createActions } from './actions'
 import { Setup } from '../initialize'
 import { parseTime, shuffle } from '../utils'
+import { Mint, Prop, Stake } from '../data'
 
 export * from './actors'
 
@@ -18,18 +19,9 @@ interface SimulateOpts extends Setup {
 
 export const simulate = async (opts: SimulateOpts): Promise<void> => {
   const { verbose, found, duration, actors } = opts
-
-  const errors: any[] = []
-
-  const {
-    props,
-    stakes,
-    createProp,
-    createStake,
-    mintFound
-  } = createActions(opts)
-
+  const actions = createActions(opts)
   const start = Math.floor(new Date().getTime() / 1000)
+  const errors: any[] = []
 
   const catchError = (step: string, e: Error): void => {
     console.log(chalk.bold(step) + ': ' + chalk.red(e as any))
@@ -43,26 +35,43 @@ export const simulate = async (opts: SimulateOpts): Promise<void> => {
   const step = async (time: number): Promise<void> => {
     await Promise.all(
       shuffle(actors).map(async (actor) => {
-        // CREATE PROP
-        await createProp(actor, time).then(prop => {
-          if (verbose && prop != null) {
-            console.log(`${chalk.bold(parseTime(time))} Prop created: Expires ${new Date(prop.expiresAt * 1000).toISOString()}`)
-          }
-        }).catch(e => catchError('createProp: ' + actor.signer.address, e))
+        await actor.step({
+          time, actors, ...actions
+        }).then(async bits => {
+          await Promise.all(
+            bits.reduce<Array<Promise<void>>>((acc, bit) => {
+              if (bit?._type === 'PROP') {
+                const prop = bit as Prop
+                if (verbose) {
+                  console.log(`${chalk.bold(parseTime(time))} Prop created: Expires ${new Date(prop.expiresAt * 1000).toISOString()}`)
+                }
 
-        // CREATE STAKE
-        await createStake(actor, time).then(stake => {
-          if (verbose && stake != null) {
-            console.log(`${chalk.bold(parseTime(time))} Stake created: ${formatEther(stake.amount)}`)
-          }
-        }).catch(e => catchError('createStake: ' + actor.signer.address, e))
+                acc.push(actions.createProp(actor, prop))
+              }
 
-        // MINT
-        await mintFound(actor, time).then(found => {
-          if (verbose && found != null) {
-            console.log(`${chalk.bold(parseTime(time))} Found minted: ${formatEther(found)}`)
-          }
-        }).catch(e => catchError('mintFound: ' + actor.signer.address, e))
+              if (bit?._type === 'STAKE') {
+                const stake = bit as Stake
+                if (verbose) {
+                  console.log(`${chalk.bold(parseTime(time))} Stake created: ${formatEther(stake.amount)}`)
+                }
+
+                acc.push(actions.createStake(actor, stake))
+              }
+
+              if (bit?._type === 'MINT') {
+                const mint = bit as Mint
+                if (verbose) {
+                  console.log(`${chalk.bold(parseTime(time))} Found minted: ${formatEther(mint.amount)}`)
+                }
+                acc.push(actions.mintFound(actor, mint))
+              }
+
+              return acc
+            }, [])
+          )
+        }).catch(e => (
+          catchError(actor.signer.address, e)
+        ))
       })
     )
   }
@@ -82,7 +91,7 @@ export const simulate = async (opts: SimulateOpts): Promise<void> => {
   const totalSupply = await found.totalSupply()
 
   console.log(`FOUND supply: ${formatEther(totalSupply)}`)
-  console.log(`Total props: ${props.length}`)
-  console.log(`Total stakes: ${stakes.length}`)
+  console.log(`Total props: ${actions.props.length}`)
+  console.log(`Total stakes: ${actions.stakes.length}`)
   console.log(`Total errors: ${errors.length}`)
 }

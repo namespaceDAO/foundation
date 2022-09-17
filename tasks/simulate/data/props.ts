@@ -11,6 +11,7 @@ export interface PropOpts {
 }
 
 export interface Prop {
+  _type: 'PROP'
   id: number
   text: string
   expiresAt: number
@@ -52,5 +53,5 @@ export const randomProp = (
     value: parseEther(`${value}`)
   }
 
-  return { id: -1, text, expiresAt, note }
+  return { _type: 'PROP', id: -1, text, expiresAt, note }
 }

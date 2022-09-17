@@ -1,3 +1,6 @@
+export interface Bit extends Record<string, any> {
+  _type: string
+}
 
 export const CHARACTERS = {
   alphaNumeric: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'

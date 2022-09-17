@@ -11,6 +11,7 @@ export interface StakeOpts {
 }
 
 export interface Stake {
+  _type: 'STAKE'
   id: number
   prop: number
   reason: string
@@ -29,6 +30,7 @@ export const randomStake = (
   const found = Math.random() * maxFound
 
   return {
+    _type: 'STAKE',
     id: -1,
     prop,
     reason: text,

@@ -1,6 +1,6 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
-import { BigNumber } from 'ethers'
-import { Prop, Stake } from './data'
+import { Prop, Stake } from '../data'
+import { Bit } from '../utils'
 
 export interface State {
   time: number
@@ -11,7 +11,5 @@ export interface State {
 
 export interface Actor {
   signer: SignerWithAddress
-  createProp: (state: State) => Promise<Prop | null>
-  createStake: (state: State) => Promise<Stake | null>
-  mintFound: (state: State) => Promise<BigNumber | null>
+  step: (state: State) => Promise<Array<Bit | null>>
 }

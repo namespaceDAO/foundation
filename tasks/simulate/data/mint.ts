@@ -5,8 +5,13 @@ export interface MintOpts {
   maxAmount?: number // in ether
 }
 
-export const randomMint = (opts?: MintOpts): BigNumber => {
+export interface Mint {
+  _type: 'MINT'
+  amount: BigNumber
+}
+
+export const randomMint = (opts?: MintOpts): Mint => {
   const maxAmount = opts?.maxAmount != null ? opts.maxAmount : 1
   const amount = maxAmount * Math.random()
-  return parseEther(`${amount}`)
+  return { _type: 'MINT', amount: parseEther(`${amount}`) }
 }
