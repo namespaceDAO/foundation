@@ -34,7 +34,9 @@ export const createRandomActor = (
       const prop = props[cur.prop - 1]
 
       if (prop.expiresAt <= time) {
-        acc.push(cur)
+        if (Math.random() < 0.1) {
+          acc.push(cur)
+        }
       }
 
       return acc
@@ -49,6 +51,11 @@ export const createRandomActor = (
         console.log(`${chalk.bold(parseTime(time))} Stake ended: ${formatEther(stake.amount)}`)
       })
     }
+  }
+
+  const startPropAttempt = async ({ time, props, startProp }: Step): Promise<void> => {
+    const mine = props.filter(s => s.creator === signer.address && s == null)
+    console.log(mine)
   }
 
   const step = async (state: Step): Promise<void> => {
@@ -75,7 +82,7 @@ export const createRandomActor = (
     }
 
     if (shouldCreate) {
-      const prop = randomProp({ payee: signer.address, time, maxFound: 5, maxValue: 5 })
+      const prop = randomProp({ creator: signer.address, time, maxFound: 5, maxValue: 5 })
       await createProp(prop)
       console.log(`${chalk.bold(parseTime(time))} Prop created: Expires ${new Date(prop.expiresAt * 1000).toISOString()}`)
     }

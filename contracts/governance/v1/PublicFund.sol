@@ -25,7 +25,7 @@ abstract contract PublicFund is Arch, Foundation {
 
   function _totalRequest(uint propId) public view returns (uint) {
     Fund storage fund = _funds[propId];
-    return fund.found + _convertValueToFound(fund.value);
+    return fund.found + convertValueToFound(fund.value);
   }
   
   function _addFunding(uint id, Convertible memory note) internal returns (Fund memory) {

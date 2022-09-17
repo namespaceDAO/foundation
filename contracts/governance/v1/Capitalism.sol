@@ -107,7 +107,7 @@ abstract contract Capitalism is PublicForum, ERC721 {
         stake.createdAt = block.timestamp;
         stake.expiresAt = prop.expiresAt;
         stake.totalStaked = totalStaked();
-        stake.totalSupply = _totalFoundSupply();
+        stake.totalSupply = totalFoundSupply();
 
         _stakeTotal += stake.amount;
         _stakedPerDay[currentDay()] += stake.amount;

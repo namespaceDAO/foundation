@@ -12,10 +12,12 @@ struct PropParams {
 struct Prop {
     uint id;
     string text;
+    string conclusion;
     address author;
     uint createdAt;
     uint startedAt;
     uint expiresAt;
+    uint completedAt;
     Fund fund;
 }
 
@@ -28,6 +30,16 @@ abstract contract PublicForum is PublicFund {
     address indexed author, 
     uint expiresAt, 
     uint createdAt, 
+    string text
+  );
+
+  // TODO add fund
+  event PropStarted(
+    uint indexed id
+  );
+
+  event PropCompleted(
+    uint indexed id, 
     string text
   );
 
@@ -75,11 +87,26 @@ abstract contract PublicForum is PublicFund {
     _requiresProp(propId);
     Prop storage prop = _props[propId];
   
-    require(prop.startedAt == 0, "Prop already ended");
-    require(prop.expiresAt > block.timestamp, "Prop is past the expiresAt");
+    require(prop.startedAt == 0, "Prop has been started");
+    require(prop.expiresAt > block.timestamp, "Prop is expired");
 
     prop.startedAt = block.timestamp;
     _payFund(propId);
+
+    emit PropStarted(propId);
+  }
+
+  function _completeProp(uint propId, string memory conclusion) internal {
+    _requiresProp(propId);
+    Prop storage prop = _props[propId];
+  
+    require(prop.startedAt != 0, "Prop hasn't started");
+    require(prop.expiresAt > block.timestamp, "Prop is expired");
+
+    prop.completedAt = block.timestamp;
+    prop.conclusion = conclusion;
+
+    emit PropCompleted(propId, conclusion);
   }
 
   function _requiresProp(uint propId) internal view {

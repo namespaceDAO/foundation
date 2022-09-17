@@ -14,8 +14,12 @@ contract Government is Capitalism {
     }
 
     function startProp(uint propId) external {
-        require(_isStartable(propId), "Prop cannot be started");
+        require(isCapitalized(propId), "Prop cannot be started");
         _startProp(propId);
+    }
+
+    function completeProp(uint propId, string memory conclusion) external {
+        _completeProp(propId, conclusion);
     }
 
     function endStake(uint propId) external {
@@ -23,10 +27,10 @@ contract Government is Capitalism {
     }
 
     function dailyBudget() public view returns (uint) {
-        return _treasuryNetBalance() / budgetRate();
+        return treasuryNetBalance() / budgetRate();
     }
 
-    function _isStartable(uint propId) internal view returns (bool) {
+    function isCapitalized(uint propId) public view returns (bool) {
         uint day = currentDay();
         uint stakeRate = stakedPerDay(day) / dailyBudget();
         uint shareRate = _totalRequest(propId) * stakedOnProp(propId);

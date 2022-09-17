@@ -6,6 +6,32 @@ import "../../token/Found.sol";
 contract Foundation {
     Found private _found;
 
+    function totalFoundSupply() public view returns (uint) {
+        return _found.totalSupply();
+    }
+
+    function treasuryFoundBalance() public view returns (uint) {
+        return  _found.treasuryFoundBalance();
+    }
+
+    function treasuryValueBalance() public view returns (uint) {
+        return _found.treasuryValueBalance();
+    }
+
+    // what's the correct word here?
+    function treasuryNetBalance() public view returns (uint) {
+        uint treasuryValue = treasuryValueBalance();
+        uint treasuryFound = treasuryFoundBalance();
+        uint converted = treasuryValue * (treasuryFound / treasuryValue);
+        return treasuryFound + converted;
+    }
+
+    function convertValueToFound(uint value) public view returns (uint) {
+        uint treasuryValue = treasuryValueBalance();
+        uint treasuryFound = treasuryFoundBalance();
+        return value * (treasuryFound / treasuryValue);
+    }
+
     function _treasuryTransferValue(address payee, uint value) internal {
         _found.transferValue(payee, value);
     }
@@ -20,31 +46,6 @@ contract Foundation {
 
     function _treasuryMintFound(address to, uint amount) internal {
         _found.treasuryMint(to, amount);
-    }
-
-    function _totalFoundSupply() internal view returns (uint) {
-        return _found.totalSupply();
-    }
-
-    function _treasuryFoundBalance() internal view returns (uint) {
-        return  _found.treasuryFoundBalance();
-    }
-
-    function _treasuryValueBalance() internal view returns (uint) {
-        return _found.treasuryValueBalance();
-    }
-
-    function _treasuryNetBalance() internal view returns (uint) {
-        uint treasuryValue = _treasuryValueBalance();
-        uint treasuryFound = _treasuryFoundBalance();
-        uint converted = treasuryValue * (treasuryFound / treasuryValue);
-        return treasuryFound + converted;
-    }
-
-    function _convertValueToFound(uint value) internal view returns (uint) {
-        uint treasuryValue = _treasuryValueBalance();
-        uint treasuryFound = _treasuryFoundBalance();
-        return value * (treasuryFound / treasuryValue);
     }
 
     constructor(Found found_) { _found = found_; }

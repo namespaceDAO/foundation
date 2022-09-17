@@ -4,7 +4,8 @@ import { parseEther } from 'ethers/lib/utils'
 import { CHARACTERS, randomString } from '../utils'
 
 export interface PropOpts {
-  payee: string
+  creator: string
+  payee?: string
   time: number
   maxTextLength?: number
   maxFound?: number // in ether
@@ -16,17 +17,19 @@ export interface Prop {
   _type: 'PROP'
   id: number
   text: string
+  creator: string
   expiresAt: number
   startedAt?: number | undefined
+  completedAt?: number | undefined
   note: {
-    payee: string
+    payee?: string
     found: BigNumber // in wei
     value: BigNumber // in wei
   }
 }
 
 export const randomProp = (
-  { payee, time, ...opts }: PropOpts
+  { creator, payee, time, ...opts }: PropOpts
 ): Prop => {
   const maxLength = opts.maxTextLength != null ? opts.maxTextLength : 512
   const length = maxLength * Math.random()
@@ -50,10 +53,10 @@ export const randomProp = (
   const value = Math.random() * maxValue
 
   const note = {
-    payee,
+    payee: payee != null ? payee : creator,
     found: parseEther(`${found}`),
     value: parseEther(`${value}`)
   }
 
-  return { _type: 'PROP', id: -1, text, expiresAt, note }
+  return { _type: 'PROP', creator, id: -1, text, expiresAt, note }
 }
