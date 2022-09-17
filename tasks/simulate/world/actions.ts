@@ -21,7 +21,7 @@ export const createActions = (
   const createStake: Actions['createStake'] = async (stake) => {
     await govt.connect(actor.signer).createStake(stake)
     stake.id = await govt.stakeCount()
-
+    stake.startedAt = Math.floor(new Date().getTime() / 1000)
     accounts[actor.signer.address].stakes[stake.id] = stake
     stakes[stake.id - 1] = stake
   }
@@ -33,7 +33,15 @@ export const createActions = (
     props[prop].startedAt = startedAt
   }
 
+  const endStake: Actions['endStake'] = async (stake) => {
+    await govt.connect(actor.signer).endStake(stake.id)
+    const endedAt = Math.floor(new Date().getTime() / 1000)
+    accounts[actor.signer.address].stakes[stake.id].endedAt = endedAt
+    stakes[stake.id - 1].endedAt = endedAt
+  }
+
   return {
+    endStake,
     createProp,
     createStake,
     mintFound,

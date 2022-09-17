@@ -3,8 +3,8 @@ import { parseEther } from 'ethers/lib/utils'
 import { CHARACTERS, randomString } from '../utils'
 
 export interface StakeOpts {
-  id: number
   prop: number
+  account: string
   reason?: string
   maxFound?: number // in ether
   maxReasonLength?: number
@@ -13,13 +13,16 @@ export interface StakeOpts {
 export interface Stake {
   _type: 'STAKE'
   id: number
+  account: string
   prop: number
   reason: string
   amount: BigNumber
+  startedAt: number
+  endedAt?: number | undefined
 }
 
 export const randomStake = (
-  prop: number, opts?: StakeOpts
+  opts: StakeOpts
 ): Stake => {
   const maxLength = opts?.maxReasonLength != null ? opts.maxReasonLength : 64
   const length = maxLength * Math.random()
@@ -32,8 +35,10 @@ export const randomStake = (
   return {
     _type: 'STAKE',
     id: -1,
-    prop,
+    prop: opts.prop,
+    account: opts.account,
     reason: text,
-    amount: parseEther(`${found}`)
+    amount: parseEther(`${found}`),
+    startedAt: Math.floor(new Date().getTime() / 1000)
   }
 }

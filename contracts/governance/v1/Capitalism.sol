@@ -134,11 +134,6 @@ abstract contract Capitalism is PublicForum, ERC721 {
             "Stake has already been completed"
         );
 
-        require(
-            block.timestamp >= stake.createdAt + minimumDuration(),
-            "Stake is too early"
-        );
-
         stake.completedAt = block.timestamp;
         stake.redeemer = _requireOwner(stakeId);
         (stake.penalty, stake.interest) = _payStake(stake);

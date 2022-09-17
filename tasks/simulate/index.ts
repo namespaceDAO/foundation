@@ -7,7 +7,7 @@ task('simulate', 'Simulates contract interactions', async (_, { ethers }) => {
   const init = await initialize({ ethers })
 
   const config = {
-    duration: 24,
+    duration: 24 * 12,
     secondsPerStep: 3600 * 6,
     verbose: true
   }

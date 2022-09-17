@@ -13,6 +13,7 @@ export interface Actions {
   createProp: (prop: Prop) => Promise<void>
   createStake: (stake: Stake) => Promise<void>
   startProp: (prop: number) => Promise<void>
+  endStake: (stake: Stake) => Promise<void>
   mintFound: (amount: Mint) => Promise<void>
 }
 
