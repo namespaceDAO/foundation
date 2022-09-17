@@ -15,6 +15,7 @@ export interface Prop {
   id: number
   text: string
   expiresAt: number
+  startedAt?: number | undefined
   note: {
     payee: string
     found: BigNumber // in wei

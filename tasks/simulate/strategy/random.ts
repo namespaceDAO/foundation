@@ -1,13 +1,15 @@
+import chalk from 'chalk'
 import { randomMint, randomProp, randomStake, Stake } from '../data'
-import { Actor, State, Initialization } from '../world'
-import { Bit, pickRandom } from '../utils'
+import { Actor, State, Initialization, Step } from '../world'
+import { Bit, parseTime, pickRandom } from '../utils'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
+import { formatEther } from 'ethers/lib/utils'
 
 export const createRandomActor = (
   signer: SignerWithAddress,
   { found }: Initialization
 ): Actor => {
-  const getStake = async ({ props, time }: State): Promise<Stake | null> => {
+  const createStakeAttempt = async ({ props, time }: State): Promise<Stake | null> => {
     const possible = props.filter(prop => prop.expiresAt > time)
     if (possible.length === 0) return null
 
@@ -25,20 +27,34 @@ export const createRandomActor = (
     return stake
   }
 
-  const step = async (state: State): Promise<Array<Bit | null>> => {
-    const mint = Math.random() > 1 / 40 ? null : randomMint()
+  const step = async (state: Step): Promise<void> => {
+    const {
+      time, createProp, createStake, mintFound
+    } = state
 
-    const prop = Math.random() > 1 / 40
-      ? null
-      : randomProp(signer.address, {
-        maxFound: 5,
-        maxValue: 5,
-        maxTextLength: 512
-      })
+    const shouldMint = Math.random() < 1 / 40
+    const shouldStake = Math.random() < 1 / 40
+    const shouldCreate = Math.random() < 1 / 40
 
-    const stake = Math.random() > 1 / 40 ? null : await getStake(state)
+    if (shouldMint) {
+      const mint = randomMint()
+      await mintFound(mint)
+      console.log(`${chalk.bold(parseTime(time))} Found minted: ${formatEther(mint.amount)}`)
+    }
 
-    return [mint, prop, stake]
+    if (shouldStake) {
+      const stake = await createStakeAttempt(state)
+      if (stake != null) {
+        await createStake(stake)
+        console.log(`${chalk.bold(parseTime(time))} Stake created: ${formatEther(stake.amount)}`)
+      }
+    }
+
+    if (shouldCreate) {
+      const prop = randomProp(signer.address, { maxFound: 5, maxValue: 5 })
+      await createProp(prop)
+      console.log(`${chalk.bold(parseTime(time))} Prop created: Expires ${new Date(prop.expiresAt * 1000).toISOString()}`)
+    }
   }
 
   return { step, signer }
