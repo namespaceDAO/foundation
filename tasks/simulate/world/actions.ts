@@ -35,9 +35,16 @@ export const createActions = (
 
   const endStake: Actions['endStake'] = async (stake) => {
     await govt.connect(actor.signer).endStake(stake.id)
+    const { interest, penalty } = await govt.getStake(stake.id)
+
     const endedAt = Math.floor(new Date().getTime() / 1000)
+
     accounts[actor.signer.address].stakes[stake.id].endedAt = endedAt
+    accounts[actor.signer.address].stakes[stake.id].interest = interest
+    accounts[actor.signer.address].stakes[stake.id].penalty = penalty
     stakes[stake.id - 1].endedAt = endedAt
+    stakes[stake.id - 1].interest = interest
+    stakes[stake.id - 1].penalty = penalty
   }
 
   return {

@@ -7,8 +7,12 @@ import { parseTime, shuffle } from '../utils'
 import { Account, Actor, State } from './types'
 import { createActions } from './actions'
 import { Setup } from './initialize'
+import { HardhatEthersHelpers } from 'hardhat/types'
+import { add } from 'date-fns'
+import { BigNumber } from 'ethers'
 
 interface SimulateOpts extends Setup {
+  ethers: HardhatEthersHelpers
   duration: number
   secondsPerStep: number
   verbose: boolean
@@ -16,8 +20,9 @@ interface SimulateOpts extends Setup {
 }
 
 export const simulate = async (opts: SimulateOpts): Promise<void> => {
-  const { verbose, found, duration, actors } = opts
-  const start = Math.floor(new Date().getTime() / 1000)
+  const { verbose, found, duration, actors, ethers } = opts
+  const date = add(new Date(), { days: 1 })
+  const start = Math.floor(date.getTime() / 1000)
   const errors: any[] = []
 
   const catchError = (step: string, e: Error): void => {
@@ -38,6 +43,7 @@ export const simulate = async (opts: SimulateOpts): Promise<void> => {
   }, {})
 
   const step = async (time: number): Promise<void> => {
+    await ethers.provider.send('evm_mine', [time])
     await Promise.all(
       shuffle(actors).map(async (actor) => {
         const state: State = { time, props, stakes, accounts, actors }
@@ -64,8 +70,18 @@ export const simulate = async (opts: SimulateOpts): Promise<void> => {
 
   const totalSupply = await found.totalSupply()
 
+  const totalInterest = stakes.reduce((acc, cur) => {
+    return cur.interest != null ? acc.add(cur.interest) : acc
+  }, BigNumber.from(0))
+
+  const totalPenalties = stakes.reduce((acc, cur) => {
+    return cur.penalty != null ? acc.add(cur.penalty) : acc
+  }, BigNumber.from(0))
+
   console.log(`FOUND supply: ${formatEther(totalSupply)}`)
   console.log(`Total props: ${props.length}`)
   console.log(`Total stakes: ${stakes.length}`)
   console.log(`Total errors: ${errors.length}`)
+  console.log(`Total interest: ${formatEther(totalInterest)}`)
+  console.log(`Total penalties: ${formatEther(totalPenalties)}`)
 }

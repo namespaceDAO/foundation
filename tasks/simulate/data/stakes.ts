@@ -17,6 +17,8 @@ export interface Stake {
   prop: number
   reason: string
   amount: BigNumber
+  interest?: BigNumber
+  penalty?: BigNumber
   startedAt: number
   endedAt?: number | undefined
 }

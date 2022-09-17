@@ -109,6 +109,7 @@ abstract contract Capitalism is PublicForum, ERC721 {
         stake.totalStaked = totalStaked();
         stake.totalSupply = _totalFoundSupply();
 
+        _stakeTotal += stake.amount;
         _stakedPerDay[currentDay()] += stake.amount;
         _stakedOnProp[stake.prop] += stake.amount;
         _mint(stake.staker, stake.id);
@@ -136,9 +137,12 @@ abstract contract Capitalism is PublicForum, ERC721 {
 
         stake.completedAt = block.timestamp;
         stake.redeemer = _requireOwner(stakeId);
-        (stake.penalty, stake.interest) = _payStake(stake);
 
+        _stakeTotal -= stake.amount;
+        _stakedOnProp[stake.prop] -= stake.amount;
         _burn(stakeId);
+
+        (stake.penalty, stake.interest) = _payStake(stake);
 
         emit StakeEnded(
             stake.id,
@@ -178,13 +182,8 @@ abstract contract Capitalism is PublicForum, ERC721 {
     }
 
     function _calculateInterest(Stake memory stake, uint time) internal view returns (uint) {
-        uint inflation = inflationRate();
-
-        uint age = time / 60 / 60 / 24 / 365; // in years
-        uint fraction = stake.totalStaked / stake.totalSupply;
-        uint rate = 2 * inflation * fraction + inflation;
-        uint bonus = age ** 2 / rate + age / rate;
-        return bonus * stake.amount;
+        // TODO: change how this is calculated
+        return inflationRate() * time * stake.amount / 3600 / 24 / 365;
     }
 
     function _calculatePenalty(Stake memory stake) internal view returns (uint) {
