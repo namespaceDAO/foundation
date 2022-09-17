@@ -1,6 +1,19 @@
 import { Mint, Prop, Stake } from '../data'
-import { Setup } from '../initialize'
-import { Actor } from './actors'
+import { Setup } from './initialize'
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
+import { Bit } from '../utils'
+
+export interface State {
+  time: number
+  props: Prop[]
+  stakes: Stake[]
+  actors: Actor[]
+}
+
+export interface Actor {
+  signer: SignerWithAddress
+  step: (state: State) => Promise<Array<Bit | null>>
+}
 
 export interface Actions {
   props: Prop[]

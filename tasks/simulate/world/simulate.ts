@@ -2,13 +2,10 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import chalk from 'chalk'
 import { formatEther } from 'ethers/lib/utils'
-import { Actor } from './actors'
-import { createActions } from './actions'
-import { Setup } from '../initialize'
+import { Actor, createActions } from './actions'
+import { Setup } from './initialize'
 import { parseTime, shuffle } from '../utils'
 import { Mint, Prop, Stake } from '../data'
-
-export * from './actors'
 
 interface SimulateOpts extends Setup {
   duration: number

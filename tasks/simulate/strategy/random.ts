@@ -1,6 +1,5 @@
 import { randomMint, randomProp, randomStake, Stake } from '../data'
-import { Actor, State } from '../simulate'
-import { Initialization } from '../initialize'
+import { Actor, State, Initialization } from '../world'
 import { Bit, pickRandom } from '../utils'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 

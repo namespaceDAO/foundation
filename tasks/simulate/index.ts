@@ -1,6 +1,6 @@
 import { task } from 'hardhat/config'
-import { initialize } from './initialize'
-import { simulate } from './simulate'
+import { initialize } from './world/initialize'
+import { simulate } from './world/simulate'
 import { createActors } from './strategy'
 
 task('simulate', 'Simulates contract interactions', async (_, { ethers }) => {
