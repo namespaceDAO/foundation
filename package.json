@@ -1,6 +1,6 @@
 {
   "name": "@namespacedao/found",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "license": "ISC",
   "repository": "git@github.com:namespacedao/found-contracts.git",
@@ -8,6 +8,10 @@
   "publishConfig": {
     "@namespacedao:registry": "https://npm.pkg.github.com"
   },
+  "files": [
+    "artifacts",
+    "typechain-types"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
