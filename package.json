@@ -1,13 +1,15 @@
 {
-  "name": "bank-of-nouns",
+  "name": "@namespacedao/found",
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
-  "repository": "git@github.com:woodpav/foundation-v1.git",
+  "repository": "git@github.com:namespaceDAO/found-contracts.git",
+  "publishConfig": {
+    "@namespacedao:registry": "https://npm.pkg.github.com"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "TY <22600052+woodpav@users.noreply.github.com>",
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
     "@ethersproject/providers": "^5.4.7",
