@@ -5,16 +5,7 @@ on:
     types: [created]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - run: yarn
-      - run: npx hardhat compile
-
   publish:
-    needs: build
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -24,6 +15,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           registry-url: https://npm.pkg.github.com/
+      - run: yarn
+      - run: npx hardhat compile
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
