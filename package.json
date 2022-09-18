@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
-  "repository": "git@github.com:namespaceDAO/found-contracts.git",
+  "repository": "git@github.com:namespacedao/found-contracts.git",
+  "author": "TY <22600052+woodpav@users.noreply.github.com>",
   "publishConfig": {
     "@namespacedao:registry": "https://npm.pkg.github.com"
   },
