@@ -52,11 +52,11 @@ abstract contract PublicFund is Arch, Foundation {
     Fund storage fund = _funds[id];
     
     if (fund.value > 0) {
-      _treasuryPullValue(fund.payee, fund.value);
+      _treasuryPushValue(fund.payee, fund.value);
     }
     
     if (fund.found > 0) {
-      _treasuryPullFound(fund.payee, fund.value);
+      _treasuryPushFound(fund.payee, fund.value);
     }
 
     emit FundPaid(id, fund.payee, fund.found, fund.value);

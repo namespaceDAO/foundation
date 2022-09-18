@@ -5,7 +5,6 @@ import "./Token.sol";
 import "./Treasury.sol";
 
 contract Found is Token, Treasury {
-
     function foundBalance() public view returns (uint) {
         return balanceOf(address(this));
     }
@@ -23,11 +22,11 @@ contract Found is Token, Treasury {
         _mint(address(this), amount);   // 1 to treasury
     }
 
-    function pullFound(address to,  uint amount) external onlyTreasurer {
+    function pushFound(address to,  uint amount) external onlyTreasurer {
         _transfer(address(this), to, amount);
     }
 
-    function pushFound(address from, uint amount) external onlyTreasurer {
+    function pullFound(address from, uint amount) external onlyTreasurer {
         _transfer(from, address(this), amount);
     }
 

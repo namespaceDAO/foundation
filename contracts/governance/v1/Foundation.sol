@@ -18,16 +18,16 @@ contract Foundation {
         return _found.valueBalance();
     }
 
-    function _treasuryPullValue(address payee, uint value) internal {
-        _found.pullValue(payee, value);
+    function _treasuryPushValue(address payee, uint value) internal {
+        _found.pushValue(payee, value);
     }
 
-    function _treasuryPullFound(address payee, uint value) internal {
-        _found.pullFound(payee, value);
+    function _treasuryPushFound(address payee, uint value) internal {
+        _found.pushFound(payee, value);
     }
 
-    function _treasuryPushFound(address depositor, uint value) internal {
-        _found.pushFound(depositor, value);
+    function _treasuryPullFound(address depositor, uint value) internal {
+        _found.pullFound(depositor, value);
     }
 
     function _treasuryMintFound(address to, uint amount) internal {

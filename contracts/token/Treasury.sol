@@ -37,11 +37,11 @@ contract Treasury is Ownable {
         emit DeactivateTreasurer(treasurer);
     }
 
-    function pullValue(address to, uint amount) external onlyTreasurer {
-       _pullValue(to, amount);
+    function pushValue(address to, uint amount) external onlyTreasurer {
+       _pushValue(to, amount);
     }
 
-    function _pullValue(address to, uint amount) internal {
+    function _pushValue(address to, uint amount) internal {
         require(
             valueBalance() >= amount, 
             "Treasury: transfer exceeds treasury balance"

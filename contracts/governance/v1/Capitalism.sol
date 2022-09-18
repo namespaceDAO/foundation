@@ -91,7 +91,7 @@ abstract contract Capitalism is PublicForum, ERC721 {
         );
 
         Prop memory prop = getProp(params.prop);
-        _treasuryPushFound(msg.sender, params.amount);
+        _treasuryPullFound(msg.sender, params.amount);
 
         require(
             prop.expiresAt > block.timestamp, 
@@ -161,13 +161,13 @@ abstract contract Capitalism is PublicForum, ERC721 {
 
         if (interest > penalty) {
             if (goodAccounting()) {
-                _treasuryPullFound(stake.redeemer, stake.amount + interest - penalty);
+                _treasuryPushFound(stake.redeemer, stake.amount + interest - penalty);
             } else {
-                _treasuryPullFound(stake.redeemer, stake.amount);
+                _treasuryPushFound(stake.redeemer, stake.amount);
                 _treasuryMintFound(stake.redeemer, interest - penalty);
             }
         } else if (stake.amount > penalty) {
-            _treasuryPullFound(stake.redeemer, stake.amount - penalty);
+            _treasuryPushFound(stake.redeemer, stake.amount - penalty);
         }
 
         return (penalty, interest);
