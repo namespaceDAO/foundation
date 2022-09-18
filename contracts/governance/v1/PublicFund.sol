@@ -25,9 +25,11 @@ abstract contract PublicFund is Arch, Foundation {
 
   function _totalRequest(uint propId) public view returns (uint) {
     Fund storage fund = _funds[propId];
-    return fund.found + convertValueToFound(fund.value);
+    uint value = valueBalance();
+    uint found = foundBalance();
+    return fund.found + fund.value * (found / value);
   }
-  
+
   function _addFunding(uint id, Convertible memory note) internal returns (Fund memory) {
     require(
       note.value > 0 || note.found > 0, 
@@ -50,11 +52,11 @@ abstract contract PublicFund is Arch, Foundation {
     Fund storage fund = _funds[id];
     
     if (fund.value > 0) {
-      _treasuryTransferValue(fund.payee, fund.value);
+      _treasuryPullValue(fund.payee, fund.value);
     }
     
     if (fund.found > 0) {
-      _treasuryTransferFound(fund.payee, fund.value);
+      _treasuryPullFound(fund.payee, fund.value);
     }
 
     emit FundPaid(id, fund.payee, fund.found, fund.value);

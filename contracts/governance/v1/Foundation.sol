@@ -6,42 +6,28 @@ import "../../token/Found.sol";
 contract Foundation {
     Found private _found;
 
-    function totalFoundSupply() public view returns (uint) {
+    function foundSupply() public view returns (uint) {
         return _found.totalSupply();
     }
 
-    function treasuryFoundBalance() public view returns (uint) {
-        return  _found.treasuryFoundBalance();
+    function foundBalance() public view returns (uint) {
+        return  _found.foundBalance();
     }
 
-    function treasuryValueBalance() public view returns (uint) {
-        return _found.treasuryValueBalance();
+    function valueBalance() public view returns (uint) {
+        return _found.valueBalance();
     }
 
-    // what's the correct word here?
-    function treasuryNetBalance() public view returns (uint) {
-        uint treasuryValue = treasuryValueBalance();
-        uint treasuryFound = treasuryFoundBalance();
-        uint converted = treasuryValue * (treasuryFound / treasuryValue);
-        return treasuryFound + converted;
+    function _treasuryPullValue(address payee, uint value) internal {
+        _found.pullValue(payee, value);
     }
 
-    function convertValueToFound(uint value) public view returns (uint) {
-        uint treasuryValue = treasuryValueBalance();
-        uint treasuryFound = treasuryFoundBalance();
-        return value * (treasuryFound / treasuryValue);
+    function _treasuryPullFound(address payee, uint value) internal {
+        _found.pullFound(payee, value);
     }
 
-    function _treasuryTransferValue(address payee, uint value) internal {
-        _found.transferValue(payee, value);
-    }
-
-    function _treasuryTransferFound(address payee, uint value) internal {
-        _found.treasuryTransfer(address(_found), payee, value);
-    }
-
-    function _treasuryDepositFound(address depositor, uint value) internal {
-        _found.treasuryTransfer(depositor, address(_found), value);
+    function _treasuryPushFound(address depositor, uint value) internal {
+        _found.pushFound(depositor, value);
     }
 
     function _treasuryMintFound(address to, uint amount) internal {

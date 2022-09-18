@@ -54,8 +54,8 @@ export const simulate = async (opts: SimulateOpts): Promise<void> => {
           accounts,
           actors,
           treasury: {
-            value: await govt.treasuryValueBalance(),
-            found: await govt.treasuryFoundBalance()
+            value: await govt.valueBalance(),
+            found: await govt.foundBalance()
           }
         }
 

@@ -21,7 +21,7 @@ describe('Found', () => {
   it('Create FOUND with getters', async () => {
     const name = await found.name()
     const symbol = await found.symbol()
-    const balance = await found.treasuryValueBalance()
+    const balance = await found.valueBalance()
     const isTreasurer = await found.isTreasurer(treasurer.address)
     expect(name).to.equal('FOUND')
     expect(symbol).to.equal('FOUND')
@@ -31,13 +31,13 @@ describe('Found', () => {
 
   it('Mints FOUND to minter and treasury', async () => {
     const value = ethers.utils.parseEther(`${Math.random() + 1}`)
-    const e1 = await found.treasuryValueBalance()
+    const e1 = await found.valueBalance()
 
     await found.mint(alice.address, { value })
 
     const ba = await found.balanceOf(alice.address)
     const bt = await found.balanceOf(found.address)
-    const e2 = await found.treasuryValueBalance()
+    const e2 = await found.valueBalance()
 
     expect(ba).to.equal(value)
     expect(bt).to.equal(value)
@@ -54,8 +54,8 @@ describe('Found', () => {
     const f1 = await found.balanceOf(bob.address)
 
     await found.mint(alice.address, { value })
-    await found.connect(treasurer).transferValue(bob.address, half)
-    await found.connect(treasurer).treasuryTransfer(found.address, bob.address, half)
+    await found.connect(treasurer).pullValue(bob.address, half)
+    await found.connect(treasurer).pullFound(bob.address, half)
 
     const b2 = await bob.getBalance()
     const f2 = await found.balanceOf(bob.address)

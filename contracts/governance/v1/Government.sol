@@ -27,7 +27,10 @@ contract Government is Capitalism {
     }
 
     function dailyBudget() public view returns (uint) {
-        return treasuryNetBalance() / budgetRate();
+        uint value = valueBalance();
+        uint found = foundBalance();
+        uint balance = found + value;
+        return balance / budgetRate();
     }
 
     function isCapitalized(uint propId) public view returns (bool) {

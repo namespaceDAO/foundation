@@ -1,23 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "./Origin.sol";
+import "./OriginToken.sol";
 import "./Treasury.sol";
 
-contract Found is ERC20, Origin, Treasury {
-    uint private _totalValue;
-    uint private _claimValue;
-    uint private _claimFound;
+contract Found is OriginToken, Treasury {
 
-    event Claim(address indexed to, uint value, uint found);
+    function foundBalance() public view returns (uint) {
+        return balanceOf(address(this));
+    }
 
     function mint(address to) external payable {
         require(msg.value > 0, "Must send more than 0 ETH");
         uint amount = msg.value;        // 1 token = 1 ETH
         _mint(to, amount);              // 1 to minter
         _mint(address(this), amount);   // 1 to treasury
-        _totalValue += amount;
+        _addValue(amount);
     }
 
     function treasuryMint(address to, uint amount) external onlyTreasurer {
@@ -25,46 +23,13 @@ contract Found is ERC20, Origin, Treasury {
         _mint(address(this), amount);   // 1 to treasury
     }
 
-    function treasuryTransfer(
-        address from, 
-        address to, 
-        uint amount
-    ) external onlyTreasurer {
-        _transfer(from, to, amount);
+    function pullFound(address to,  uint amount) external onlyTreasurer {
+        _transfer(address(this), to, amount);
     }
 
-    function treasuryFoundBalance() public view returns (uint) {
-        return balanceOf(address(this));
+    function pushFound(address from, uint amount) external onlyTreasurer {
+        _transfer(from, address(this), amount);
     }
 
-    function treasuryNetBalance() public view returns (uint) {
-        uint treasuryValue = treasuryValueBalance();
-        uint treasuryFound = treasuryFoundBalance();
-        uint converted = treasuryValue * (treasuryFound / treasuryValue);
-        return treasuryFound + converted;
-    }
-
-    function originClaim(
-        address to, 
-        uint value,
-        uint found
-    ) external onlyOrigin {
-        if (value > 0) {
-            uint maxValue = _totalValue / 10 - _claimValue;
-            require(maxValue >= value, "Value claim is too large");
-            _transferValue(to, value);
-            _claimValue += value;
-        }
-
-        if (found > 0) {
-            uint maxFound = totalSupply() / 20 - _claimFound;
-            require(maxFound >= found, "Found claim is too large");
-            _transfer(address(this), to, found);
-            _claimFound += found;
-        }
-
-        emit Claim(to, value, found);
-    }
-
-    constructor() ERC20("FOUND", "FOUND") {}
+    constructor() OriginToken() {}
 }
