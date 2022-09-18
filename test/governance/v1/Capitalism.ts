@@ -23,7 +23,7 @@ describe('Capitalism', () => {
 
     // seed the treasury with some ether and found
     await found.mint(origin.address, { value: seed })
-    await found.setTreasurer(govt.address, true)
+    await found.activateTreasurer(govt.address)
   })
 
   it('Creates govt', async () => {

@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract OriginToken is ERC20 {
+contract Token is ERC20 {
     address private _address;
     address private _provenance; 
     uint private _totalValue;

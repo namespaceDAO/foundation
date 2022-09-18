@@ -15,18 +15,18 @@ describe('Found', () => {
     [origin, treasurer, alice, bob] = await ethers.getSigners()
     const Found = await ethers.getContractFactory('Found')
     found = await Found.deploy()
-    await found.setTreasurer(treasurer.address, true)
+    await found.activateTreasurer(treasurer.address)
   })
 
   it('Create FOUND with getters', async () => {
     const name = await found.name()
     const symbol = await found.symbol()
     const balance = await found.valueBalance()
-    const isTreasurer = await found.isTreasurer(treasurer.address)
+    const isTreasurerActive = await found.isTreasurerActive(treasurer.address)
     expect(name).to.equal('FOUND')
     expect(symbol).to.equal('FOUND')
     expect(balance).to.equal(0)
-    expect(isTreasurer).to.equal(true)
+    expect(isTreasurerActive).to.equal(true)
   })
 
   it('Mints FOUND to minter and treasury', async () => {

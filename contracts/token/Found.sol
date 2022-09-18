@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "./OriginToken.sol";
+import "./Token.sol";
 import "./Treasury.sol";
 
-contract Found is OriginToken, Treasury {
+contract Found is Token, Treasury {
 
     function foundBalance() public view returns (uint) {
         return balanceOf(address(this));
@@ -31,5 +31,5 @@ contract Found is OriginToken, Treasury {
         _transfer(from, address(this), amount);
     }
 
-    constructor() OriginToken() {}
+    constructor() Token() {}
 }

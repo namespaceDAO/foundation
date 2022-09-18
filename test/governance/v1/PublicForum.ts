@@ -19,7 +19,7 @@ describe('PublicForum', () => {
     found = await Found.deploy()
     govt = await Government.deploy(found.address)
 
-    await found.setTreasurer(govt.address, true)
+    await found.activateTreasurer(govt.address)
     await found.mint(origin.address, { value: parseEther('100') })
   })
 

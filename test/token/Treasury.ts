@@ -3,6 +3,7 @@ import { expect } from 'chai'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { Contract } from 'ethers'
 
+// TODO: test is treasurer inactive
 describe('Treasury', () => {
   let origin: SignerWithAddress
   let treasurer: SignerWithAddress
@@ -21,14 +22,14 @@ describe('Treasury', () => {
     const balance = await treasury.valueBalance()
     expect(balance).to.equal(seed)
 
-    const isTreasurer = await treasury.isTreasurer(origin.address)
-    expect(isTreasurer).to.equal(false)
+    const isTreasurerActive = await treasury.isTreasurerActive(origin.address)
+    expect(isTreasurerActive).to.equal(false)
   })
 
   it('Change treasurer', async () => {
-    await treasury.setTreasurer(treasurer.address, true)
-    const isTreasurer = await treasury.isTreasurer(treasurer.address)
-    expect(isTreasurer).to.equal(true)
+    await treasury.activateTreasurer(treasurer.address)
+    const isTreasurerActive = await treasury.isTreasurerActive(treasurer.address)
+    expect(isTreasurerActive).to.equal(true)
   })
 
   it('Transfers funds for treasurer', async () => {
@@ -61,7 +62,7 @@ describe('Treasury', () => {
 
   it('Fails to change treasurer when not owner', async () => {
     await expect(
-      treasury.connect(alice).setTreasurer(alice.address, true)
+      treasury.connect(alice).activateTreasurer(alice.address)
     ).to.revertedWith('Ownable: caller is not the owner')
   })
 })

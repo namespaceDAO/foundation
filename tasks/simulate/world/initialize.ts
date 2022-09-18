@@ -20,7 +20,7 @@ export const initialize = async ({ ethers }: Init): Promise<Initialization> => {
 
   const Govt = await ethers.getContractFactory('Government')
   const govt = await Govt.deploy(found.address)
-  await found.setTreasurer(govt.address, true)
+  await found.activateTreasurer(govt.address)
 
   const [origin, ...signers] = await ethers.getSigners()
 

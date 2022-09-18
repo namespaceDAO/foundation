@@ -3,11 +3,10 @@ pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-// TODO: setTreasurer to activateTreasurer
-
 contract Treasury is Ownable {
     mapping(address => bool) private _treasurers;  // authorized operators
-    event SetTreasurer(address indexed treasurer, bool indexed active);
+    event ActivateTreasurer(address indexed treasurer);
+    event DeactivateTreasurer(address indexed treasurer);
 
     receive() external payable {}
     fallback() external payable {}
@@ -24,13 +23,18 @@ contract Treasury is Ownable {
         return address(this).balance;
     }
 
-    function isTreasurer(address treasurer) public view returns (bool) {
+    function isTreasurerActive(address treasurer) public view returns (bool) {
         return _treasurers[treasurer];
     }
 
-    function setTreasurer(address treasurer, bool active) external onlyOwner {
-        _treasurers[treasurer] = active;
-        emit SetTreasurer(treasurer, active);
+    function activateTreasurer(address treasurer) external onlyOwner {
+        _treasurers[treasurer] = true;
+        emit ActivateTreasurer(treasurer);
+    }
+
+    function dectivateTreasurer(address treasurer) external onlyOwner {
+        _treasurers[treasurer] = false;
+        emit DeactivateTreasurer(treasurer);
     }
 
     function pullValue(address to, uint amount) external onlyTreasurer {
