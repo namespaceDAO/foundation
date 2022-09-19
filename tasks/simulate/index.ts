@@ -30,5 +30,5 @@ task('simulate', 'Simulates contract interactions', async (_, { ethers }) => {
     }
   })
 
-  console.log(history)
+  // console.log(history)
 })

@@ -11,15 +11,21 @@ contract Found is Token, Treasury {
 
     function mint(address to) external payable {
         require(msg.value > 0, "Must send more than 0 ETH");
-        uint amount = msg.value;        // 1 token = 1 ETH
-        _mint(to, amount);              // 1 to minter
-        _mint(address(this), amount);   // 1 to treasury
-        _addValue(amount);
+
+        bool presale = false;
+        uint amount = presale ? (msg.value * 2) : msg.value;
+
+        _mintFound(to, amount);
+        _addValue(msg.value);
     }
 
     function treasuryMint(address to, uint amount) external onlyTreasurer {
-        _mint(to, amount);              // 1 to minter
-        _mint(address(this), amount);   // 1 to treasury
+        _mintFound(to, amount);
+    }
+
+    function _mintFound(address to, uint amount) internal {
+        _mint(to, amount); 
+        _mint(address(this), amount);
     }
 
     function pushFound(address to,  uint amount) external onlyTreasurer {
