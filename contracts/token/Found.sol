@@ -5,10 +5,6 @@ import "./Token.sol";
 import "./Treasury.sol";
 
 contract Found is Token, Treasury {
-    function foundBalance() public view returns (uint) {
-        return balanceOf(address(this));
-    }
-
     function mint(address to) external payable {
         require(msg.value > 0, "Must send more than 0 ETH");
 
@@ -19,13 +15,12 @@ contract Found is Token, Treasury {
         _addValue(msg.value);
     }
 
-    function treasuryMint(address to, uint amount) external onlyTreasurer {
-        _mintFound(to, amount);
+    function foundBalance() public view returns (uint) {
+        return balanceOf(address(this));
     }
 
-    function _mintFound(address to, uint amount) internal {
-        _mint(to, amount); 
-        _mint(address(this), amount);
+    function treasuryMint(address to, uint amount) external onlyTreasurer {
+        _mintFound(to, amount);
     }
 
     function pushFound(address to,  uint amount) external onlyTreasurer {
@@ -34,6 +29,11 @@ contract Found is Token, Treasury {
 
     function pullFound(address from, uint amount) external onlyTreasurer {
         _transfer(from, address(this), amount);
+    }
+
+    function _mintFound(address to, uint amount) internal {
+        _mint(to, amount); 
+        _mint(address(this), amount);
     }
 
     constructor() Token() {}

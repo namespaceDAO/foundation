@@ -24,7 +24,7 @@ describe('Origin', () => {
   })
 
   it('Move origin', async () => {
-    await origin.moveOrigin(signer2.address)
+    await origin.updateOrigin(signer2.address)
     const address = await origin.originAddress()
     expect(address).to.equal(signer2.address)
   })
@@ -39,7 +39,7 @@ describe('Origin', () => {
 
   it('Fails to move origin', async () => {
     await expect(
-      origin.connect(signer2).moveOrigin(signer2.address)
+      origin.connect(signer2).updateOrigin(signer2.address)
     ).to.revertedWith('Origin: caller is not the origin')
   })
 

@@ -6,13 +6,13 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 contract Token is ERC20 {
     address private _address;
     address private _provenance; 
-    
+
     uint private _totalValue;
     uint private _claimValue;
     uint private _claimFound;
 
-    emit ClaimFound(address indexed to, uint found);
-    emit ClaimValue(address indexed to, uint value);
+    event ClaimFound(address indexed to, uint found);
+    event ClaimValue(address indexed to, uint value);
 
     event UpdateOrigin(address indexed to);
     event RelinquishOrigin(address provenance);
