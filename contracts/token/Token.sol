@@ -6,13 +6,15 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 contract Token is ERC20 {
     address private _address;
     address private _provenance; 
+    
     uint private _totalValue;
     uint private _claimValue;
     uint private _claimFound;
 
-    event Claim(address indexed to, uint value, uint found);
+    emit ClaimFound(address indexed to, uint found);
+    emit ClaimValue(address indexed to, uint value);
 
-    event MoveOrigin(address indexed previousAddress, address indexed newAddress);
+    event UpdateOrigin(address indexed to);
     event RelinquishOrigin(address provenance);
 
     modifier onlyOrigin() {
@@ -33,10 +35,9 @@ contract Token is ERC20 {
         return _provenance; 
     }
 
-    function moveOrigin(address newAddress) external onlyOrigin {
-        address previousAddress = _address;
-        _address = newAddress;
-        emit MoveOrigin(previousAddress, newAddress);
+    function updateOrigin(address to) external onlyOrigin {
+        _address = to;
+        emit UpdateOrigin(to);
     }
 
     function relinquishOrigin() external onlyOrigin {
@@ -45,28 +46,22 @@ contract Token is ERC20 {
         emit RelinquishOrigin(_provenance);
     }
 
-    function originClaim(
-        address to, 
-        uint value,
-        uint found
-    ) external onlyOrigin {
-        if (value > 0) {
-            uint maxValue = _totalValue / 10 - _claimValue;
-            require(maxValue >= value, "Value claim is too large");
-            (bool success, ) = to.call{value:value}("");
-            require(success, "Treasury: transfer failed");
-            _claimValue += value;
-        }
-
-        if (found > 0) {
-            uint maxFound = totalSupply() / 20 - _claimFound;
-            require(maxFound >= found, "Found claim is too large");
-            _transfer(address(this), to, found);
-            _claimFound += found;
-        }
-
-        emit Claim(to, value, found);
+    function claimValue(address to, uint value) external onlyOrigin {
+        uint maxValue = _totalValue / 10 - _claimValue;
+        require(maxValue >= value, "Value claim is too large");
+        (bool success, ) = to.call{value:value}("");
+        require(success, "Treasury: transfer failed");
+        _claimValue += value;
     }
+
+    function claimFound(address to, uint found) external onlyOrigin {
+        uint maxFound = totalSupply() / 20 - _claimFound;
+        require(maxFound >= found, "Found claim is too large");
+        _transfer(address(this), to, found);
+        _claimFound += found;
+        emit ClaimFound(to,found);
+    }
+
 
     constructor() ERC20("FOUND", "FOUND") {
         _address = msg.sender;
