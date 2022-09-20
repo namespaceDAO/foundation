@@ -17,6 +17,18 @@ contract Token is Origin, ERC20, Treasury {
         return balanceOf(address(this));
     }
 
+    function pushToken(address to,  uint amount) external onlyTreasurer {
+        _transfer(address(this), to, amount);
+    }
+
+    function pullToken(address from, uint amount) external onlyTreasurer {
+        _transfer(from, address(this), amount);
+    }
+
+    function treasuryMint(address to, uint amount) external onlyTreasurer {
+        _mintToken(to, amount);
+    }
+
     function claimValue(address to, uint value) external onlyOrigin {
         require(
             valueBalance() >= value, 

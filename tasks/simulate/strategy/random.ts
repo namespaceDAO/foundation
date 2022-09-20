@@ -12,7 +12,7 @@ export const createRandomActor = (
   signer,
   step: async (state: Step): Promise<void> => {
     const {
-      time, createProp, createStake, mintFound
+      time, createProp, createStake, mintToken
     } = state
 
     const shouldMint = Math.random() < 1 / 40
@@ -84,7 +84,7 @@ export const createRandomActor = (
 
     if (shouldMint) {
       const mint = randomMint()
-      await mintFound(mint)
+      await mintToken(mint)
       log(`${chalk.yellow('FOUND MINTED')} ${formatEther(mint.amount)}`)
     }
 

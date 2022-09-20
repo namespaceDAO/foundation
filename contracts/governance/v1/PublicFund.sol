@@ -26,7 +26,7 @@ abstract contract PublicFund is Arch, Foundation {
   function _totalRequest(uint propId) public view returns (uint) {
     Fund storage fund = _funds[propId];
     uint value = valueBalance();
-    uint found = foundBalance();
+    uint found = tokenBalance();
     return fund.found + fund.value * (found / value);
   }
 
@@ -56,7 +56,7 @@ abstract contract PublicFund is Arch, Foundation {
     }
     
     if (fund.found > 0) {
-      _treasuryPushFound(fund.payee, fund.value);
+      _treasuryPushToken(fund.payee, fund.value);
     }
 
     emit FundPaid(id, fund.payee, fund.found, fund.value);

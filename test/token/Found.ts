@@ -55,7 +55,7 @@ describe('Found', () => {
 
     await found.mint(alice.address, { value })
     await found.connect(treasurer).pushValue(bob.address, half)
-    await found.connect(treasurer).pushFound(bob.address, half)
+    await found.connect(treasurer).pushToken(bob.address, half)
 
     const b2 = await bob.getBalance()
     const f2 = await found.balanceOf(bob.address)

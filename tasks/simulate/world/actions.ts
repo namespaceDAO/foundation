@@ -14,7 +14,7 @@ export const createActions = (
     props[prop.id - 1] = prop
   }
 
-  const mintFound: Actions['mintFound'] = async ({ amount }) => {
+  const mintToken: Actions['mintToken'] = async ({ amount }) => {
     await found.connect(actor.signer).mint(actor.signer.address, { value: amount })
   }
 
@@ -51,7 +51,7 @@ export const createActions = (
     endStake,
     createProp,
     createStake,
-    mintFound,
+    mintToken,
     startProp
   }
 }

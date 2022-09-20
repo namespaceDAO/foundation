@@ -10,8 +10,8 @@ contract Foundation {
         return _found.totalSupply();
     }
 
-    function foundBalance() public view returns (uint) {
-        return  _found.foundBalance();
+    function tokenBalance() public view returns (uint) {
+        return  _found.tokenBalance();
     }
 
     function valueBalance() public view returns (uint) {
@@ -22,15 +22,15 @@ contract Foundation {
         _found.pushValue(payee, value);
     }
 
-    function _treasuryPushFound(address payee, uint value) internal {
-        _found.pushFound(payee, value);
+    function _treasuryPushToken(address payee, uint value) internal {
+        _found.pushToken(payee, value);
     }
 
-    function _treasuryPullFound(address depositor, uint value) internal {
-        _found.pullFound(depositor, value);
+    function _treasuryPullToken(address depositor, uint value) internal {
+        _found.pullToken(depositor, value);
     }
 
-    function _treasuryMintFound(address to, uint amount) internal {
+    function _treasuryMintToken(address to, uint amount) internal {
         _found.treasuryMint(to, amount);
     }
 

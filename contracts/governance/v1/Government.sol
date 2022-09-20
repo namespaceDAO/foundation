@@ -28,7 +28,7 @@ contract Government is Capitalism {
 
     function dailyBudget() public view returns (uint) {
         uint value = valueBalance();
-        uint found = foundBalance();
+        uint found = tokenBalance();
         uint balance = found + value;
         return balance / budgetRate();
     }

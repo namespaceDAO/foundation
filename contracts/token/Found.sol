@@ -17,22 +17,6 @@ contract Found is Brachistochrone, Token {
         emit Mint(to, msg.value, amount);
     }
 
-    function foundBalance() external view returns (uint) {
-        return balanceOf(address(this));
-    }
-
-    function pushFound(address to,  uint amount) external onlyTreasurer {
-        _transfer(address(this), to, amount);
-    }
-
-    function pullFound(address from, uint amount) external onlyTreasurer {
-        _transfer(from, address(this), amount);
-    }
-
-    function treasuryMint(address to, uint amount) external onlyTreasurer {
-        _mintToken(to, amount);
-    }
-
     constructor(address origin_, uint lightning_) 
     Token("FOUND", "FOUND", origin_)
     Brachistochrone(lightning_) {}

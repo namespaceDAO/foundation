@@ -18,7 +18,7 @@ export interface Actions {
   createStake: (stake: Stake) => Promise<void>
   startProp: (prop: number) => Promise<void>
   endStake: (stake: Stake) => Promise<void>
-  mintFound: (amount: Mint) => Promise<void>
+  mintToken: (amount: Mint) => Promise<void>
 }
 
 export type Step = State & Actions
