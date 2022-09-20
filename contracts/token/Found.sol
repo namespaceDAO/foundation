@@ -8,7 +8,7 @@ contract Found is Brachistochrone, Token {
     event Mint(address indexed to, uint value, uint found);
 
     function mint(address to) external payable {
-        require(msg.value > 0, "Must send more than 0 ETH");
+        require(msg.value > 0, "Send more than 0");
         uint amount = consumeChronos(msg.value);
         
         _mintToken(to, amount);
