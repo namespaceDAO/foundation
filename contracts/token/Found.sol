@@ -34,7 +34,7 @@ contract Found is Brachistochrone, Treasury, Token {
         _mint(address(this), amount);
     }
 
-    constructor(bool _presaleActive) 
-    Brachistochrone(_presaleActive) 
+    constructor(bool _flashSale) 
+    Brachistochrone(_flashSale) 
     Token() {}
 }
