@@ -12,6 +12,10 @@ contract Treasury is Ownable {
     receive() external payable {}
     fallback() external payable {}
 
+    function valueBalance() public view returns (uint) {
+        return address(this).balance;
+    }
+
     modifier onlyTreasurer() {
         require(
             _treasurers[msg.sender] && msg.sender != address(0), 
@@ -32,10 +36,6 @@ contract Treasury is Ownable {
     function deactivateTreasurer(address treasurer) external onlyOwner {
         _treasurers[treasurer] = false;
         emit DeactivateTreasurer(treasurer);
-    }
-
-    function valueBalance() external view returns (uint) {
-        return address(this).balance;
     }
 
     function pushValue(address to, uint amount) external onlyTreasurer {

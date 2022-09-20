@@ -13,22 +13,38 @@ contract Token is Origin, ERC20, Treasury {
     event ClaimValue(address indexed to, uint value);
     event ClaimToken(address indexed to, uint token);
 
+    function tokenBalance() public view returns (uint) {
+        return balanceOf(address(this));
+    }
+
     function claimValue(address to, uint value) external onlyOrigin {
-        uint maxValue = _totalValue / 10 - _valueClaim;
-        require(maxValue >= value, "Value claim too large");
+        require(
+            valueBalance() >= value, 
+            "Value claim too large"
+        );
+
+        require(
+            _totalValue / 10 >= value + _valueClaim, 
+            "Value claim too large"
+        );
         
         _valueClaim += value;
-
         _pushValue(to, value);
         emit ClaimValue(to, value);
     }
 
     function claimToken(address to, uint token) external onlyOrigin {
-        uint maxToken = totalSupply() / 20 - _tokenClaim;
-        require(maxToken >= token, "Token claim too large");
+        require(
+            tokenBalance() >= token, 
+            "Token claim too large"
+        );
+
+        require(
+            totalSupply() / 20 >= token + _tokenClaim, 
+            "Token claim too large"
+        );
         
         _tokenClaim += token;
-
         _transfer(address(this), to, token);
         emit ClaimToken(to, token);
     }
