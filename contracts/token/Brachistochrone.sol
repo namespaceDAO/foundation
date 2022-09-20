@@ -13,7 +13,7 @@ contract Brachistochrone {
         0x0d, 0x07, 0x03, 0x01, 0x00
     ];
 
-    function calculateMintAmount(uint value) public view returns (uint) {
+    function consumeChronos(uint value) public view returns (uint) {
         if (block.timestamp < _chronos) {
             uint day = (_chronos - block.timestamp) / 1 days;
 

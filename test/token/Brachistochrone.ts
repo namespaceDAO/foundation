@@ -29,19 +29,19 @@ describe('Brachistochrone', () => {
   it('Brachistochrone prices', async () => {
     const val = parseEther('1')
 
-    const a1 = await chron.calculateMintAmount(val)
+    const a1 = await chron.consumeChronos(val)
 
     await addDays(7)
-    const a2 = await chron.calculateMintAmount(val)
+    const a2 = await chron.consumeChronos(val)
 
     await addDays(15)
-    const a3 = await chron.calculateMintAmount(val)
+    const a3 = await chron.consumeChronos(val)
 
     await addDays(29)
-    const a4 = await chron.calculateMintAmount(val)
+    const a4 = await chron.consumeChronos(val)
 
     await addDays(33)
-    const a5 = await chron.calculateMintAmount(val)
+    const a5 = await chron.consumeChronos(val)
 
     expect(a1).to.equal(val.mul(2))
     expect(a2).to.lessThan(a1)
