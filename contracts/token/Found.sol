@@ -34,7 +34,7 @@ contract Found is Brachistochrone, Treasury, Token {
         _mint(address(this), amount);
     }
 
-    constructor(address origin_, bool flash_) 
+    constructor(address origin_, uint lightning_) 
     Token("FOUND", "FOUND", origin_)
-    Brachistochrone(flash_) {}
+    Brachistochrone(lightning_) {}
 }

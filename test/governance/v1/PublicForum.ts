@@ -18,7 +18,7 @@ describe('PublicForum', () => {
     const Found = await ethers.getContractFactory('Found')
     const Government = await ethers.getContractFactory('Government')
 
-    found = await Found.deploy(origin.address, false)
+    found = await Found.deploy(origin.address, 0)
     govt = await Government.deploy(found.address)
 
     await found.activateTreasurer(govt.address)

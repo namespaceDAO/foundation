@@ -2,8 +2,7 @@
 pragma solidity ^0.8.10;
 
 contract Brachistochrone {
-    bool private _enabled = false;
-    uint private _timestamp = 1666666667;
+    uint private _timestamp;
 
     uint8[] private _weights = [
         0xff, 0xfe, 0xfc, 0xf8, 0xf3,
@@ -15,7 +14,7 @@ contract Brachistochrone {
     ];
 
     function calculateMintAmount(uint value) public view returns (uint) {
-        if (_enabled && block.timestamp < _timestamp) {
+        if (block.timestamp < _timestamp) {
             uint day = (_timestamp - block.timestamp) / 1 days;
             if (day < _weights.length) {
                 uint8 weight = _weights[_weights.length - day];
@@ -27,7 +26,7 @@ contract Brachistochrone {
         return value;
     }
 
-    constructor(bool enabled_) {
-        _enabled = enabled_;
+    constructor(uint timestamp_) {
+        _timestamp = timestamp_;
     }
 }
