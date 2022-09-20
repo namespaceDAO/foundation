@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./Origin.sol";
 import "./Treasury.sol";
 
-contract Token is Origin, ERC20, Treasury {
+contract Token is ERC20, Origin, Treasury {
     uint private _valueClaim;
     uint private _tokenClaim;
     uint private _totalValue;
