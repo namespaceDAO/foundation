@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Treasury is Ownable {
     mapping(address => bool) private _treasurers;
+    
     event ActivateTreasurer(address indexed treasurer);
     event DeactivateTreasurer(address indexed treasurer);
 
@@ -38,10 +39,6 @@ contract Treasury is Ownable {
     }
 
     function pushValue(address to, uint amount) external onlyTreasurer {
-       _pushValue(to, amount);
-    }
-
-    function _pushValue(address to, uint amount) internal {
         require(
             address(this).balance >= amount, 
             "Treasury: transfer exceeds treasury balance"

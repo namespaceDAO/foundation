@@ -74,7 +74,7 @@ describe('Found', () => {
     const bv1 = await bob.getBalance()
 
     await found.claimValue(bob.address, valueClaim)
-    await found.claimFound(bob.address, foundClaim)
+    await found.claimToken(bob.address, foundClaim)
 
     const bf2 = await found.balanceOf(bob.address)
     const bv2 = await bob.getBalance()
@@ -88,10 +88,10 @@ describe('Found', () => {
 
     await expect(
       found.claimValue(bob.address, parseEther('1.0000001'))
-    ).to.rejectedWith('Value claim is too large')
+    ).to.rejectedWith('Value claim too large')
 
     await expect(
-      found.claimFound(bob.address, parseEther('1.0000001'))
-    ).to.rejectedWith('Found claim is too large')
+      found.claimToken(bob.address, parseEther('1.0000001'))
+    ).to.rejectedWith('Token claim too large')
   })
 })

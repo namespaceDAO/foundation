@@ -6,11 +6,16 @@ import "./Treasury.sol";
 import "./Token.sol";
 
 contract Found is Brachistochrone, Treasury, Token {
+    event Mint(address indexed to, uint value, uint found);
+
     function mint(address to) external payable {
         require(msg.value > 0, "Must send more than 0 ETH");
         uint amount = calculateMintAmount(msg.value);
+        
         _mintFound(to, amount);
         _addValue(msg.value);
+
+        emit Mint(to, msg.value, amount);
     }
 
     function foundBalance() external view returns (uint) {

@@ -6,31 +6,31 @@ import "./Origin.sol";
 
 contract Token is ERC20, Origin {
     uint private _valueClaim;
-    uint private _foundClaim;
+    uint private _tokenClaim;
     uint private _totalValue;
 
-    event ClaimFound(address indexed to, uint found);
     event ClaimValue(address indexed to, uint value);
+    event ClaimToken(address indexed to, uint token);
 
     function claimValue(address to, uint value) external onlyOrigin {
         uint maxValue = _totalValue / 10 - _valueClaim;
-        require(maxValue >= value, "Value claim is too large");
+        require(maxValue >= value, "Value claim too large");
         
         _valueClaim += value;
+
         (bool success, ) = to.call{value:value}("");
         require(success, "Treasury: transfer failed");
-        
         emit ClaimValue(to, value);
     }
 
-    function claimFound(address to, uint found) external onlyOrigin {
-        uint maxFound = totalSupply() / 20 - _foundClaim;
-        require(maxFound >= found, "Found claim is too large");
+    function claimToken(address to, uint token) external onlyOrigin {
+        uint maxToken = totalSupply() / 20 - _tokenClaim;
+        require(maxToken >= token, "Token claim too large");
         
-        _foundClaim += found;
-        _transfer(address(this), to, found);
+        _tokenClaim += token;
 
-        emit ClaimFound(to, found);
+        _transfer(address(this), to, token);
+        emit ClaimToken(to, token);
     }
 
     function _addValue(uint value) internal {
