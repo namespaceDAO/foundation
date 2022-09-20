@@ -62,7 +62,6 @@ contract Token is ERC20 {
         emit ClaimFound(to,found);
     }
 
-
     constructor() ERC20("FOUND", "FOUND") {
         _address = msg.sender;
     }

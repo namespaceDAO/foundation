@@ -1,16 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "./Token.sol";
 import "./Treasury.sol";
+import "./Token.sol";
+import "./Presale.sol";
 
-contract Found is Token, Treasury {
+contract Found is Treasury, Token, Presale {
     function mint(address to) external payable {
         require(msg.value > 0, "Must send more than 0 ETH");
-
-        bool presale = false;
-        uint amount = presale ? (msg.value * 2) : msg.value;
-
+        uint amount = calculateMintAmount(msg.value);
         _mintFound(to, amount);
         _addValue(msg.value);
     }

@@ -46,7 +46,6 @@ contract Treasury is Ownable {
             valueBalance() >= amount, 
             "Treasury: transfer exceeds treasury balance"
         );
-
         (bool success, ) = to.call{value:amount}("");
         require(success, "Treasury: transfer failed");
     }
