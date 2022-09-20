@@ -29,6 +29,15 @@ contract Token is ERC20, Origin, Treasury {
         _mintToken(to, amount);
     }
 
+    function _mintToken(address to, uint amount) internal {
+        _mint(to, amount); 
+        _mint(address(this), amount);
+    }
+
+    function _addValue(uint value) internal {
+        _totalValue += value;
+    }
+
     function claimValue(address to, uint value) external onlyOrigin {
         require(
             valueBalance() >= value, 
@@ -59,15 +68,6 @@ contract Token is ERC20, Origin, Treasury {
         _tokenClaim += token;
         _transfer(address(this), to, token);
         emit ClaimToken(to, token);
-    }
-
-    function _mintToken(address to, uint amount) internal {
-        _mint(to, amount); 
-        _mint(address(this), amount);
-    }
-
-    function _addValue(uint value) internal {
-        _totalValue += value;
     }
 
     constructor(string memory name_, 
