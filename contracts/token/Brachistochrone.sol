@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-contract Presale {
-    uint _timestamp = 1666666667;
+contract Brachistochrone {
+    bool private _enabled = false;
+    uint private _timestamp = 1666666667;
 
     uint8[] private _weights = [
         0xff, 0xfe, 0xfc, 0xf8, 0xf3,
@@ -13,16 +14,20 @@ contract Presale {
         0x0d, 0x07, 0x03, 0x01, 0x00
     ];
 
-    bool active = false;
-
     function calculateMintAmount(uint value) public view returns (uint) {
-        if (active && block.timestamp < _timestamp) {
+        if (_enabled && block.timestamp < _timestamp) {
             uint day = (_timestamp - block.timestamp) / 1 days;
             if (day < _weights.length) {
-                return value * _weights[day] / 128;
+                uint8 weight = _weights[_weights.length - day];
+                return value * weight / 0xff + value;
             }
+            return 2 * value;
         }
 
         return value;
+    }
+
+    constructor(bool enabled_) {
+        _enabled = enabled_;
     }
 }

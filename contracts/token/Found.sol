@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
+import "./Brachistochrone.sol";
 import "./Treasury.sol";
 import "./Token.sol";
-import "./Presale.sol";
 
-contract Found is Treasury, Token, Presale {
+contract Found is Brachistochrone, Treasury, Token {
     function mint(address to) external payable {
         require(msg.value > 0, "Must send more than 0 ETH");
         uint amount = calculateMintAmount(msg.value);
@@ -34,5 +34,7 @@ contract Found is Treasury, Token, Presale {
         _mint(address(this), amount);
     }
 
-    constructor() Token() {}
+    constructor(bool _presaleActive) 
+    Brachistochrone(_presaleActive) 
+    Token() {}
 }

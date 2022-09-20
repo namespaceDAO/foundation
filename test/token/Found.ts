@@ -1,8 +1,8 @@
-import { ethers } from 'hardhat'
-import { expect } from 'chai'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
+import { expect } from 'chai'
 import { Contract } from 'ethers'
 import { parseEther } from 'ethers/lib/utils'
+import { ethers } from 'hardhat'
 
 describe('Found', () => {
   let origin: SignerWithAddress
@@ -14,7 +14,7 @@ describe('Found', () => {
   beforeEach(async () => {
     [origin, treasurer, alice, bob] = await ethers.getSigners()
     const Found = await ethers.getContractFactory('Found')
-    found = await Found.deploy()
+    found = await Found.deploy(false)
     await found.activateTreasurer(treasurer.address)
   })
 
