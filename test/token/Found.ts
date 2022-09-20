@@ -14,7 +14,7 @@ describe('Found', () => {
   beforeEach(async () => {
     [origin, treasurer, alice, bob] = await ethers.getSigners()
     const Found = await ethers.getContractFactory('Found')
-    found = await Found.deploy(false)
+    found = await Found.deploy(origin.address, false)
     await found.activateTreasurer(treasurer.address)
   })
 

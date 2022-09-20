@@ -15,14 +15,14 @@ export interface Initialization extends Setup {
 interface Init { ethers: HardhatEthersHelpers }
 
 export const initialize = async ({ ethers }: Init): Promise<Initialization> => {
+  const [origin, ...signers] = await ethers.getSigners()
+
   const Found = await ethers.getContractFactory('Found')
-  const found = await Found.deploy(false)
+  const found = await Found.deploy(origin.address, false)
 
   const Govt = await ethers.getContractFactory('Government')
   const govt = await Govt.deploy(found.address)
   await found.activateTreasurer(govt.address)
-
-  const [origin, ...signers] = await ethers.getSigners()
 
   console.log('ORIGIN: ' + origin.address)
   console.log('FOUND: ' + found.address)

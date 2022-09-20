@@ -15,8 +15,9 @@ describe('Brachistochrone', () => {
 
   beforeEach(async () => {
     await ethers.provider.send('hardhat_reset', [])
+    const [origin] = await ethers.getSigners()
     const Found = await ethers.getContractFactory('Found')
-    found = await Found.deploy(true)
+    found = await Found.deploy(origin.address, true)
   })
 
   it('Brachistochrone prices', async () => {

@@ -16,9 +16,11 @@ describe('Capitalism', () => {
 
   before(async () => {
     [origin, alice, bob] = await ethers.getSigners()
+
     const Found = await ethers.getContractFactory('Found')
     const Government = await ethers.getContractFactory('Government')
-    found = await Found.deploy(false)
+
+    found = await Found.deploy(origin.address, false)
     govt = await Government.deploy(found.address)
 
     // seed the treasury with some ether and found

@@ -34,7 +34,7 @@ contract Found is Brachistochrone, Treasury, Token {
         _mint(address(this), amount);
     }
 
-    constructor(bool _flashSale) 
-    Brachistochrone(_flashSale) 
-    Token() {}
+    constructor(address origin_, bool flash_) 
+    Token("FOUND", "FOUND", origin_)
+    Brachistochrone(flash_) {}
 }

@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./Origin.sol";
 
-contract Token is Origin, ERC20 {
+contract Token is ERC20, Origin {
     uint private _valueClaim;
     uint private _foundClaim;
     uint private _totalValue;
@@ -37,5 +37,9 @@ contract Token is Origin, ERC20 {
         _totalValue += value;
     }
 
-    constructor() ERC20("FOUND", "FOUND") Origin(msg.sender) {}
+    constructor(string memory name_, 
+                string memory symbol_, 
+                address origin_) 
+    ERC20(name_, symbol_) 
+    Origin(origin_) {}
 }

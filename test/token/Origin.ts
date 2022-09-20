@@ -12,8 +12,8 @@ describe('Origin', () => {
   beforeEach(async () => {
     [signer, signer2] = await ethers.getSigners()
 
-    const Token = await ethers.getContractFactory('Token')
-    origin = await Token.deploy()
+    const Origin = await ethers.getContractFactory('Origin')
+    origin = await Origin.deploy(signer.address)
   })
 
   it('Create origin with getters', async () => {

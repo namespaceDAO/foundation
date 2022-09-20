@@ -1,14 +1,13 @@
 import { task } from 'hardhat/config'
 
 task('deploy', 'Deploys contracts', async (_, { ethers }) => {
+  const [origin] = await ethers.getSigners()
   const Found = await ethers.getContractFactory('Found')
-  const found = await Found.deploy(true)
+  const found = await Found.deploy(origin.address, true)
 
   const Govt = await ethers.getContractFactory('Government')
   const govt = await Govt.deploy(found.address)
   await found.activateTreasurer(govt.address)
-
-  const [origin] = await ethers.getSigners()
 
   const addresses = { found: found.address, govt: govt.address }
 
