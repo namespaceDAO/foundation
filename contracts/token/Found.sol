@@ -11,8 +11,8 @@ contract Found is Brachistochrone, Token {
         require(msg.value > 0, "Send more than 0");
         uint amount = consumeChronos(msg.value);
         
-        _mintToken(to, amount);
         _addValue(msg.value);
+        _mintToken(to, amount);
 
         emit Mint(to, msg.value, amount);
     }
