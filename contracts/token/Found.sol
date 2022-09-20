@@ -2,17 +2,16 @@
 pragma solidity ^0.8.10;
 
 import "./Brachistochrone.sol";
-import "./Treasury.sol";
 import "./Token.sol";
 
-contract Found is Brachistochrone, Treasury, Token {
+contract Found is Brachistochrone, Token {
     event Mint(address indexed to, uint value, uint found);
 
     function mint(address to) external payable {
         require(msg.value > 0, "Must send more than 0 ETH");
         uint amount = calculateMintAmount(msg.value);
         
-        _mintFound(to, amount);
+        _mintToken(to, amount);
         _addValue(msg.value);
 
         emit Mint(to, msg.value, amount);
@@ -20,10 +19,6 @@ contract Found is Brachistochrone, Treasury, Token {
 
     function foundBalance() external view returns (uint) {
         return balanceOf(address(this));
-    }
-
-    function treasuryMint(address to, uint amount) external onlyTreasurer {
-        _mintFound(to, amount);
     }
 
     function pushFound(address to,  uint amount) external onlyTreasurer {
@@ -34,9 +29,8 @@ contract Found is Brachistochrone, Treasury, Token {
         _transfer(from, address(this), amount);
     }
 
-    function _mintFound(address to, uint amount) internal {
-        _mint(to, amount); 
-        _mint(address(this), amount);
+    function treasuryMint(address to, uint amount) external onlyTreasurer {
+        _mintToken(to, amount);
     }
 
     constructor(address origin_, uint lightning_) 

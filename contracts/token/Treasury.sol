@@ -39,6 +39,10 @@ contract Treasury is Ownable {
     }
 
     function pushValue(address to, uint amount) external onlyTreasurer {
+        _pushValue(to, amount);
+    }
+
+    function _pushValue(address to, uint amount) internal {
         require(
             address(this).balance >= amount, 
             "Treasury: transfer exceeds treasury balance"

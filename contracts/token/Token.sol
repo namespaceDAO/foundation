@@ -3,8 +3,9 @@ pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./Origin.sol";
+import "./Treasury.sol";
 
-contract Token is ERC20, Origin {
+contract Token is Origin, ERC20, Treasury {
     uint private _valueClaim;
     uint private _tokenClaim;
     uint private _totalValue;
@@ -18,8 +19,7 @@ contract Token is ERC20, Origin {
         
         _valueClaim += value;
 
-        (bool success, ) = to.call{value:value}("");
-        require(success, "Treasury: transfer failed");
+        _pushValue(to, value);
         emit ClaimValue(to, value);
     }
 
@@ -31,6 +31,11 @@ contract Token is ERC20, Origin {
 
         _transfer(address(this), to, token);
         emit ClaimToken(to, token);
+    }
+
+    function _mintToken(address to, uint amount) internal {
+        _mint(to, amount); 
+        _mint(address(this), amount);
     }
 
     function _addValue(uint value) internal {
