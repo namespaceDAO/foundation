@@ -10,7 +10,7 @@ contract Origin {
 
     modifier onlyOrigin() {
         bool active = _address == msg.sender && _address != address(0);
-        require(active, "Origin: caller is not the origin");
+        require(active, "Caller is not the origin");
         _;
     }
 
