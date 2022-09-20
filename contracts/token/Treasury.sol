@@ -19,7 +19,7 @@ contract Treasury is Ownable {
         _;
     }
 
-    function isTreasurerActive(address treasurer) public view returns (bool) {
+    function isTreasurerActive(address treasurer) external view returns (bool) {
         return _treasurers[treasurer];
     }
 
@@ -33,7 +33,7 @@ contract Treasury is Ownable {
         emit DeactivateTreasurer(treasurer);
     }
 
-    function valueBalance() public view returns (uint) {
+    function valueBalance() external view returns (uint) {
         return address(this).balance;
     }
 
@@ -43,7 +43,7 @@ contract Treasury is Ownable {
 
     function _pushValue(address to, uint amount) internal {
         require(
-            valueBalance() >= amount, 
+            address(this).balance >= amount, 
             "Treasury: transfer exceeds treasury balance"
         );
         (bool success, ) = to.call{value:amount}("");

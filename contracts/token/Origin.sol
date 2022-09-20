@@ -14,11 +14,11 @@ contract Origin {
         _;
     }
 
-    function originAddress() public view returns (address) { 
+    function originAddress() external view returns (address) { 
         return _address; 
     }    
     
-    function originProvenance() public view returns (address) { 
+    function originProvenance() external view returns (address) { 
         return _provenance; 
     }
 

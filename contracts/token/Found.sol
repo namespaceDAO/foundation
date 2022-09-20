@@ -13,7 +13,7 @@ contract Found is Brachistochrone, Treasury, Token {
         _addValue(msg.value);
     }
 
-    function foundBalance() public view returns (uint) {
+    function foundBalance() external view returns (uint) {
         return balanceOf(address(this));
     }
 
