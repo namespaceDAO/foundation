@@ -22,7 +22,7 @@ describe('Brachistochrone', () => {
     const Chron = await ethers.getContractFactory('Brachistochrone')
 
     await addDays(1)
-    const date = add(start * 1000, { days: 33 })
+    const date = add(start * 1000, { days: 36 })
     chronos = await Chron.deploy(getTime(date))
   })
 
@@ -40,7 +40,7 @@ describe('Brachistochrone', () => {
     await addDays(29)
     const a4 = await chronos.consume(val)
 
-    await addDays(33)
+    await addDays(36)
     const a5 = await chronos.consume(val)
 
     expect(a1).to.equal(val.mul(2))
