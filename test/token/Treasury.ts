@@ -77,7 +77,7 @@ describe('Treasury', () => {
     const tooMuch = balance.mul(2)
     await expect(
       treasury.connect(treasurer).pushValue(origin.address, tooMuch)
-    ).to.revertedWith('Treasury: transfer exceeds treasury balance')
+    ).to.revertedWith('Treasury transfer exceeds balance')
   })
 
   it('Fails to transfer funds when not treasurer', async () => {
@@ -85,7 +85,7 @@ describe('Treasury', () => {
     const value = ethers.utils.parseEther(`${Math.random()}`)
     await expect(
       treasury.pushValue(bob.address, value)
-    ).to.revertedWith('Treasury: caller is not the treasurer')
+    ).to.revertedWith('Caller is not the treasurer')
   })
 
   it('Fails to change treasurer when not owner', async () => {

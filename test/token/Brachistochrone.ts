@@ -5,7 +5,7 @@ import { parseEther } from 'ethers/lib/utils'
 import { ethers } from 'hardhat'
 
 describe('Brachistochrone', () => {
-  let chron: Contract
+  let chronos: Contract
   const start = Math.floor(new Date().getTime() / 1000)
 
   const getTime = (date: Date): number => {
@@ -23,25 +23,25 @@ describe('Brachistochrone', () => {
 
     await addDays(1)
     const date = add(start * 1000, { days: 33 })
-    chron = await Chron.deploy(getTime(date))
+    chronos = await Chron.deploy(getTime(date))
   })
 
   it('Brachistochrone prices', async () => {
     const val = parseEther('1')
 
-    const a1 = await chron.consumeChronos(val)
+    const a1 = await chronos.consume(val)
 
     await addDays(7)
-    const a2 = await chron.consumeChronos(val)
+    const a2 = await chronos.consume(val)
 
     await addDays(15)
-    const a3 = await chron.consumeChronos(val)
+    const a3 = await chronos.consume(val)
 
     await addDays(29)
-    const a4 = await chron.consumeChronos(val)
+    const a4 = await chronos.consume(val)
 
     await addDays(33)
-    const a5 = await chron.consumeChronos(val)
+    const a5 = await chronos.consume(val)
 
     expect(a1).to.equal(val.mul(2))
     expect(a2).to.lessThan(a1)

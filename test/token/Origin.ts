@@ -40,12 +40,12 @@ describe('Origin', () => {
   it('Fails to move origin', async () => {
     await expect(
       origin.connect(signer2).updateOrigin(signer2.address)
-    ).to.revertedWith('Origin: caller is not the origin')
+    ).to.revertedWith('Caller is not the origin')
   })
 
   it('Fails to relinquish origin', async () => {
     await expect(
       origin.connect(signer2).relinquishOrigin()
-    ).to.revertedWith('Origin: caller is not the origin')
+    ).to.revertedWith('Caller is not the origin')
   })
 })

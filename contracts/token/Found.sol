@@ -9,11 +9,11 @@ contract Found is Brachistochrone, Token {
 
     function mint(address to) external payable {
         require(msg.value > 0, "Send more than 0");
-        uint amount = consumeChronos(msg.value);
+        uint amount = consume(msg.value);
         
         _addValue(msg.value);
         _mintToken(to, amount);
-
+ 
         emit Mint(to, msg.value, amount);
     }
 
