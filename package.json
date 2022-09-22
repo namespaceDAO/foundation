@@ -1,6 +1,6 @@
 {
   "name": "@namespacedao/found",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "",
   "license": "ISC",
   "repository": "git@github.com:namespacedao/found-contracts.git",
@@ -46,7 +46,6 @@
     "typescript": "^4.8.0"
   },
   "dependencies": {
-    "@chainlink/contracts": "^0.4.1",
     "@ethersproject/bytes": "^5.7.0",
     "@openzeppelin/contracts": "^4.7.3",
     "date-fns": "^2.29.3",
