@@ -1,19 +1,23 @@
 import { task } from 'hardhat/config'
 
 task('deploy', 'Deploys contracts', async (_, { ethers }) => {
-  const [origin] = await ethers.getSigners()
   const Found = await ethers.getContractFactory('Found')
-  const found = await Found.deploy(origin.address, 1666666667)
 
-  const Govt = await ethers.getContractFactory('Government')
-  const govt = await Govt.deploy(found.address)
-  await found.activateTreasurer(govt.address)
+  const originAddress = '0x5E2DDebd950aAc94dE0eCCf981FF0ece6ed7eedE'
+  const found = await Found.deploy(originAddress, 1666666667)
 
-  const addresses = { found: found.address, govt: govt.address }
-
-  console.log('ORIGIN: ' + origin.address)
+  console.log('ORIGIN: ' + originAddress)
   console.log('FOUND: ' + found.address)
-  console.log('GOVT: ' + govt.address)
 
-  console.log(addresses)
+  // const Govt = await ethers.getContractFactory('Government')
+  // const govt = await Govt.deploy(found.address)
+  // await found.activateTreasurer(govt.address)
+
+  // const addresses = { found: found.address, govt: govt.address }
+
+  // console.log('ORIGIN: ' + originAddress)
+  // console.log('FOUND: ' + found.address)
+  // console.log('GOVT: ' + govt.address)
+
+  // console.log(addresses)
 })

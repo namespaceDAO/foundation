@@ -73,25 +73,32 @@ describe('Found', () => {
     const bf1 = await found.balanceOf(bob.address)
     const bv1 = await bob.getBalance()
 
-    await found.claimValue(bob.address, valueClaim)
-    await found.claimToken(bob.address, foundClaim)
+    await found.claimValue(bob.address, valueClaim, 'my memo')
+    await found.claimToken(bob.address, foundClaim, 'my memo')
 
     const bf2 = await found.balanceOf(bob.address)
     const bv2 = await bob.getBalance()
 
     expect(bf1.add(foundClaim)).to.equal(bf2)
     expect(bv1.add(valueClaim)).to.equal(bv2)
+
+    await found.claimValue(bob.address, valueClaim, 'my memo')
+    await found.claimToken(bob.address, foundClaim, 'my memo')
+    await found.claimValue(bob.address, valueClaim, 'my memo')
+    await found.claimToken(bob.address, foundClaim, 'my memo')
+    await found.claimValue(bob.address, valueClaim, 'my memo')
+    await found.claimToken(bob.address, foundClaim, 'my memo')
   })
 
   it('Fails to claim too much', async () => {
     await found.mint(alice.address, { value: parseEther('10') })
 
     await expect(
-      found.claimValue(bob.address, parseEther('1.0000001'))
+      found.claimValue(bob.address, parseEther('1.0000001'), 'my memo')
     ).to.rejectedWith('Value claim too large')
 
     await expect(
-      found.claimToken(bob.address, parseEther('1.0000001'))
+      found.claimToken(bob.address, parseEther('1.0000001'), 'my memo')
     ).to.rejectedWith('Token claim too large')
   })
 })

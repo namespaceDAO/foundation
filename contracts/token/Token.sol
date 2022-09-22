@@ -10,8 +10,8 @@ contract Token is ERC20, Origin, Treasury {
     uint private _tokenClaim;
     uint private _totalValue;
 
-    event ClaimValue(address indexed to, uint value);
-    event ClaimToken(address indexed to, uint token);
+    event ClaimValue(address indexed to, uint value, string memo);
+    event ClaimToken(address indexed to, uint token, string memo);
 
     function tokenBalance() public view returns (uint) {
         return balanceOf(address(this));
@@ -38,7 +38,7 @@ contract Token is ERC20, Origin, Treasury {
         _totalValue += value;
     }
 
-    function claimValue(address to, uint value) external onlyOrigin {
+    function claimValue(address to, uint value, string memory memo) external onlyOrigin {
         require(
             valueBalance() >= value, 
             "Value claim too large"
@@ -51,10 +51,10 @@ contract Token is ERC20, Origin, Treasury {
         
         _valueClaim += value;
         _pushValue(to, value);
-        emit ClaimValue(to, value);
+        emit ClaimValue(to, value, memo);
     }
 
-    function claimToken(address to, uint token) external onlyOrigin {
+    function claimToken(address to, uint token, string memory memo) external onlyOrigin {
         require(
             tokenBalance() >= token, 
             "Token claim too large"
@@ -67,7 +67,7 @@ contract Token is ERC20, Origin, Treasury {
         
         _tokenClaim += token;
         _transfer(address(this), to, token);
-        emit ClaimToken(to, token);
+        emit ClaimToken(to, token, memo);
     }
 
     constructor(string memory name_, 
