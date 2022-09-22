@@ -38,6 +38,18 @@ contract Token is ERC20, Origin, Treasury {
         _totalValue += value;
     }
 
+    function totalValue() external view returns (uint) {
+        return _totalValue;
+    }
+
+    function claimedValue() external view returns (uint) {
+        return _valueClaim;
+    }
+
+    function claimedToken() external view returns (uint) {
+        return _tokenClaim;
+    }
+
     function claimValue(address to, uint value, string memory memo) external onlyOrigin {
         require(
             valueBalance() >= value, 
@@ -68,18 +80,6 @@ contract Token is ERC20, Origin, Treasury {
         _tokenClaim += token;
         _transfer(address(this), to, token);
         emit ClaimToken(to, token, memo);
-    }
-
-    function totalValue() external view returns (uint) {
-        return _totalValue;
-    }
-
-    function claimedValue() external view returns (uint) {
-        return _valueClaim;
-    }
-
-    function claimedToken() external view returns (uint) {
-        return _tokenClaim;
     }
 
     constructor(string memory name_, 
