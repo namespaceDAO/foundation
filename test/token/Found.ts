@@ -23,10 +23,18 @@ describe('Found', () => {
     const symbol = await found.symbol()
     const balance = await found.valueBalance()
     const isTreasurerActive = await found.isTreasurerActive(treasurer.address)
+
+    const totalValue = await found.totalValue()
+    const claimedValue = await found.claimedValue()
+    const claimedToken = await found.claimedToken()
+
     expect(name).to.equal('FOUND')
     expect(symbol).to.equal('FOUND')
     expect(balance).to.equal(0)
     expect(isTreasurerActive).to.equal(true)
+    expect(claimedValue).to.equal(0)
+    expect(claimedToken).to.equal(0)
+    expect(totalValue).to.equal(0)
   })
 
   it('Mints FOUND to minter and treasury', async () => {
@@ -84,10 +92,14 @@ describe('Found', () => {
 
     await found.claimValue(bob.address, valueClaim, 'my memo')
     await found.claimToken(bob.address, foundClaim, 'my memo')
-    await found.claimValue(bob.address, valueClaim, 'my memo')
-    await found.claimToken(bob.address, foundClaim, 'my memo')
-    await found.claimValue(bob.address, valueClaim, 'my memo')
-    await found.claimToken(bob.address, foundClaim, 'my memo')
+
+    const totalValue = await found.totalValue()
+    const claimedValue = await found.claimedValue()
+    const claimedToken = await found.claimedToken()
+
+    expect(claimedValue).to.equal(valueClaim.mul(2))
+    expect(claimedToken).to.equal(foundClaim.mul(2))
+    expect(totalValue).to.equal(parseEther('20'))
   })
 
   it('Fails to claim too much', async () => {

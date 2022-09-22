@@ -70,6 +70,18 @@ contract Token is ERC20, Origin, Treasury {
         emit ClaimToken(to, token, memo);
     }
 
+    function totalValue() external view returns (uint) {
+        return _totalValue;
+    }
+
+    function claimedValue() external view returns (uint) {
+        return _valueClaim;
+    }
+
+    function claimedToken() external view returns (uint) {
+        return _tokenClaim;
+    }
+
     constructor(string memory name_, 
                 string memory symbol_, 
                 address origin_) 
