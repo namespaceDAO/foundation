@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "../../token/Found.sol";
+import "../../token/v1/Found.sol";
 
 contract Foundation {
     Found private _found;
