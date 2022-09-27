@@ -17,7 +17,7 @@ interface Init { ethers: HardhatEthersHelpers }
 export const initialize = async ({ ethers }: Init): Promise<Initialization> => {
   const [origin, ...signers] = await ethers.getSigners()
 
-  const Found = await ethers.getContractFactory('Found1')
+  const Found = await ethers.getContractFactory('FoundV1')
   const found = await Found.deploy(origin.address, 0)
 
   const Govt = await ethers.getContractFactory('Government')

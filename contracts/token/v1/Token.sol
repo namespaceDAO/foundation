@@ -2,10 +2,10 @@
 pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "../Origin.sol";
+import "./Origin.sol";
 import "./Treasury.sol";
 
-contract Token1 is ERC20, Origin, Treasury {
+contract TokenV1 is ERC20, Origin, TreasuryV1 {
     uint private _valueClaim;
     uint private _tokenClaim;
     uint private _totalValue;

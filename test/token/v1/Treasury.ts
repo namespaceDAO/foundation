@@ -22,7 +22,7 @@ describe('Treasury', () => {
   beforeEach(async () => {
     [origin, treasurer, alice, bob] = await ethers.getSigners()
 
-    const Treasury = await ethers.getContractFactory('Treasury')
+    const Treasury = await ethers.getContractFactory('TreasuryV1')
     treasury = await Treasury.deploy()
 
     await treasury.activateTreasurer(treasurer.address)

@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 import "./Brachistochrone.sol";
 import "./Token.sol";
 
-contract Found1 is Brachistochrone, Token1 {
+contract FoundV1 is Brachistochrone, TokenV1 {
     event Mint(address indexed to, uint value, uint found);
 
     function mint(address to) external payable {
@@ -18,6 +18,6 @@ contract Found1 is Brachistochrone, Token1 {
     }
 
     constructor(address origin_, uint lightning_) 
-    Token1("FOUND", "FOUND", origin_)
+    TokenV1("FOUND", "FOUND", origin_)
     Brachistochrone(lightning_) {}
 }

@@ -44,5 +44,5 @@ contract Government is Capitalism {
         return shareRate > stakeRate;
     }
 
-    constructor(Found1 found_) Foundation(found_) {}
+    constructor(FoundV1 found_) Foundation(found_) {}
 }
