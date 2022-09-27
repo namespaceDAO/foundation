@@ -2,9 +2,9 @@
 pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "../Origin.sol";
+import "./Origin.sol";
 
-contract Token2 is ERC20, Origin {
+contract Token is Origin, ERC20 {
     uint private _valueClaim;
     uint private _tokenClaim;
     uint private _totalValue;
@@ -14,10 +14,6 @@ contract Token2 is ERC20, Origin {
 
     receive() external payable {}
     fallback() external payable {}
-
-    function _addValue(uint value) internal {
-        _totalValue += value;
-    }
 
     function tokenBalance() public view returns (uint) {
         return balanceOf(address(this));
@@ -29,15 +25,6 @@ contract Token2 is ERC20, Origin {
 
     function valueBalance() public view returns (uint) {
         return address(this).balance;
-    }
-
-    function _pushValue(address to, uint amount) internal {
-        require(
-            address(this).balance >= amount, 
-            "Treasury transfer exceeds balance"
-        );
-        (bool success, ) = to.call{value:amount}("");
-        require(success, "Treasury transfer failed");
     }
 
     function claimedValue() external view returns (uint) {
@@ -80,9 +67,24 @@ contract Token2 is ERC20, Origin {
         emit ClaimToken(to, token, memo);
     }
 
-    constructor(string memory name_, 
-                string memory symbol_, 
-                address origin_) 
+    function _addValue(uint value) internal {
+        _totalValue += value;
+    }
+
+    function _pushValue(address to, uint amount) internal {
+        require(
+            address(this).balance >= amount, 
+            "Treasury transfer exceeds balance"
+        );
+        (bool success, ) = to.call{value:amount}("");
+        require(success, "Treasury transfer failed");
+    }
+
+    constructor(
+        string memory name_,
+        string memory symbol_,
+        address origin_
+    ) 
     ERC20(name_, symbol_) 
     Origin(origin_) {}
 }
