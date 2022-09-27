@@ -1,7 +1,7 @@
 import { task } from 'hardhat/config'
 
 task('deploy', 'Deploys contracts', async (_, { ethers }) => {
-  const Found = await ethers.getContractFactory('Found')
+  const Found = await ethers.getContractFactory('Found1')
 
   const originAddress = '0x5E2DDebd950aAc94dE0eCCf981FF0ece6ed7eedE'
   const found = await Found.deploy(originAddress, 1666666667)

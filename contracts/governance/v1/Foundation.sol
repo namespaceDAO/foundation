@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 import "../../token/v1/Found.sol";
 
 contract Foundation {
-    Found private _found;
+    Found1 private _found;
 
     function foundSupply() public view returns (uint) {
         return _found.totalSupply();
@@ -34,5 +34,5 @@ contract Foundation {
         _found.treasuryMint(to, amount);
     }
 
-    constructor(Found found_) { _found = found_; }
+    constructor(Found1 found_) { _found = found_; }
 }

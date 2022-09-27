@@ -17,7 +17,7 @@ describe('Capitalism', () => {
   before(async () => {
     [origin, alice, bob] = await ethers.getSigners()
 
-    const Found = await ethers.getContractFactory('Found')
+    const Found = await ethers.getContractFactory('Found1')
     const Government = await ethers.getContractFactory('Government')
 
     found = await Found.deploy(origin.address, 0)
