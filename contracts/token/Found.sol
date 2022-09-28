@@ -56,6 +56,5 @@ contract Found is Ownable, ERC20 {
         require(success, "Treasury transfer failed");
     }
 
-    constructor(Treasury treasury_) 
-    ERC20("FOUND", "FOUND") {}
+    constructor() ERC20("FOUND", "FOUND") {}
 }
