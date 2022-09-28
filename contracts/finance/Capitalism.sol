@@ -24,6 +24,8 @@ struct Stake {
     uint expiresAt;
     uint startTime;
     uint endTime;
+    address founder;
+    address redeemer;
 }
 
 contract Capitalism is ERC721 {
@@ -82,6 +84,7 @@ contract Capitalism is ERC721 {
         stake.amount = params.amount;
         stake.expiresAt = params.expiresAt;
         stake.startTime = block.timestamp;
+        stake.founder = params.founder;
 
         _mint(params.owner, _stakeCount);
 
@@ -102,6 +105,7 @@ contract Capitalism is ERC721 {
 
         require(stake.endTime == 0, "Stake already ended");
         stake.endTime = block.timestamp;
+        stake.redeemer = owner;
 
         _burn(id);
         _coin.transferFrom(

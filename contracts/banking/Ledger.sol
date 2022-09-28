@@ -111,7 +111,6 @@ abstract contract Ledger is ERC1155 {
                 _approve(account, spender, coinId, currentAllowance - amount);
             }
         }
-
     }
 
     constructor(string memory baseURI_) ERC1155(baseURI_) {}  

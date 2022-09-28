@@ -21,6 +21,7 @@ contract Governance is Treasury {
     }
 
     function setTax(uint tax_) external onlyOwner {
+        require(_bps / 3 >= tax_, "Tax too large");
         _tax = tax_; 
     }
 }

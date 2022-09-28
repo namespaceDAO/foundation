@@ -5,10 +5,7 @@ import "../finance/Venture.sol";
 import "../banking/Bank.sol";
 import "./Nounish.sol";
 
-/*
-NounBank creates a new cryptocurrency every day.
-*/
-
+// NounBank creates a new cryptocurrency every day.
 contract NounBank is Nounish, Venture, Bank {
     mapping(uint => uint) private _nounToDay;
     mapping(uint => uint) private _dayToNoun;

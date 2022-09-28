@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "../finance/Treasury.sol";
 import "./Presale.sol";
 
-contract Found is Ownable, Presale, ERC20 {
+contract Found is Treasury, Presale, ERC20 {
     uint foundClaim;
 
     event Mint(
@@ -26,15 +26,6 @@ contract Found is Ownable, Presale, ERC20 {
         uint found,
         string memo 
     );
-   
-    receive() external payable {}
-    fallback() external payable {}
-
-    function burnValue(uint amount) public view returns (uint) {
-        uint balance = address(this).balance;
-        uint supply = totalSupply();
-        return amount * balance / supply;
-    }
 
     function forge(address from, address to, uint amount) external {
         uint forged = _forgeFound(from, amount);
@@ -71,13 +62,10 @@ contract Found is Ownable, Presale, ERC20 {
         emit Claim(to, amount, memo);
     }
 
-    function _transferValue(address to, uint amount) internal {
-        require(
-            address(this).balance >= amount, 
-            "Treasury transfer exceeds balance"
-        );
-        (bool success, ) = to.call{value:amount}("");
-        require(success, "Treasury transfer failed");
+    function burnValue(uint amount) public view returns (uint) {
+        uint balance = address(this).balance;
+        uint supply = totalSupply();
+        return amount * balance / supply;
     }
 
     constructor() ERC20("FOUND", "FOUND") {}

@@ -3,13 +3,13 @@ pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-interface Treasury is IERC20 {
+interface Original is IERC20 {
     function pushValue(address to, uint amount) external;
     function pullToken(address from, uint amount) external;
 }
 
 abstract contract Presale is IERC20 {
-    Treasury private _treasury;
+    Original private _original;
 
     event Forge(address indexed from, address indexed to, uint amount, uint created);
 
@@ -19,19 +19,19 @@ abstract contract Presale is IERC20 {
             "Forge is closed"
         );
 
-        uint balance = address(_treasury).balance;
+        uint balance = address(_original).balance;
         uint circulating = _circulatingSupply();
         uint value = balance * amount / circulating;
 
-        _treasury.pullToken(from, amount);
-        _treasury.pushValue(address(this), value);
+        _original.pullToken(from, amount);
+        _original.pushValue(address(this), value);
 
         return 2 * value;
     }
 
     function _circulatingSupply() internal view returns (uint) {
-        uint balance = _treasury.balanceOf(address(_treasury));
-        uint supply = _treasury.totalSupply();
+        uint balance = _original.balanceOf(address(_original));
+        uint supply = _original.totalSupply();
         return supply - balance;
     }
 }

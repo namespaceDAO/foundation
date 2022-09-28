@@ -9,7 +9,6 @@ import "./Treasury.sol";
 // Venture splits ETH among capitalist stakers.
 // Ending a stake transfers ETH to an address.
 // Your share is determined by when you stake.
-// Longer pays better. Shorter pays sooner.
 contract Venture is Treasury {
     Capitalism private _capitalism;
     Governance private _governance;
@@ -61,7 +60,7 @@ contract Venture is Treasury {
         uint epoch = currentEpoch();
         uint shares = getShares(epoch, amount);
 
-        _shares[stake.id] = shares;
+        _shares[stakeId] = shares;
         _totalShares += shares;
     }
 
@@ -102,6 +101,7 @@ contract Venture is Treasury {
             symbol_,
             coin_,
             address(this)
+            
         );
     }
 }
