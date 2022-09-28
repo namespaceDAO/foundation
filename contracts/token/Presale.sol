@@ -34,8 +34,4 @@ abstract contract Presale is IERC20 {
         uint supply = _treasury.totalSupply();
         return supply - balance;
     }
-
-    constructor(Treasury treasury_) {
-        _treasury = treasury_;
-    }
 }

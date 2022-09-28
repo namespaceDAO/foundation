@@ -26,7 +26,7 @@ struct Stake {
     uint interest;
 }
 
-abstract contract Capitalism is PublicForum, ERC721 {
+abstract contract CapitalismV1 is PublicForum, ERC721 {
     uint private _stakeCount;
     uint private _stakeTotal;
     string private _tokenURI;

@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 import "./Arch.sol";
 import "./Capitalism.sol";
 
-contract Government is Capitalism {
+contract Government is CapitalismV1 {
     function createProp(PropParams memory params) external whenNotPaused {
         _createProp(params);
     }

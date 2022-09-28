@@ -80,7 +80,5 @@ contract Found is Ownable, Presale, ERC20 {
         require(success, "Treasury transfer failed");
     }
 
-    constructor(Treasury treasury_)
-    Presale(treasury_)
-    ERC20("FOUND", "FOUND") {}
+    constructor() ERC20("FOUND", "FOUND") {}
 }
