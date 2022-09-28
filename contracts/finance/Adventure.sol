@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "../token/Found.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./Capitalism.sol";
 
-contract JointVenture {
+contract Adventure {
     Capitalism private _capitalism;
     
     uint epochDuration = 28 days;
@@ -33,6 +33,10 @@ contract JointVenture {
     function endStake(uint id) external {
         uint served = _share.endStake(id);
         // TODO: update payment shares
+
+        for (uint month = 0; month < served; month += 1) {
+
+        }
     }
 
     function _addValue(uint value) internal {
@@ -41,10 +45,10 @@ contract JointVenture {
     }
 
     constructor(
-        Found found_,
         string memory name_,
-        string memory symbol_
+        string memory symbol_,
+        ERC20 coin_
     ) {
-        _capitalism = new Capitalism(found_, name_, symbol_);
+        _capitalism = new Capitalism(name_, symbol_, coin_);
     }
 }

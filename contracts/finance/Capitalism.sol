@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
-import "../token/Found.sol";
 
 struct Stake {
     uint id;
@@ -15,7 +14,7 @@ struct Stake {
 }
 
 contract Capitalism is ERC721 {
-    Found private _found;
+    ERC20 private _coin;
     uint private _stakeCount;
     uint private _minimumDuration = 1 days;
 
@@ -53,7 +52,7 @@ contract Capitalism is ERC721 {
             "Must expire further in the future"
         );
 
-        _found.transferFrom(
+        _coin.transferFrom(
             founder,
             address(this),
             amount
@@ -81,7 +80,8 @@ contract Capitalism is ERC721 {
         require(stake.endTime == 0, "Stake already ended");
         stake.endTime = block.timestamp;
 
-        _found.transferFrom(
+        _burn(id);
+        _coin.transferFrom(
             address(this), 
             payee, 
             stake.amount
@@ -100,10 +100,10 @@ contract Capitalism is ERC721 {
     }
 
     constructor(
-        Found found_,
         string memory name_,
-        string memory symbol_
+        string memory symbol_,
+        ERC20 coin_
     ) ERC721(name_, symbol_) {
-        _found = found_;
+        _coin = coin_;
     }
 }

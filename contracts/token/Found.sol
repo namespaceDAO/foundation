@@ -5,11 +5,21 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./Forge.sol";
 
-contract Found is Ownable, ERC20 {
+contract Found is Ownable, ERC20, Forge {
     uint foundClaim;
 
-    event Mint(address indexed to, uint amount);
-    event Burn(address indexed from, address indexed to, uint amount);
+    event Mint(
+        address indexed to, 
+        uint value, 
+        uint found    
+    );
+
+    event Burn(
+        address indexed from, 
+        address indexed to,
+        uint value, 
+        uint found    
+    );
    
     receive() external payable {}
     fallback() external payable {}
@@ -20,9 +30,9 @@ contract Found is Ownable, ERC20 {
 
     function mint(address to) external payable {
         require(msg.value > 0, "Send more than 0");
-
-        _mint(to, msg.value);
-        emit Mint(to, msg.value);
+        uint amount = msg.value;
+        _mint(to, amount);
+        emit Mint(to, amount);
     }
 
     function burn(address from, address to, uint amount) external {
@@ -32,7 +42,13 @@ contract Found is Ownable, ERC20 {
         
         _burn(from, amount);
         _transferValue(to, value);
-        emit Burn(from, to, amount);
+
+        emit Burn(
+            from, 
+            to, 
+            value,
+            found
+        );
     }
 
     function claim(address to, uint amount) external onlyOwner {
@@ -44,7 +60,13 @@ contract Found is Ownable, ERC20 {
         foundClaim += amount;
         
         _mint(to, amount);
-        emit Mint(to, amount);
+        
+        emit Mint(
+            from, 
+            to, 
+            value,
+            found
+        );
     }
 
     function _transferValue(address to, uint amount) internal {

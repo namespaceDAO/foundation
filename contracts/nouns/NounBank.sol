@@ -1,14 +1,26 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
+import "../finance/Adventure.sol";
 import "../banking/Bank.sol";
-import "../finance/JointVenture.sol";
 import "./Nounish.sol";
 
-contract BankOfNouns is Nounish, JointVenture, Bank {
+contract BankOfNouns is Nounish, Adventure, Bank {
+    uint amplitude = 10;
+
     mapping(uint => uint) private _nounToDay;
     mapping(uint => uint) private _dayToNoun;
+    mapping(uint => uint) private _totalOnNoun;
+    mapping(uint => uint) private _totalOnDay;
+    mapping(uint => bool) private _nounClaims;
+    
     event Mint(uint coinId, uint amount);
+    event Vote(uint coinId, uint nounId, uint amount);
+    event Claim(uint nounId, uint amount);
+
+    function totalCoins() public view returns (uint) {
+        return block.timestamp / 1 days;
+    }
 
     function currentDay() public view returns (uint) {
         return block.timestamp / 1 days;
@@ -36,16 +48,28 @@ contract BankOfNouns is Nounish, JointVenture, Bank {
         emit Mint(coinId, amount);
     }
 
-    function convertValue(uint coinId, uint value) public view returns (uint) {
-        return value;
-    }
-    
-    // for auctions
-    mapping(uint => uint) private _totalOnNoun;
-    mapping(uint => uint) private _totalOnDay;
-    event MintNoun(uint coinId, uint nounId, uint amount);
+    function convertValue(
+        uint coinId, 
+        uint value
+    ) public view returns (uint) {
+        uint totalSupply = totalSupply();
+        if (totalSupply == 0) return value;
 
-    function mintNoun(
+        uint avgSupply = totalSupply / totalCoins();
+        uint tokenSupply = _totalSupplies[coinId];
+
+        if (tokenSupply > avgSupply * amplitude) {
+            return value / amplitude;
+        }
+
+        if (avgSupply > tokenSupply * amplitude) {
+            return value * amplitude;
+        }
+
+        return value * avgSupply / tokenSupply;
+    }
+
+    function vote(
         address payee, 
         uint nounId,
         bytes memory data
@@ -61,9 +85,9 @@ contract BankOfNouns is Nounish, JointVenture, Bank {
         uint amount = msg.value;
 
         _updateDailyNouns(nounId, amount);
-        _mint(to, day, amount * 3, data);
+        _mint(to, day, amount * amplitude, data);
         
-        emit MysteryMint(day, nounId, amount);
+        emit Vote(day, nounId, amount);
     }
 
     function _updateDailyNouns(uint nounId, uint value) internal {
@@ -75,10 +99,6 @@ contract BankOfNouns is Nounish, JointVenture, Bank {
         }
     }
 
-    // for creators
-    mapping(uint => bool) private _nounClaims;
-    event CreatorClaim(uint nounId, uint amount);
-
     function creatorClaim(uint nounId, bytes memory data) external {
         Noun memory noun = getNoun(nounId);
         uint amount = _totalOnNoun[nounId] / 10;
@@ -86,6 +106,6 @@ contract BankOfNouns is Nounish, JointVenture, Bank {
         _nounClaims[nounId] = true;
         _mint(noun.creator, nounId, amount, data);
 
-        emit CreatorClaim(nounId, amount);
+        emit Claim(nounId, amount);
     }
 }
