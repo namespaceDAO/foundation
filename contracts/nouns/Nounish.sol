@@ -14,16 +14,16 @@ contract Nounish {
 
     event NounAdded(
         uint id,
-        uint name,
+        string name,
         bytes pixels,
         address creator
-    )
+    );
 
-    function nounCount() external view returns (uint) {
+    function nounCount() public view returns (uint) {
         return _nounCount;
     }
 
-    function getNoun(uint id) external view returns (Noun) {
+    function getNoun(uint id) public view returns (Noun memory) {
         _requireNoun(id);
         return _nouns[id];
     }
@@ -38,7 +38,7 @@ contract Nounish {
         noun.name = name;
         noun.pixels = pixels;
         noun.creator = creator;
-        emit NounAdded(id, name, pixels, noun.creator);
+        emit NounAdded(noun.id, name, pixels, noun.creator);
     }
 
     function _requireNoun(uint id) internal view {

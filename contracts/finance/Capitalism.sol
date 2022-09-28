@@ -67,14 +67,14 @@ contract Capitalism is ERC721 {
 
         _mint(owner, _stakeCount);
 
-        emit StartStake(id, prop, amount, expiresAt, stake.startTime);
+        emit StakeStarted(stake.id, prop, amount, expiresAt, stake.startTime);
     }
 
     function endStake(
         address payee,
         uint id
     ) external returns (uint under, uint over) {
-        address owner = _requireOwner(stakeId);
+        address owner = _requireOwner(id);
         Stake storage stake = _stakes[id];
 
         require(stake.endTime == 0, "Stake already ended");
@@ -87,7 +87,7 @@ contract Capitalism is ERC721 {
             stake.amount
         );
 
-        emit StakeEnded(id, stake.prop, amount, stake.endTime);
+        emit StakeEnded(id, stake.prop, stake.amount, stake.endTime);
     }
 
     function _requireStake(uint stakeId) internal view {

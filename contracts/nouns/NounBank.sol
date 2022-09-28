@@ -15,8 +15,12 @@ contract BankOfNouns is Nounish, Adventure, Bank {
     mapping(uint => bool) private _nounClaims;
     
     event Mint(uint coinId, uint amount);
-    event Vote(uint coinId, uint nounId, uint amount);
+    event Smelt(uint coinId, uint nounId, uint amount);
     event Claim(uint nounId, uint amount);
+
+    function decimals() override virtual public view returns (uint8) {
+        return 14;
+    }
 
     function totalCoins() public view returns (uint) {
         return block.timestamp / 1 days;
@@ -43,7 +47,8 @@ contract BankOfNouns is Nounish, Adventure, Bank {
     ) external payable {
         require(msg.value > 0, "Must mint some Nouns");
         uint amount = convertValue(coinId, msg.value);
-        _totalOnNoun[_dayToNoun(coinId)] += msg.value;
+        uint nounId = dayToNoun(coinId);
+        _totalOnNoun[nounId] += msg.value;
         _mint(to, coinId, amount, data);
         emit Mint(coinId, amount);
     }
@@ -69,7 +74,7 @@ contract BankOfNouns is Nounish, Adventure, Bank {
         return value * avgSupply / tokenSupply;
     }
 
-    function vote(
+    function smelt(
         address payee, 
         uint nounId,
         bytes memory data
@@ -78,23 +83,28 @@ contract BankOfNouns is Nounish, Adventure, Bank {
 
         uint day = currentDay();
         require(
-            _nounToDay(nounId) == 0 || _nounToDay(nounId) == day,
+            nounToDay(nounId) == 0 || nounToDay(nounId) == day,
             "Noun has been minted"
         );
 
         uint amount = msg.value;
 
         _updateDailyNouns(nounId, amount);
-        _mint(to, day, amount * amplitude, data);
+        _mint(payee, day, amount * amplitude, data);
         
-        emit Vote(day, nounId, amount);
+        emit Smelt(day, nounId, amount);
+    }
+
+    function forge(uint coinId) external {
+
     }
 
     function _updateDailyNouns(uint nounId, uint value) internal {
+        uint day = currentDay();
         _totalOnNoun[nounId] += value;
 
         if (_totalOnNoun[nounId] > _totalOnDay[day]) {
-            _nouns[day] = nounId;
+            _dayToNoun[day] = nounId;
             _totalOnDay[day] = _totalOnNoun[nounId];
         }
     }
@@ -108,4 +118,8 @@ contract BankOfNouns is Nounish, Adventure, Bank {
 
         emit Claim(nounId, amount);
     }
+
+    constructor(ERC20 coin_, string memory baseURI_) 
+    Adventure("NOUN NOTE", "NOUN NOTE", coin_)
+    Bank(baseURI_) {}
 }

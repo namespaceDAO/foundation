@@ -6,7 +6,7 @@ import "./Capitalism.sol";
 
 contract Adventure {
     Capitalism private _capitalism;
-    
+   
     uint epochDuration = 28 days;
     uint stepDuration = 1 days;
 
@@ -22,26 +22,26 @@ contract Adventure {
     }
 
     function startStake(uint prop, uint amount, uint expiresAt) external {
-        _share.startStake(amount);
+        // _capitalism.startStake(amount);
 
         uint step = _steps[currentStep() - 1];
-        uint id = capitalism.startStake(prop, amount, expiresAt);
+        // uint id = _capitalism.startStake(prop, amount, expiresAt);
 
         // TODO: update payment shares
     }
 
     function endStake(uint id) external {
-        uint served = _share.endStake(id);
+        // uint served = _capitalism.endStake(id);
         // TODO: update payment shares
 
-        for (uint month = 0; month < served; month += 1) {
+        // for (uint month = 0; month < served; month += 1) {
 
-        }
+        // }
     }
 
     function _addValue(uint value) internal {
-        _totals[block.timestamp / _timedelta] += value;
-        _days[currentDay()] += value;
+        _epochs[currentEpoch()] += value;
+        _steps[currentStep()] += value;
     }
 
     constructor(

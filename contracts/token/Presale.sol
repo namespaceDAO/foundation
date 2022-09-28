@@ -8,14 +8,12 @@ interface Treasury is IERC20 {
     function pullToken(address from, uint amount) external;
 }
 
-abstract contract Forge is IERC20 {
+abstract contract Presale is IERC20 {
     Treasury private _treasury;
 
     event Forge(address indexed from, address indexed to, uint amount, uint created);
 
-    function _mint(address account, uint256 amount) internal virtual;
-
-    function forge(address from, address to, uint amount) external {
+    function _forgeFound(address from, uint amount) internal returns (uint) {
         require(
             block.timestamp < 1666666667 + 696969,
             "Forge is closed"
@@ -28,9 +26,7 @@ abstract contract Forge is IERC20 {
         _treasury.pullToken(from, amount);
         _treasury.pushValue(address(this), value);
 
-        uint created = value * 2;
-        _mint(to, created);
-        emit Forge(from, to, amount, created);
+        return 2 * value;
     }
 
     function _circulatingSupply() internal view returns (uint) {

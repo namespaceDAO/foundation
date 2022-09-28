@@ -19,10 +19,9 @@ abstract contract Bank is Ledger {
         uint coinId, 
         string memory symbol
     ) external returns (Coin) {
-        Coin coin = _coins[coinId];
-        _requireNotDeployed(coin);
+        _requireNotDeployed(_coins[coinId]);
         
-        Coin token = new Coin(Ledger(this), coinId, symbol);
+        Coin coin = new Coin(Ledger(this), coinId, symbol);
         _coins[coinId] = coin;
 
         return coin;
@@ -35,24 +34,24 @@ abstract contract Bank is Ledger {
         uint amount
     ) virtual external override {
         require(
-            _tokens[coinId] == Token(msg.sender) && msg.sender != address(0),
-            "Ledger: sender is not an approved token"
+            _coins[coinId] == Coin(msg.sender) && msg.sender != address(0),
+            "Ledger: sender is not an approved coin"
         );
 
         bytes memory data;
         _safeTransferFrom(from, to, coinId, amount, data);
     }
 
-    function _requireNotDeployed(Token token) internal pure {
-        require(!_isDeployed(token), "Bank: token has already been deployed");
+    function _requireNotDeployed(Coin coin) internal pure {
+        require(!_isDeployed(coin), "Bank: coin has already been deployed");
     }
 
-    function _requireDeployed(Token token) internal pure {
-        require(_isDeployed(token), "Bank: token has not been deployed");
+    function _requireDeployed(Coin coin) internal pure {
+        require(_isDeployed(coin), "Bank: coin has not been deployed");
     }
 
-    function _isDeployed(Token token) internal pure returns (bool) {
-        return address(token) != address(0);
+    function _isDeployed(Coin coin) internal pure returns (bool) {
+        return address(coin) != address(0);
     }
 
     constructor(string memory baseURI_) Ledger(baseURI_) {}
