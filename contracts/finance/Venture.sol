@@ -15,7 +15,7 @@ contract Venture is Treasury {
     Governance private _governance;
 
     uint amplitude = 10;
-    uint epochDuration = 28 days;
+    uint epochDuration = 1 days;
     uint private _totalShares = 0;
     
     mapping(uint => uint) private _epochs;
@@ -41,31 +41,34 @@ contract Venture is Treasury {
 
     function startStake(StakeParams memory params) external {
         Stake memory stake = _capitalism.startStake(params);
-
-        uint epoch = currentEpoch();
-        uint count = getShares(epoch, params.amount);
-
-        _epochs[epoch] += params.amount;
-        _shares[stake.id] = count;
-        _totalShares += count;
+        _setupStake(stake.id, params.amount);
     }
 
     function endStake(address payee, uint id) external {
         Stake memory stake = _capitalism.endStake(payee, id);
-        _payStake(payee, stake);
+        _payStake(stake.id, payee);
     }
 
-    function _payStake(address payee, Stake memory stake) internal {
-        uint balance = currentBalance();
-        uint shares = _shares[stake.id];
-        uint supply = totalShares();
-        uint value = balance * shares / supply;
+    function stakeShares(uint stakeId) public view returns (uint) {
+        return _shares[stakeId];
+    }
 
-        _totalShares -= shares;
+    function currentStakeValue(uint stakeId) public view returns (uint) {
+        return currentBalance() * stakeShares(stakeId) / totalShares();
+    }
 
-        if (value > 0) {
-            _transferValue(payee, value);
-        }
+    function _setupStake(uint stakeId, uint amount) internal {
+        uint epoch = currentEpoch();
+        uint shares = getShares(epoch, amount);
+
+        _shares[stake.id] = shares;
+        _totalShares += shares;
+    }
+
+    function _payStake(uint stakeId, address payee) internal {
+        _totalShares -= stakeShares(stakeId);
+        uint value = currentStakeValue(stakeId);
+        if (value > 0) _transferValue(payee, value);
     }
 
     function currentEpoch() public view returns (uint) {
@@ -85,7 +88,8 @@ contract Venture is Treasury {
     }
 
     function _addValue(uint value) internal {
-        _epochs[currentEpoch()] += value;
+        uint epoch = currentEpoch();
+        _epochs[epoch] += value;
     }
 
     constructor(
