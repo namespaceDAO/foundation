@@ -21,8 +21,12 @@ contract Adventure {
         return block.timestamp / stepDuration;
     }
 
-    function startStake(uint prop, uint amount, uint expiresAt) external {
-        // _capitalism.startStake(amount);
+    function capitalism() public view returns (Capitalism) {
+        return _capitalism;
+    }
+
+    function startStake(StakeParams memory params) external {
+        _capitalism.startStake(params);
 
         uint step = _steps[currentStep() - 1];
         // uint id = _capitalism.startStake(prop, amount, expiresAt);
@@ -49,6 +53,11 @@ contract Adventure {
         string memory symbol_,
         ERC20 coin_
     ) {
-        _capitalism = new Capitalism(name_, symbol_, coin_);
+        _capitalism = new Capitalism(
+            name_,
+            symbol_,
+            coin_,
+            address(this)
+        );
     }
 }

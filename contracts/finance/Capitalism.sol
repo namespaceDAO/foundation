@@ -4,6 +4,14 @@ pragma solidity ^0.8.10;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
+struct StakeParams {
+    address founder;
+    address owner;
+    uint prop;
+    uint amount; 
+    uint expiresAt;
+}
+
 struct Stake {
     uint id;
     uint prop;
@@ -13,8 +21,17 @@ struct Stake {
     uint endTime;
 }
 
+/*
+Capitalism is an ERC721 that can be minted by staking an ERC20.
+When you start your stake your ERC20 is locked in the Capitalism contract.
+When you end your stake your ERC20 is transfered back to your address.
+
+Each stake has a deposit amount and expiration date. 
+*/
+
 contract Capitalism is ERC721 {
     ERC20 private _coin;
+    address private _admin;
     uint private _stakeCount;
     uint private _minimumDuration = 1 days;
 
@@ -35,45 +52,50 @@ contract Capitalism is ERC721 {
         uint endTime
     );
 
-    function startStake(
-        address founder,
-        address owner,
-        uint prop,
-        uint amount, 
-        uint expiresAt
-    ) external {
+    modifier onlyAdmin() {
+        require(msg.sender == _admin, "Caller is not the admin");
+        _;
+    }
+
+    function startStake(StakeParams memory params) external onlyAdmin {
         require(
-            amount > 0, 
+            params.amount > 0, 
             "Stake more than 0"
         );
 
         require(
-            expiresAt > block.timestamp  + _minimumDuration, 
+            params.expiresAt > block.timestamp  + _minimumDuration, 
             "Must expire further in the future"
         );
 
         _coin.transferFrom(
-            founder,
+            params.founder,
             address(this),
-            amount
+            params.amount
         );
 
         Stake storage stake = _stakes[++_stakeCount];
         stake.id = _stakeCount;
-        stake.prop = prop;
-        stake.amount = amount;
-        stake.expiresAt = expiresAt;
+        stake.prop = params.prop;
+        stake.amount = params.amount;
+        stake.expiresAt = params.expiresAt;
         stake.startTime = block.timestamp;
 
-        _mint(owner, _stakeCount);
+        _mint(params.owner, _stakeCount);
 
-        emit StakeStarted(stake.id, prop, amount, expiresAt, stake.startTime);
+        emit StakeStarted(
+            stake.id, 
+            stake.prop,
+            stake.amount,
+            stake.expiresAt,
+            stake.startTime
+        );
     }
 
     function endStake(
         address payee,
         uint id
-    ) external returns (uint under, uint over) {
+    ) external onlyAdmin returns (uint under, uint over) {
         address owner = _requireOwner(id);
         Stake storage stake = _stakes[id];
 
@@ -102,8 +124,10 @@ contract Capitalism is ERC721 {
     constructor(
         string memory name_,
         string memory symbol_,
-        ERC20 coin_
+        ERC20 coin_,
+        address admin_
     ) ERC721(name_, symbol_) {
         _coin = coin_;
+        _admin = admin_;
     }
 }
