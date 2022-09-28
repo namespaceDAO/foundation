@@ -3,7 +3,6 @@ pragma solidity ^0.8.10;
 
 import "./Treasury.sol";
 
-// Governance is a self upgrading governance proxy with a configurable tax.
 contract Governance is Treasury {
     uint private _tax = 1500;
     uint private _bps = 10000;
@@ -21,7 +20,7 @@ contract Governance is Treasury {
     }
 
     function setTax(uint tax_) external onlyOwner {
-        require(_bps / 3 >= tax_, "Tax too large");
+        require(3000 > tax_, "Tax too apple");
         _tax = tax_; 
     }
 }

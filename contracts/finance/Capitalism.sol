@@ -7,25 +7,31 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 // Capitalism is an NFT that can be minted by staking an ERC20.
 // When you start your stake your ERC20 is locked in the Capitalism contract.
 // When you end your stake your ERC20 is transfered back to your address.
-// Each stake has an expiration date. 
+// Each stake has an expiration date and Noun it was staked on.
+// TODO: the art for the stake is stored on chain in the 
 
 struct StakeParams {
     address founder;
     address owner;
-    uint prop;
+    uint idea;
     uint amount; 
-    uint expiresAt;
+    uint expiryTime;
 }
 
 struct Stake {
     uint id;
-    uint prop;
+    uint idea;
     uint amount;
-    uint expiresAt;
+    uint expiryTime;
     uint startTime;
     uint endTime;
     address founder;
     address redeemer;
+}
+
+contract CapitalismDescriptor {
+    function dataURI(Stake memory stake) virtual public view returns (string memory);
+    function tokenURI(Stake memory stake) virtual public view returns (string memory);
 }
 
 contract Capitalism is ERC721 {
@@ -33,20 +39,21 @@ contract Capitalism is ERC721 {
     address private _admin;
     uint private _stakeCount;
     uint private _minimumDuration = 1 days;
+    CapitalismDescriptor descriptor;
 
     mapping(uint => Stake) private _stakes;
     
     event StakeStarted(
         uint id,
-        uint prop,
+        uint idea,
         uint amount,
-        uint expiresAt,
+        uint expiryTime,
         uint startTime
     );
 
     event StakeEnded(
         uint id,
-        uint prop,
+        uint idea,
         uint amount,
         uint endTime
     );
@@ -54,6 +61,14 @@ contract Capitalism is ERC721 {
     modifier onlyAdmin() {
         require(msg.sender == _admin, "Caller is not the admin");
         _;
+    }
+
+    function dataURI(uint stakeId) public view override returns (string memory) {
+        return descriptor.tokenURI(getStake(stakeId))
+    }
+
+    function tokenURI(uint stakeId) public view override returns (string memory) {
+        return descriptor.tokenURI(getStake(stakeId))
     }
 
     function getStake(uint id) public view returns (Stake memory) {
@@ -68,7 +83,7 @@ contract Capitalism is ERC721 {
         );
 
         require(
-            params.expiresAt > block.timestamp  + _minimumDuration, 
+            params.expiryTime > block.timestamp  + _minimumDuration, 
             "Must expire further in the future"
         );
 
@@ -80,9 +95,9 @@ contract Capitalism is ERC721 {
 
         Stake storage stake = _stakes[++_stakeCount];
         stake.id = _stakeCount;
-        stake.prop = params.prop;
+        stake.idea = params.idea;
         stake.amount = params.amount;
-        stake.expiresAt = params.expiresAt;
+        stake.expiryTime = params.expiryTime;
         stake.startTime = block.timestamp;
         stake.founder = params.founder;
 
@@ -90,9 +105,9 @@ contract Capitalism is ERC721 {
 
         emit StakeStarted(
             stake.id, 
-            stake.prop,
+            stake.idea,
             stake.amount,
-            stake.expiresAt,
+            stake.expiryTime,
             stake.startTime
         );
 
@@ -114,7 +129,7 @@ contract Capitalism is ERC721 {
             stake.amount
         );
 
-        emit StakeEnded(id, stake.prop, stake.amount, stake.endTime);
+        emit StakeEnded(id, stake.idea, stake.amount, stake.endTime);
 
         return stake;
     }
@@ -129,12 +144,14 @@ contract Capitalism is ERC721 {
     }
 
     constructor(
+        address admin_,
         string memory name_,
         string memory symbol_,
+        CapitalismDescriptor desc_
         ERC20 coin_,
-        address admin_
     ) ERC721(name_, symbol_) {
-        _coin = coin_;
         _admin = admin_;
+        _coin = coin_;
+        _desc = desc_;
     }
 }
