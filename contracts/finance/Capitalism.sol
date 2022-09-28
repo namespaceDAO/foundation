@@ -29,17 +29,17 @@ struct Stake {
     address redeemer;
 }
 
-contract CapitalismDescriptor {
+abstract contract CapitalismDescriptor {
     function dataURI(Stake memory stake) virtual public view returns (string memory);
     function tokenURI(Stake memory stake) virtual public view returns (string memory);
 }
 
 contract Capitalism is ERC721 {
+    CapitalismDescriptor private _desc;
     ERC20 private _coin;
     address private _admin;
     uint private _stakeCount;
     uint private _minimumDuration = 1 days;
-    CapitalismDescriptor descriptor;
 
     mapping(uint => Stake) private _stakes;
     
@@ -63,12 +63,12 @@ contract Capitalism is ERC721 {
         _;
     }
 
-    function dataURI(uint stakeId) public view override returns (string memory) {
-        return descriptor.tokenURI(getStake(stakeId))
+    function dataURI(uint stakeId) public view returns (string memory) {
+        return _desc.tokenURI(getStake(stakeId));
     }
 
     function tokenURI(uint stakeId) public view override returns (string memory) {
-        return descriptor.tokenURI(getStake(stakeId))
+        return _desc.tokenURI(getStake(stakeId));
     }
 
     function getStake(uint id) public view returns (Stake memory) {
@@ -147,8 +147,8 @@ contract Capitalism is ERC721 {
         address admin_,
         string memory name_,
         string memory symbol_,
-        CapitalismDescriptor desc_
-        ERC20 coin_,
+        CapitalismDescriptor desc_,
+        ERC20 coin_
     ) ERC721(name_, symbol_) {
         _admin = admin_;
         _coin = coin_;

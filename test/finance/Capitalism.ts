@@ -14,12 +14,16 @@ describe('Capitalism', () => {
     const Found = await ethers.getContractFactory('Found')
     found = await Found.deploy()
 
+    const Desc = await ethers.getContractFactory('NounDescriptor')
+    const desc = await Desc.deploy()
+
     const Capitalism = await ethers.getContractFactory('Capitalism')
     capital = await Capitalism.deploy(
+      alice.address,
       'FOUND NOTE',
       'FOUND NOTE',
-      found.address,
-      alice.address
+      desc.address,
+      found.address
     )
   })
 

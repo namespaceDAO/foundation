@@ -14,10 +14,14 @@ describe('Venture', () => {
     const Found = await ethers.getContractFactory('Found')
     found = await Found.deploy()
 
+    const Desc = await ethers.getContractFactory('NounDescriptor')
+    const desc = await Desc.deploy()
+
     const Venture = await ethers.getContractFactory('Venture')
     venture = await Venture.deploy(
       'FOUND NOTE',
       'FOUND NOTE',
+      desc.address,
       found.address
     )
 
@@ -35,11 +39,11 @@ describe('Venture', () => {
     expect(symbol).to.equal('FOUND NOTE')
 
     await expect(cap.startStake({
+      idea: 0,
       amount: 0,
-      expiresAt: 0,
+      expiryTime: 0,
       founder: bob.address,
-      owner: bob.address,
-      prop: 0
+      owner: bob.address
     })).to.rejectedWith('Caller is not the admin')
   })
 

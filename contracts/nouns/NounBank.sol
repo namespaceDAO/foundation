@@ -3,15 +3,17 @@ pragma solidity ^0.8.10;
 
 import "../finance/Venture.sol";
 import "../banking/Bank.sol";
-import "./Nounish.sol";
+import "./NounDescriptor.sol";
 
 // NounBank creates a new cryptocurrency every day.
-contract NounBank is Nounish, Venture, Bank {
+contract NounBank is Venture, Bank {
     mapping(uint => uint) private _nounToDay;
     mapping(uint => uint) private _dayToNoun;
     mapping(uint => uint) private _totalOnNoun;
     mapping(uint => uint) private _totalOnDay;
     mapping(uint => bool) private _nounClaims;
+
+    NounDescriptor private _descriptor;
     
     event Mint(uint coinId, uint amount);
     event Smelt(uint coinId, uint nounId, uint amount);
@@ -28,9 +30,8 @@ contract NounBank is Nounish, Venture, Bank {
     function currentDay() public view returns (uint) {
         return block.timestamp / 1 days;
     }
-
+    
     function nounToDay(uint noun) public view returns (uint) {
-        _requireNoun(noun);
         return _nounToDay[noun];
     }
 
@@ -63,7 +64,7 @@ contract NounBank is Nounish, Venture, Bank {
         if (totalSupply == 0) return value;
 
         uint avgSupply = totalSupply / totalCoins();
-        uint tokenSupply = _totalSupplies[coinId];
+        uint tokenSupply = totalSupplyOf(coinId);
 
         if (tokenSupply > avgSupply * amplitude) {
             return value / amplitude;
@@ -97,10 +98,6 @@ contract NounBank is Nounish, Venture, Bank {
         emit Smelt(day, nounId, amount);
     }
 
-    function forge(uint coinId) external {
-
-    }
-
     function _updateDailyNouns(uint nounId, uint value) internal {
         uint day = currentDay();
         _totalOnNoun[nounId] += value;
@@ -112,7 +109,7 @@ contract NounBank is Nounish, Venture, Bank {
     }
 
     function creatorClaim(uint nounId, bytes memory data) external {
-        Noun memory noun = getNoun(nounId);
+        Noun memory noun = _descriptor.getNoun(nounId);
         uint amount = _totalOnNoun[nounId] / 10;
 
         _nounClaims[nounId] = true;
@@ -121,7 +118,15 @@ contract NounBank is Nounish, Venture, Bank {
         emit Claim(nounId, amount);
     }
 
-    constructor(ERC20 coin_, string memory baseURI_) 
-    Venture("NOUN NOTE", "NOUN NOTE", coin_)
-    Bank(baseURI_) {}
+    function _requireNoun(uint nounId) internal {
+        _descriptor.requireNoun(nounId);
+    }
+
+    constructor(
+        string memory baseURI_,
+        CapitalismDescriptor desc_,
+        ERC20 coin_
+    ) 
+    Bank(baseURI_)
+    Venture("NOUN NOTE", "NOUN NOTE", desc_, coin_) {}
 }

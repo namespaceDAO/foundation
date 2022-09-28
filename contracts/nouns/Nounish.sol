@@ -8,7 +8,7 @@ struct Noun {
     address creator;
 }
 
-contract Nounery {
+contract Nounish {
     uint private _nounCount;
     mapping(uint => Noun) private _nouns;
 
@@ -24,7 +24,7 @@ contract Nounery {
     }
 
     function getNoun(uint id) public view returns (Noun memory) {
-        _requireNoun(id);
+        requireNoun(id);
         return _nouns[id];
     }
 
@@ -41,7 +41,7 @@ contract Nounery {
         emit NounAdded(noun.id, name, pixels, noun.creator);
     }
 
-    function requireNoun(uint id) internal view {
+    function requireNoun(uint id) public view {
         require(id <= _nounCount, "Noun not found");
     }
 }

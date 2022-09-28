@@ -102,7 +102,7 @@ contract Venture is Treasury {
             name_,
             symbol_,
             desc_,
-            coin_,
+            coin_
         );
     }
 }
