@@ -118,7 +118,7 @@ contract NounBank is Venture, Bank {
         emit Claim(nounId, amount);
     }
 
-    function _requireNoun(uint nounId) internal {
+    function _requireNoun(uint nounId) internal view {
         _descriptor.requireNoun(nounId);
     }
 

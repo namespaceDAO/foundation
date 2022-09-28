@@ -8,8 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 // When you start your stake your ERC20 is locked in the Capitalism contract.
 // When you end your stake your ERC20 is transfered back to your address.
 // Each stake has an expiration date and Noun it was staked on.
-// TODO: the art for the stake is stored on chain in the 
-
+// Art for the stake is stored in the descriptor contract.
 struct StakeParams {
     address founder;
     address owner;

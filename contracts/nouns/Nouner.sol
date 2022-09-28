@@ -38,13 +38,13 @@ contract Nouner is Treasury, ERC721 {
         uint epoch = currentEpoch();
         uint balance = currentBalance();
 
-        uint lb = balance * 69 / 1000;
+        uint lb = balance * 7 / 100;
         uint ub = balance * 15 / 100;
 
         _funding[epoch] += amount;
         require(_funding[epoch] < ub, "No more than 15%");
 
-        // If last epoch did not spend 6.9%, send remainder to origin.
+        // If last epoch did not spend 7%, send remainder to origin.
         if (_funding[epoch - 1] < lb) {
             uint excess = lb - _funding[epoch - 1];
             _funding[epoch - 1] += excess;

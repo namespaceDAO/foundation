@@ -61,7 +61,7 @@ abstract contract Ledger is ERC1155 {
     function _beforeTokenTransfer(
         address spender,
         address from,
-        address to,
+        address,
         uint[] memory ids,
         uint[] memory amounts,
         bytes memory
