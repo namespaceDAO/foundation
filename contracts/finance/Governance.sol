@@ -5,7 +5,7 @@ import "./Treasury.sol";
 
 // Governance is a self upgrading governance proxy with a configurable tax.
 contract Governance is Treasury {
-    uint private _tax = 0;
+    uint private _tax = 1500;
     uint private _bps = 10000;
 
     function bps() external view returns (uint) {

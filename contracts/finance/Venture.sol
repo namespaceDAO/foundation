@@ -101,7 +101,6 @@ contract Venture is Treasury {
             symbol_,
             coin_,
             address(this)
-            
         );
     }
 }
