@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "../finance/Adventure.sol";
+import "../finance/Venture.sol";
 import "../banking/Bank.sol";
 import "./Nounish.sol";
 
-contract BankOfNouns is Nounish, Adventure, Bank {
-    uint amplitude = 10;
+/*
+NounBank creates a new cryptocurrency every day.
+*/
 
+contract NounBank is Nounish, Venture, Bank {
     mapping(uint => uint) private _nounToDay;
     mapping(uint => uint) private _dayToNoun;
     mapping(uint => uint) private _totalOnNoun;
@@ -46,10 +48,13 @@ contract BankOfNouns is Nounish, Adventure, Bank {
         bytes memory data
     ) external payable {
         require(msg.value > 0, "Must mint some Nouns");
+        
         uint amount = convertValue(coinId, msg.value);
         uint nounId = dayToNoun(coinId);
+        
         _totalOnNoun[nounId] += msg.value;
         _mint(to, coinId, amount, data);
+
         emit Mint(coinId, amount);
     }
 
@@ -120,6 +125,6 @@ contract BankOfNouns is Nounish, Adventure, Bank {
     }
 
     constructor(ERC20 coin_, string memory baseURI_) 
-    Adventure("NOUN NOTE", "NOUN NOTE", coin_)
+    Venture("NOUN NOTE", "NOUN NOTE", coin_)
     Bank(baseURI_) {}
 }

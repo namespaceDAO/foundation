@@ -18,10 +18,9 @@ describe('Capitalism', () => {
     capital = await Capitalism.deploy(
       'FOUND NOTE',
       'FOUND NOTE',
-      found.address
+      found.address,
+      alice.address
     )
-
-    capital = capital.connect(bob)
   })
 
   it('Creates capitalism', async () => {

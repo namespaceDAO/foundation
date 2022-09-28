@@ -4,6 +4,11 @@ pragma solidity ^0.8.10;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
+// Capitalism is an NFT that can be minted by staking an ERC20.
+// When you start your stake your ERC20 is locked in the Capitalism contract.
+// When you end your stake your ERC20 is transfered back to your address.
+// Each stake has an expiration date. 
+
 struct StakeParams {
     address founder;
     address owner;
@@ -20,14 +25,6 @@ struct Stake {
     uint startTime;
     uint endTime;
 }
-
-/*
-Capitalism is an ERC721 that can be minted by staking an ERC20.
-When you start your stake your ERC20 is locked in the Capitalism contract.
-When you end your stake your ERC20 is transfered back to your address.
-
-Each stake has a deposit amount and expiration date. 
-*/
 
 contract Capitalism is ERC721 {
     ERC20 private _coin;
@@ -57,7 +54,12 @@ contract Capitalism is ERC721 {
         _;
     }
 
-    function startStake(StakeParams memory params) external onlyAdmin {
+    function getStake(uint id) public view returns (Stake memory) {
+        _requireStake(id);
+        return _stakes[id];
+    }
+
+    function startStake(StakeParams memory params) external onlyAdmin returns (Stake memory) {
         require(
             params.amount > 0, 
             "Stake more than 0"
@@ -90,12 +92,11 @@ contract Capitalism is ERC721 {
             stake.expiresAt,
             stake.startTime
         );
+
+        return stake;
     }
 
-    function endStake(
-        address payee,
-        uint id
-    ) external onlyAdmin returns (uint under, uint over) {
+    function endStake(address payee, uint id) external onlyAdmin returns (Stake memory) {
         address owner = _requireOwner(id);
         Stake storage stake = _stakes[id];
 
@@ -110,6 +111,8 @@ contract Capitalism is ERC721 {
         );
 
         emit StakeEnded(id, stake.prop, stake.amount, stake.endTime);
+
+        return stake;
     }
 
     function _requireStake(uint stakeId) internal view {

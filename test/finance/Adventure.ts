@@ -3,7 +3,7 @@ import { expect } from 'chai'
 import { Contract } from 'ethers'
 import { ethers } from 'hardhat'
 
-describe('Adventure', () => {
+describe('Venture', () => {
   let alice: SignerWithAddress
   let bob: SignerWithAddress
   let found: Contract
@@ -14,8 +14,8 @@ describe('Adventure', () => {
     const Found = await ethers.getContractFactory('Found')
     found = await Found.deploy()
 
-    const Adventure = await ethers.getContractFactory('Adventure')
-    venture = await Adventure.deploy(
+    const Venture = await ethers.getContractFactory('Venture')
+    venture = await Venture.deploy(
       'FOUND NOTE',
       'FOUND NOTE',
       found.address
