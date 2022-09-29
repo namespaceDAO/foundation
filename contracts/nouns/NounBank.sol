@@ -16,7 +16,7 @@ contract NounBank is Venture, Bank {
     NounDescriptor private _descriptor;
     
     event Mint(uint coinId, uint amount);
-    event Smelt(uint coinId, uint nounId, uint amount);
+    event Vote(uint coinId, uint nounId, uint amount);
     event Claim(uint nounId, uint amount);
 
     function nameOf(uint coinId) override public view returns (string memory) {
@@ -64,6 +64,37 @@ contract NounBank is Venture, Bank {
         emit Mint(coinId, amount);
     }
 
+    function vote(
+        address payee, 
+        uint nounId,
+        bytes memory data
+    ) external payable {
+        _requireNoun(nounId);
+
+        uint day = currentDay();
+        require(
+            nounToDay(nounId) == 0 || nounToDay(nounId) == day,
+            "Noun has been minted"
+        );
+
+        uint amount = msg.value;
+
+        _updateDailyNouns(nounId, amount);
+        _mint(payee, day, amount * amplitude, data);
+        
+        emit Vote(day, nounId, amount);
+    }
+
+    function claim(uint nounId, bytes memory data) external {
+        Noun memory noun = _descriptor.getNoun(nounId);
+        uint amount = _totalOnNoun[nounId] / 10;
+
+        _nounClaims[nounId] = true;
+        _mint(noun.creator, nounId, amount, data);
+
+        emit Claim(nounId, amount);
+    }
+
     function convertValue(
         uint coinId, 
         uint value
@@ -85,27 +116,6 @@ contract NounBank is Venture, Bank {
         return value * avgSupply / tokenSupply;
     }
 
-    function smelt(
-        address payee, 
-        uint nounId,
-        bytes memory data
-    ) external payable {
-        _requireNoun(nounId);
-
-        uint day = currentDay();
-        require(
-            nounToDay(nounId) == 0 || nounToDay(nounId) == day,
-            "Noun has been minted"
-        );
-
-        uint amount = msg.value;
-
-        _updateDailyNouns(nounId, amount);
-        _mint(payee, day, amount * amplitude, data);
-        
-        emit Smelt(day, nounId, amount);
-    }
-
     function _updateDailyNouns(uint nounId, uint value) internal {
         uint day = currentDay();
         _totalOnNoun[nounId] += value;
@@ -114,16 +124,6 @@ contract NounBank is Venture, Bank {
             _dayToNoun[day] = nounId;
             _totalOnDay[day] = _totalOnNoun[nounId];
         }
-    }
-
-    function creatorClaim(uint nounId, bytes memory data) external {
-        Noun memory noun = _descriptor.getNoun(nounId);
-        uint amount = _totalOnNoun[nounId] / 10;
-
-        _nounClaims[nounId] = true;
-        _mint(noun.creator, nounId, amount, data);
-
-        emit Claim(nounId, amount);
     }
 
     function _requireNoun(uint nounId) internal view {
