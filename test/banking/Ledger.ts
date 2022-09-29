@@ -32,8 +32,8 @@ describe('Ledger', () => {
     const amountA = parseEther(`${Math.random()}`)
     const amountB = parseEther(`${Math.random()}`)
 
-    await ledger.mint(alice.address, 1, 0, { value: amountA })
-    await ledger.mint(bob.address, 2, 0, { value: amountB })
+    await ledger.mint(alice.address, 1, { value: amountA })
+    await ledger.mint(bob.address, 2, { value: amountB })
 
     const totalSupply = await ledger.totalSupply()
 
@@ -48,5 +48,27 @@ describe('Ledger', () => {
     expect(supplyA).to.equal(amountA)
     expect(supplyB).to.equal(amountB)
     expect(totalSupply).to.equal(supplyA.add(supplyB))
+  })
+
+  it('Approves Alice as spender', async () => {
+    const amountA = parseEther('1')
+    const amountB = parseEther(`${Math.random()}`)
+
+    await ledger.mint(alice.address, 1, { value: amountA })
+    await ledger.connect(alice).approve(bob.address, amountB, 1)
+
+    const b1 = await ledger.balanceOf(bob.address, 1)
+    const a1 = await ledger.allowance(alice.address, bob.address, 1)
+
+    await ledger.connect(bob).safeTransferFrom(
+      alice.address, bob.address, 1, amountB, 0
+    )
+
+    const b2 = await ledger.balanceOf(bob.address, 1)
+    const a2 = await ledger.allowance(alice.address, bob.address, 1)
+
+    expect(b1.add(amountB)).to.equal(b2)
+    expect(a1).to.equal(b2)
+    expect(a2).to.equal(0)
   })
 })

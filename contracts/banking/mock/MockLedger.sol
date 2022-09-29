@@ -4,11 +4,8 @@ pragma solidity ^0.8.10;
 import "../Ledger.sol";
 
 contract MockLedger is Ledger {
-    function mint(
-        address to, 
-        uint coinId, 
-        bytes memory data
-    ) external payable {
+    function mint(address to, uint coinId) external payable {
+        bytes memory data;
         _mint(to, coinId, msg.value, data);
     }
 

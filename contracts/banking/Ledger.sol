@@ -42,6 +42,36 @@ abstract contract Ledger is ERC1155 {
         _approve(msg.sender, spender, coinId, amount);
     }
 
+    function approveBatch(
+        address spender, 
+        uint[] memory amounts, 
+        uint[] memory coins
+    ) external {
+        require(
+            amounts.length == coins.length, 
+            "Mismatch between amounts and coins lengths"
+        );
+
+        for (uint i = 0; i < amounts.length; i += 1) {
+            _approve(msg.sender, spender, coins[i], amounts[i]);
+        }
+    }
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes memory data
+    ) public override {
+        bool approved = isApprovedForAll(from, msg.sender);
+
+        if (!approved && from != msg.sender) {
+            _spendAllowance(from, msg.sender, id, amount);
+        }
+
+        _safeTransferFrom(from, to, id, amount, data);
+    }
+
     function _afterTokenTransfer(
         address,
         address from,
@@ -66,11 +96,6 @@ abstract contract Ledger is ERC1155 {
         uint[] memory amounts,
         bytes memory
     ) internal override {
-        if (from != address(0) && from != spender) {
-            for (uint i = 0; i < ids.length; i++) {
-                _spendAllowance(from, spender, ids[i], amounts[i]);
-            }
-        }
     }
 
     function _spendAllowance(
