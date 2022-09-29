@@ -36,6 +36,7 @@ abstract contract CapitalismDescriptor {
 contract Capitalism is ERC721 {
     CapitalismDescriptor private _desc;
     ERC20 private _coin;
+    
     address private _admin;
     uint private _stakeCount;
     uint private _minimumDuration = 1 days;
@@ -75,7 +76,11 @@ contract Capitalism is ERC721 {
         return _stakes[id];
     }
 
-    function startStake(StakeParams memory params) external onlyAdmin returns (Stake memory) {
+    function startStake(
+        StakeParams memory params
+    ) external onlyAdmin returns (
+        Stake memory
+    ) {
         require(
             params.amount > 0, 
             "Stake more than 0"
@@ -113,7 +118,12 @@ contract Capitalism is ERC721 {
         return stake;
     }
 
-    function endStake(address payee, uint id) external onlyAdmin returns (Stake memory) {
+    function endStake(
+        address payee, 
+        uint id
+    ) external onlyAdmin returns (
+        Stake memory
+    ) {
         address owner = _requireOwner(id);
         Stake storage stake = _stakes[id];
 
