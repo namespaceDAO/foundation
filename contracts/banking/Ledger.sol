@@ -17,6 +17,10 @@ abstract contract Ledger is ERC1155 {
         uint value
     );
 
+    function nameOf(uint coinId) virtual public view returns (string memory);
+    function symbolOf(uint coinId) virtual public view returns (string memory);
+    function decimals() virtual public view returns (uint8);
+
     function secretTransferFrom(
         address from, 
         address to, 
@@ -31,10 +35,6 @@ abstract contract Ledger is ERC1155 {
         uint amount
     ) virtual external;
     
-    function nameOf(uint coinId) virtual public view returns (string memory);
-    function symbolOf(uint coinId) virtual public view returns (string memory);
-    function decimals() virtual public view returns (uint8);
-
     function totalSupply() public view returns (uint) {
         return _supply;
     }

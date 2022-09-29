@@ -4,8 +4,6 @@ pragma solidity ^0.8.10;
 import "./Ledger.sol";
 import "./Coin.sol";
 
-// TODO: fetch name and symbol
-
 abstract contract Bank is Ledger {
     mapping(uint => Coin) private _coins;
 
@@ -26,8 +24,8 @@ abstract contract Bank is Ledger {
         uint coinId, 
         uint amount
     ) virtual external override {
-        _requireCoinCaller(coinId);
         bytes memory data;
+        _requireCoinCaller(coinId);
         _safeTransferFrom(from, to, coinId, amount, data);
     }
 
