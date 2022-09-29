@@ -1,23 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "../finance/Treasury.sol";
 
-contract Nouner is Treasury, ERC721 {
+contract NounderDAO is Treasury {
     uint private _coinId;
     address private _origin;
     uint epochDuration = 28 days;
 
     mapping(uint => uint) private _funding;
 
-    modifier onlyNouner() {
-        require(balanceOf(msg.sender) > 0, "You are not a Nouner");
-        _;
-    }
-
     // TODO: governance contract
-    function sendValue(address to, uint amount) external onlyNouner {
+    function sendValue(address to, uint amount) external {
         _goodAccounting(amount);
         _transferValue(to, amount);
     }
@@ -53,11 +47,9 @@ contract Nouner is Treasury, ERC721 {
     }
 
     constructor(
-        string memory name_,
-        string memory symbol_,
         uint coinId_,
         address origin_
-    ) ERC721(name_, symbol_) {
+    ) {
         _coinId = coinId_;
         _origin = origin_;
     }

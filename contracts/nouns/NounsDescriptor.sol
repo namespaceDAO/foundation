@@ -6,7 +6,7 @@ import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
 import "../finance/Capitalism.sol";
 import "./Nounish.sol";
 
-contract NounDescriptor is Nounish, CapitalismDescriptor {
+contract NounsDescriptor is Nounish, CapitalismDescriptor {
     using Strings for uint;
     
     function stakeJSON(Stake memory stake) public view returns (string memory) {

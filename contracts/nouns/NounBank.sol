@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 
 import "../finance/Venture.sol";
 import "../banking/Bank.sol";
-import "./NounDescriptor.sol";
+import "./NounsDescriptor.sol";
 
 // NounBank creates a new cryptocurrency every day.
 contract NounBank is Venture, Bank {
@@ -13,7 +13,7 @@ contract NounBank is Venture, Bank {
     mapping(uint => uint) private _totalOnDay;
     mapping(uint => bool) private _nounClaims;
 
-    NounDescriptor private _descriptor;
+    NounsDescriptor private _descriptor;
     
     event Mint(uint coinId, address to, uint amount);
     event Vote(uint coinId, uint nounId, uint amount);
