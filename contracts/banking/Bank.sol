@@ -14,9 +14,9 @@ abstract contract Bank is Ledger {
         return _coins[coinId];
     }
 
-    function deployCoin(uint coinId, string memory symbol) external returns (Coin) {
+    function deployCoin(uint coinId) external returns (Coin) {
         _requireNotDeployed(coinId);
-        _coins[coinId] = new Coin(Ledger(this), coinId, symbol);
+        _coins[coinId] = new Coin(Ledger(this), coinId);
         return _coins[coinId];
     }
 

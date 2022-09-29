@@ -7,18 +7,17 @@ import "./Ledger.sol";
 contract Coin is IERC20 {
     Ledger private _ledger;
     uint private _coinId;
-    string private _symbol;
 
     function id() external view returns (uint) {
         return _coinId;
     }
 
     function name() external view returns (string memory) {
-        return _symbol;
+        return _ledger.nameOf(_coinId);
     }
 
     function symbol() external view returns (string memory) {
-        return _symbol;
+        return _ledger.symbolOf(_coinId);
     }
 
     function decimals() external view returns (uint8) {
@@ -52,13 +51,8 @@ contract Coin is IERC20 {
         return true;
     }
 
-    constructor(
-        Ledger ledger_, 
-        uint coinId_,
-        string memory symbol_
-    ) {
+    constructor(Ledger ledger_, uint coinId_) {
         _ledger = ledger_;
         _coinId = coinId_;
-        _symbol = symbol_;
     }
 }

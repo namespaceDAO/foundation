@@ -29,12 +29,12 @@ describe('Bank', () => {
   })
 
   it('Deploys coin', async () => {
-    await bank.deployCoin(1, 'HI')
+    await bank.deployCoin(1)
     const a1 = await bank.addressOf(1)
 
     const coin1 = Coin.attach(a1)
     const symbol1 = await coin1.symbol()
 
-    expect(symbol1).to.equal('HI')
+    expect(symbol1).to.equal('SYMBOL')
   })
 })

@@ -19,6 +19,14 @@ contract NounBank is Venture, Bank {
     event Smelt(uint coinId, uint nounId, uint amount);
     event Claim(uint nounId, uint amount);
 
+    function nameOf(uint coinId) override public view returns (string memory) {
+        return "NOUN COIN";
+    }
+
+    function symbolOf(uint coinId) override public view returns (string memory) {
+        return "NOUN COIN";
+    }
+
     function decimals() override virtual public view returns (uint8) {
         return 14;
     }

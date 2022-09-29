@@ -12,6 +12,14 @@ contract MockBank is Bank {
         _mint(to, coinId, msg.value, data);
     }
 
+    function nameOf(uint coinId) override public view returns (string memory) {
+        return "NAME";
+    }
+
+    function symbolOf(uint coinId) override public view returns (string memory) {
+        return "SYMBOL";
+    }
+
     function decimals() override public pure returns (uint8) {
         return 18;
     }

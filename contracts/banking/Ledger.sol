@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 abstract contract Ledger is ERC1155 {
     uint private _bank;
     uint private _supply;
+
     mapping(uint => uint) _supplies;
     mapping(address => mapping(address => mapping(uint => uint))) private _allowances;
 
@@ -29,7 +30,9 @@ abstract contract Ledger is ERC1155 {
         uint coinId, 
         uint amount
     ) virtual external;
-
+    
+    function nameOf(uint coinId) virtual public view returns (string memory);
+    function symbolOf(uint coinId) virtual public view returns (string memory);
     function decimals() virtual public view returns (uint8);
 
     function totalSupply() public view returns (uint) {
