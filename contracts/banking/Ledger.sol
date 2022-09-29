@@ -40,16 +40,6 @@ abstract contract Ledger is ERC1155 {
         return _supplies[coinId];
     }
 
-    function totalSupplyOfBatch(uint[] memory coins) public view returns (uint[] memory) {
-        uint[] memory supplies = new uint[](coins.length);
-
-        for (uint i = 0; i < coins.length; i += 1) {
-            supplies[i] = _supplies[i];
-        }
-
-        return supplies;
-    }
-
     function allowance(
         address owner, 
         address spender,
@@ -57,10 +47,6 @@ abstract contract Ledger is ERC1155 {
     ) external view returns (uint) {
         return _allowances[owner][spender][coinId];
     }
-
-    // TODO
-    // function allowanceBatch(uint[] memory coins) public view returns (uint[]) {
-    // }
 
     function safeTransferFrom(
         address from,
@@ -148,7 +134,7 @@ abstract contract Ledger is ERC1155 {
     function _afterTokenTransfer(
         address,
         address from,
-        address,
+        address to,
         uint[] memory ids,
         uint[] memory amounts,
         bytes memory
@@ -157,6 +143,13 @@ abstract contract Ledger is ERC1155 {
             for (uint i = 0; i < ids.length; i++) {
                 _supplies[ids[i]] += amounts[i];
                 _supply += amounts[i];
+            }
+        }
+
+        if (to == address(0)) {
+            for (uint i = 0; i < ids.length; i++) {
+                _supplies[ids[i]] -= amounts[i];
+                _supply -= amounts[i];
             }
         }
     }

@@ -9,7 +9,7 @@ import "./Coin.sol";
 abstract contract Bank is Ledger {
     mapping(uint => Coin) private _coins;
 
-    function coinAddress(uint coinId) external view returns (Coin) {
+    function addressOf(uint coinId) external view returns (Coin) {
         _requireDeployed(coinId);
         return _coins[coinId];
     }
