@@ -32,23 +32,23 @@ contract Coin is IERC20 {
     function balanceOf(address account) external view returns (uint) {
         return _ledger.balanceOf(account, _coinId);
     }
-
-    function transfer(address to, uint amount) external returns (bool) {
-        _ledger.deployedTokenTransfer(msg.sender, to, _coinId, amount);
-        return true;
-    }
-
-    function transferFrom(address from, address to, uint amount) external returns (bool) {
-        _ledger.deployedTokenTransfer(from, to, _coinId, amount);
-        return true;
-    }
-
+    
     function allowance(address account, address spender) external view returns (uint) {
         return _ledger.allowance(account, spender, _coinId);
     }
 
+    function transfer(address to, uint amount) external returns (bool) {
+        _ledger.secretTransferFrom(msg.sender, to, _coinId, amount);
+        return true;
+    }
+
+    function transferFrom(address from, address to, uint amount) external returns (bool) {
+        _ledger.secretTransferFrom(from, to, _coinId, amount);
+        return true;
+    }
+
     function approve(address spender, uint amount) external returns (bool) {
-        _ledger.approve(spender, amount, _coinId);
+        _ledger.secretApproveFrom(msg.sender, spender, amount, _coinId);
         return true;
     }
 

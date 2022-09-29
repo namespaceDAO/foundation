@@ -13,9 +13,16 @@ contract MockLedger is Ledger {
         return 18;
     }
 
-    function deployedTokenTransfer(
+    function secretTransferFrom(
         address from, 
         address to, 
+        uint coinId, 
+        uint amount
+    ) override external {}
+
+    function secretApproveFrom(
+        address from, 
+        address spender, 
         uint coinId, 
         uint amount
     ) override external {}

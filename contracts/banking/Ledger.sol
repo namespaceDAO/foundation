@@ -16,6 +16,20 @@ abstract contract Ledger is ERC1155 {
         uint value
     );
 
+    function secretTransferFrom(
+        address from, 
+        address to, 
+        uint coinId, 
+        uint amount
+    ) virtual external;
+
+    function secretApproveFrom(
+        address from, 
+        address spender, 
+        uint coinId, 
+        uint amount
+    ) virtual external;
+
     function decimals() virtual public view returns (uint8);
 
     function totalSupply() public view returns (uint) {
@@ -26,12 +40,61 @@ abstract contract Ledger is ERC1155 {
         return _supplies[coinId];
     }
 
+    function totalSupplyOfBatch(uint[] memory coins) public view returns (uint[] memory) {
+        uint[] memory supplies = new uint[](coins.length);
+
+        for (uint i = 0; i < coins.length; i += 1) {
+            supplies[i] = _supplies[i];
+        }
+
+        return supplies;
+    }
+
     function allowance(
         address owner, 
         address spender,
         uint coinId
     ) external view returns (uint) {
         return _allowances[owner][spender][coinId];
+    }
+
+    // TODO
+    // function allowanceBatch(uint[] memory coins) public view returns (uint[]) {
+    // }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint id,
+        uint amount,
+        bytes memory data
+    ) public override {
+        bool approved = isApprovedForAll(from, msg.sender);
+
+        if (!approved && from != msg.sender) {
+            _spendAllowance(from, msg.sender, id, amount);
+        }
+
+        _safeTransferFrom(from, to, id, amount, data);
+    }
+
+    function safeBatchTransferFrom(
+        address from,
+        address to,
+        uint[] memory ids,
+        uint[] memory amounts,
+        bytes memory data
+    ) public override {
+        require(ids.length == amounts.length, "ERC1155: ids and amounts length mismatch");
+        bool approved = isApprovedForAll(from, msg.sender);
+
+        if (!approved && from != msg.sender) {
+            for (uint i = 0; i < ids.length; i += 1) {
+                _spendAllowance(from, msg.sender, ids[i], amounts[i]);
+            }
+        }
+
+        _safeBatchTransferFrom(from, to, ids, amounts, data);
     }
 
     function approve(
@@ -56,47 +119,6 @@ abstract contract Ledger is ERC1155 {
             _approve(msg.sender, spender, coins[i], amounts[i]);
         }
     }
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 id,
-        uint256 amount,
-        bytes memory data
-    ) public override {
-        bool approved = isApprovedForAll(from, msg.sender);
-
-        if (!approved && from != msg.sender) {
-            _spendAllowance(from, msg.sender, id, amount);
-        }
-
-        _safeTransferFrom(from, to, id, amount, data);
-    }
-
-    function _afterTokenTransfer(
-        address,
-        address from,
-        address,
-        uint[] memory ids,
-        uint[] memory amounts,
-        bytes memory
-    ) internal override {
-        if (from == address(0)) {
-            for (uint i = 0; i < ids.length; i++) {
-                _supplies[ids[i]] += amounts[i];
-                _supply += amounts[i];
-            }
-        }
-    }
-
-    function _beforeTokenTransfer(
-        address spender,
-        address from,
-        address,
-        uint[] memory ids,
-        uint[] memory amounts,
-        bytes memory
-    ) internal override {
-    }
 
     function _spendAllowance(
         address owner,
@@ -119,17 +141,25 @@ abstract contract Ledger is ERC1155 {
     ) internal {
         require(owner != address(0), "Cannot approve from the zero address");
         require(spender != address(0), "Cannot approve to the zero address");
-
         _allowances[owner][spender][coinId] = amount;
         emit Approval(owner, spender, coinId, amount);
     }
 
-    function deployedTokenTransfer(
-        address from, 
-        address to, 
-        uint coinId, 
-        uint amount
-    ) virtual external;
+    function _afterTokenTransfer(
+        address,
+        address from,
+        address,
+        uint[] memory ids,
+        uint[] memory amounts,
+        bytes memory
+    ) internal override {
+        if (from == address(0)) {
+            for (uint i = 0; i < ids.length; i++) {
+                _supplies[ids[i]] += amounts[i];
+                _supply += amounts[i];
+            }
+        }
+    }
 
     constructor(string memory baseURI_) ERC1155(baseURI_) {}  
 }

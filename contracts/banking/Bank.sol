@@ -2,7 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "./Ledger.sol";
-import "./Coinage.sol";
+import "./Coin.sol";
 
 // TODO: fetch name and symbol
 
@@ -10,45 +10,56 @@ abstract contract Bank is Ledger {
     mapping(uint => Coin) private _coins;
 
     function coinAddress(uint coinId) external view returns (Coin) {
-        Coin coin = _coins[coinId];
-        _requireDeployed(coin);
-        return coin;
+        _requireDeployed(coinId);
+        return _coins[coinId];
     }
 
-    function deployCoin(
-        uint coinId, 
-        string memory symbol
-    ) external returns (Coin) {
-        _requireNotDeployed(_coins[coinId]);
+    function deployCoin(uint coinId, string memory symbol) external returns (Coin) {
+        _requireNotDeployed(coinId);
         _coins[coinId] = new Coin(Ledger(this), coinId, symbol);
         return _coins[coinId];
     }
 
-    function deployedTokenTransfer(
+    function secretTransferFrom(
         address from, 
         address to, 
         uint coinId, 
         uint amount
     ) virtual external override {
-        require(
-            _coins[coinId] == Coin(msg.sender) && msg.sender != address(0),
-            "Ledger: sender is not an approved coin"
-        );
-
+        _requireCoinCaller(coinId);
         bytes memory data;
         _safeTransferFrom(from, to, coinId, amount, data);
     }
 
-    function _requireNotDeployed(Coin coin) internal pure {
-        require(!_isDeployed(coin), "Bank: coin has already been deployed");
+    function secretApproveFrom(
+        address from, 
+        address spender, 
+        uint coinId, 
+        uint amount
+    ) virtual external override {
+        _requireCoinCaller(coinId);
+        _approve(msg.sender, spender, coinId, amount);
     }
 
-    function _requireDeployed(Coin coin) internal pure {
-        require(_isDeployed(coin), "Bank: coin has not been deployed");
+    function _requireCoinCaller(uint coinId) internal view {
+        require(
+            _coins[coinId] == Coin(msg.sender) && msg.sender != address(0),
+            "Caller is not an approved coin"
+        );
     }
 
-    function _isDeployed(Coin coin) internal pure returns (bool) {
-        return address(coin) != address(0);
+    function _requireNotDeployed(uint coinId) internal view {
+        require(
+            address(_coins[coinId]) == address(0), 
+            "Bank coin has already been deployed"
+        );
+    }
+
+    function _requireDeployed(uint coinId) internal view {
+        require(
+            address(_coins[coinId]) != address(0), 
+            "Bank coin has not been deployed"
+        );
     }
 
     constructor(string memory baseURI_) Ledger(baseURI_) {}
