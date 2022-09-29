@@ -22,25 +22,21 @@ contract Venture is Treasury {
     mapping(uint => uint) private _shares;
 
     function startStake(StakeParams memory params) external {
-        Stake memory stake = _capitalism.startStake(params);
-
         _coin.transferFrom(
             params.founder,
             address(this),
             params.amount
         );
 
+        Stake memory stake = _capitalism.startStake(params);
+        
         _setupStake(stake.id, params.amount);
     }
 
     function endStake(address payee, uint id) external {
-        Stake memory stake = _capitalism.endStake(payee, id);
+        Stake memory stake = _capitalism.endStake(msg.sender, payee, id);
         
-        _coin.transferFrom(
-            address(this), 
-            payee, 
-            stake.amount
-        );
+        _coin.transfer(msg.sender, stake.amount);
 
         _payStakeValue(stake.id, payee);
     }
@@ -96,8 +92,8 @@ contract Venture is Treasury {
     }
 
     function _payStakeValue(uint stakeId, address payee) internal {
-        _totalShares -= stakeShares(stakeId);
         uint value = currentStakeValue(stakeId);
+        _totalShares -= stakeShares(stakeId);
         if (value > 0) _transferValue(payee, value);
     }
 

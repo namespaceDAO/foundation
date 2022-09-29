@@ -116,12 +116,13 @@ contract Capitalism is ERC721 {
     }
 
     function endStake(
+        address owner,
         address payee, 
         uint id
     ) external onlyAdmin returns (
         Stake memory
     ) {
-        address owner = _requireOwner(id);
+        require(owner == ownerOf(id), "You are not the stake owner");
         Stake storage stake = _stakes[id];
 
         require(stake.endedAt == 0, "Stake already ended");
@@ -139,8 +140,7 @@ contract Capitalism is ERC721 {
         require(stakeId <= _stakeCount, "Stake not found");
     }
 
-    function _requireOwner(uint stakeId) internal view returns (address) {
-        require(msg.sender == ownerOf(stakeId), "You are not the stake owner");
+    function _requireOwner(uint founder, uint stakeId) internal view returns (address) {
         return msg.sender;
     }
 
