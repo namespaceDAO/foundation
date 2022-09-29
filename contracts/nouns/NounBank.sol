@@ -15,7 +15,7 @@ contract NounBank is Venture, Bank {
 
     NounDescriptor private _descriptor;
     
-    event Mint(uint coinId, uint amount);
+    event Mint(uint coinId, address to, uint amount);
     event Vote(uint coinId, uint nounId, uint amount);
     event Claim(uint nounId, uint amount);
 
@@ -61,7 +61,7 @@ contract NounBank is Venture, Bank {
         _totalOnNoun[nounId] += msg.value;
         _mint(to, coinId, amount, data);
 
-        emit Mint(coinId, amount);
+        emit Mint(coinId, to, amount);
     }
 
     function vote(

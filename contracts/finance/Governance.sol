@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 import "./Treasury.sol";
 
 contract Governance is Treasury {
-    uint private _tax = 1500;
+    uint private _tax = 0;
     uint private _bps = 10000;
 
     function bps() external view returns (uint) {
@@ -20,7 +20,7 @@ contract Governance is Treasury {
     }
 
     function setTax(uint tax_) external onlyOwner {
-        require(3000 > tax_, "Tax too apple");
+        require(3000 > tax_, "Too many apples");
         _tax = tax_; 
     }
 }

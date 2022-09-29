@@ -12,6 +12,7 @@ import "./Treasury.sol";
 contract Venture is Treasury {
     Capitalism private _capitalism;
     Governance private _governance;
+    ERC20 private _coin;
 
     uint amplitude = 10;
     uint epochDuration = 1 days;
@@ -19,6 +20,30 @@ contract Venture is Treasury {
     
     mapping(uint => uint) private _epochs;
     mapping(uint => uint) private _shares;
+
+    function startStake(StakeParams memory params) external {
+        Stake memory stake = _capitalism.startStake(params);
+
+        _coin.transferFrom(
+            params.founder,
+            address(this),
+            params.amount
+        );
+
+        _setupStake(stake.id, params.amount);
+    }
+
+    function endStake(address payee, uint id) external {
+        Stake memory stake = _capitalism.endStake(payee, id);
+        
+        _coin.transferFrom(
+            address(this), 
+            payee, 
+            stake.amount
+        );
+
+        _payStakeValue(stake.id, payee);
+    }
 
     function getShares(uint epoch, uint amount) public view returns (uint) {
         uint last = _epochs[epoch - 1];
@@ -38,16 +63,6 @@ contract Venture is Treasury {
         return amount * amount / last;
     }
 
-    function startStake(StakeParams memory params) external {
-        Stake memory stake = _capitalism.startStake(params);
-        _setupStake(stake.id, params.amount);
-    }
-
-    function endStake(address payee, uint id) external {
-        Stake memory stake = _capitalism.endStake(payee, id);
-        _payStake(stake.id, payee);
-    }
-
     function stakeShares(uint stakeId) public view returns (uint) {
         return _shares[stakeId];
     }
@@ -56,22 +71,12 @@ contract Venture is Treasury {
         return currentBalance() * stakeShares(stakeId) / totalShares();
     }
 
-    function _setupStake(uint stakeId, uint amount) internal {
-        uint epoch = currentEpoch();
-        uint shares = getShares(epoch, amount);
-
-        _shares[stakeId] = shares;
-        _totalShares += shares;
-    }
-
-    function _payStake(uint stakeId, address payee) internal {
-        _totalShares -= stakeShares(stakeId);
-        uint value = currentStakeValue(stakeId);
-        if (value > 0) _transferValue(payee, value);
-    }
-
     function currentEpoch() public view returns (uint) {
         return block.timestamp / epochDuration;
+    }
+
+    function totalShares() public view returns (uint) {
+        return _totalShares;
     }
 
     function capitalism() public view returns (Capitalism) {
@@ -82,8 +87,18 @@ contract Venture is Treasury {
         return _governance;
     }
 
-    function totalShares() public view returns (uint) {
-        return _totalShares;
+    function _setupStake(uint stakeId, uint amount) internal {
+        uint epoch = currentEpoch();
+        uint shares = getShares(epoch, amount);
+
+        _shares[stakeId] = shares;
+        _totalShares += shares;
+    }
+
+    function _payStakeValue(uint stakeId, address payee) internal {
+        _totalShares -= stakeShares(stakeId);
+        uint value = currentStakeValue(stakeId);
+        if (value > 0) _transferValue(payee, value);
     }
 
     function _addValue(uint value) internal {
@@ -92,17 +107,10 @@ contract Venture is Treasury {
     }
 
     constructor(
-        string memory name_,
-        string memory symbol_,
-        CapitalismDescriptor desc_,
-        ERC20 coin_
+        string memory name_, string memory symbol_,
+        CapitalismDescriptor desc_, ERC20 coin_
     ) {
-        _capitalism = new Capitalism(
-            address(this),
-            name_,
-            symbol_,
-            desc_,
-            coin_
-        );
+        _coin = coin_;
+        _capitalism = new Capitalism(address(this), name_, symbol_, desc_);
     }
 }

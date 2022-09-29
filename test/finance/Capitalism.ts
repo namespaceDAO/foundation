@@ -22,8 +22,7 @@ describe('Capitalism', () => {
       alice.address,
       'FOUND NOTE',
       'FOUND NOTE',
-      desc.address,
-      found.address
+      desc.address
     )
   })
 

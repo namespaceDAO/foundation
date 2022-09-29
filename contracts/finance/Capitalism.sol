@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
+// TODO: fix comment
 // Capitalism is an NFT that can be minted by staking an ERC20.
 // When you start your stake your ERC20 is locked in the Capitalism contract.
 // When you end your stake your ERC20 is transfered back to your address.
@@ -14,16 +14,16 @@ struct StakeParams {
     address owner;
     uint idea;
     uint amount; 
-    uint expiryTime;
+    uint expiresAt;
 }
 
 struct Stake {
     uint id;
     uint idea;
     uint amount;
-    uint expiryTime;
-    uint startTime;
-    uint endTime;
+    uint expiresAt;
+    uint startedAt;
+    uint endedAt;
     address founder;
     address redeemer;
 }
@@ -35,7 +35,6 @@ abstract contract CapitalismDescriptor {
 
 contract Capitalism is ERC721 {
     CapitalismDescriptor private _desc;
-    ERC20 private _coin;
     
     address private _admin;
     uint private _stakeCount;
@@ -47,15 +46,15 @@ contract Capitalism is ERC721 {
         uint id,
         uint idea,
         uint amount,
-        uint expiryTime,
-        uint startTime
+        uint expiresAt,
+        uint startedAt
     );
 
     event StakeEnded(
         uint id,
         uint idea,
         uint amount,
-        uint endTime
+        uint endedAt
     );
 
     modifier onlyAdmin() {
@@ -69,6 +68,10 @@ contract Capitalism is ERC721 {
 
     function tokenURI(uint stakeId) public view override returns (string memory) {
         return _desc.tokenURI(getStake(stakeId));
+    }
+
+    function stakeCount() public view returns (uint) {
+        return _stakeCount;
     }
 
     function getStake(uint id) public view returns (Stake memory) {
@@ -87,22 +90,16 @@ contract Capitalism is ERC721 {
         );
 
         require(
-            params.expiryTime > block.timestamp  + _minimumDuration, 
+            params.expiresAt > block.timestamp  + _minimumDuration, 
             "Must expire further in the future"
-        );
-
-        _coin.transferFrom(
-            params.founder,
-            address(this),
-            params.amount
         );
 
         Stake storage stake = _stakes[++_stakeCount];
         stake.id = _stakeCount;
         stake.idea = params.idea;
         stake.amount = params.amount;
-        stake.expiryTime = params.expiryTime;
-        stake.startTime = block.timestamp;
+        stake.expiresAt = params.expiresAt;
+        stake.startedAt = block.timestamp;
         stake.founder = params.founder;
 
         _mint(params.owner, _stakeCount);
@@ -111,8 +108,8 @@ contract Capitalism is ERC721 {
             stake.id, 
             stake.idea,
             stake.amount,
-            stake.expiryTime,
-            stake.startTime
+            stake.expiresAt,
+            stake.startedAt
         );
 
         return stake;
@@ -127,18 +124,13 @@ contract Capitalism is ERC721 {
         address owner = _requireOwner(id);
         Stake storage stake = _stakes[id];
 
-        require(stake.endTime == 0, "Stake already ended");
-        stake.endTime = block.timestamp;
+        require(stake.endedAt == 0, "Stake already ended");
+        stake.endedAt = block.timestamp;
         stake.redeemer = owner;
 
         _burn(id);
-        _coin.transferFrom(
-            address(this), 
-            payee, 
-            stake.amount
-        );
 
-        emit StakeEnded(id, stake.idea, stake.amount, stake.endTime);
+        emit StakeEnded(id, stake.idea, stake.amount, stake.endedAt);
 
         return stake;
     }
@@ -156,11 +148,9 @@ contract Capitalism is ERC721 {
         address admin_,
         string memory name_,
         string memory symbol_,
-        CapitalismDescriptor desc_,
-        ERC20 coin_
+        CapitalismDescriptor desc_
     ) ERC721(name_, symbol_) {
         _admin = admin_;
-        _coin = coin_;
         _desc = desc_;
     }
 }
