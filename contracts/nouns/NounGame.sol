@@ -5,7 +5,7 @@ import "../foundation/Venture.sol";
 import "./NounBank.sol";
 import "./NounData.sol";
 
-contract NounGame is Venture {
+contract NounGame is Nouns, Venture {
     NounBank private _bank;
     NounData private _data;
     uint private _start;
@@ -36,11 +36,11 @@ contract NounGame is Venture {
         return (block.timestamp - _start) / 1 days;
     }
     
-    function nounToCoin(uint nounId) public view returns (uint) {
+    function nounToCoin(uint nounId) override public view returns (uint) {
         return _nounToCoin[nounId];
     }
 
-    function coinToNoun(uint coinId) public view returns (uint) {
+    function coinToNoun(uint coinId) override public view returns (uint) {
         require(coinId <= currentDay(), "Noun has not been found");
         return _coinToNoun[coinId];
     }
@@ -126,7 +126,7 @@ contract NounGame is Venture {
     constructor(string memory baseURI_, ERC20 coin_) 
     Venture("NOUN NOTE", "NOUN NOTE", coin_) {
         _data = new NounData();
-        _bank = new NounBank(address(this), baseURI_, _data);
+        _bank = new NounBank(baseURI_, Nouns(address(this)), _data);
         _start = block.timestamp;
     }
 }

@@ -3,6 +3,12 @@ pragma solidity ^0.8.10;
 
 // import { Base64 } from 'base64-sol/base64.sol';
 
+struct NounParams {
+    string name;
+    bytes pixels;
+    address creator;
+}
+
 struct Noun {
     uint id;
     string name;
@@ -34,17 +40,13 @@ contract NounData {
         return "";
     }
 
-    function addNoun(
-        string memory name,
-        bytes memory pixels,
-        address creator
-    ) external {
+    function addNoun(NounParams memory params) external {
         Noun storage noun = _nouns[++_nounCount];
         noun.id = _nounCount;
-        noun.name = name;
-        noun.pixels = pixels;
-        noun.creator = creator;
-        emit NounAdded(noun.id, name, pixels, noun.creator);
+        noun.name = params.name;
+        noun.pixels = params.pixels;
+        noun.creator = params.creator;
+        emit NounAdded(noun.id, noun.name, noun.pixels, noun.creator);
     }
 
     function requireNoun(uint id) public view {
