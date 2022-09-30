@@ -37,10 +37,8 @@ contract NounPost is PaymentSplitter {
     }
 
     function _transferValue(address to, uint amount) internal {
-        require(
-            address(this).balance >= amount, 
-            "Treasury transfer exceeds balance"
-        );
+        uint capped = address(this).balance >= amount;
+        require(capped, "Transfer exceeds balance");
         (bool success, ) = to.call{value:amount}("");
         require(success, "Treasury transfer failed");
     }

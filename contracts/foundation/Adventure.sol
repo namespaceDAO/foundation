@@ -23,24 +23,24 @@ contract Adventure {
     receive() external payable {}
     fallback() external payable {}
 
-    function startStake(StakeParams memory params) external {
-        _coin.transferFrom(
-            params.founder,
-            address(this),
-            params.amount
-        );
+    function capitalism() public view returns (Capitalism) {
+        return _capitalism;
+    }
 
+    function governance() public view returns (Governance) {
+        return _governance;
+    }
+
+    function startStake(StakeParams memory params) external {
+        _coin.transferFrom(params.founder, address(this), params.amount);
         Stake memory stake = _capitalism.startStake(params);
-        
         _setupStake(stake.id, params.amount);
     }
 
     function endStake(address payee, uint id) external {
         Stake memory stake = _capitalism.endStake(msg.sender, payee, id);
-        
         _coin.transfer(msg.sender, stake.amount);
-
-        _payStakeValue(stake.id, payee);
+        _transferStakeValue(stake.id, payee);
     }
 
     function getShares(uint epoch, uint amount) public view returns (uint) {
@@ -81,14 +81,6 @@ contract Adventure {
         return _totalShares;
     }
 
-    function capitalism() public view returns (Capitalism) {
-        return _capitalism;
-    }
-
-    function governance() public view returns (Governance) {
-        return _governance;
-    }
-
     function _setupStake(uint stakeId, uint amount) internal {
         uint epoch = currentEpoch();
         uint shares = getShares(epoch, amount);
@@ -97,24 +89,22 @@ contract Adventure {
         _totalShares += shares;
     }
 
-    function _payStakeValue(uint stakeId, address payee) internal {
+    function _transferStakeValue(uint stakeId, address payee) internal {
         uint value = currentStakeValue(stakeId);
         _totalShares -= _shares[stakeId];
         if (value > 0) _transferValue(payee, value);
     }
 
+    function _transferValue(address to, uint amount) internal {
+        uint capped = address(this).balance >= amount;
+        require(capped, "Transfer exceeds balance");
+        (bool success, ) = to.call{value:amount}("");
+        require(success, "Treasury transfer failed");
+    }
+
     function _addValue(uint value) internal {
         uint epoch = currentEpoch();
         _epochs[epoch] += value;
-    }
-
-    function _transferValue(address to, uint amount) internal {
-        require(
-            address(this).balance >= amount, 
-            "Treasury transfer exceeds balance"
-        );
-        (bool success, ) = to.call{value:amount}("");
-        require(success, "Treasury transfer failed");
     }
 
     constructor(string memory name_, string memory symbol_, ERC20 coin_) {
