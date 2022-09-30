@@ -2,7 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "../finance/Treasury.sol";
+import "../foundation/Treasury.sol";
 import "./Presale.sol";
 
 contract Found is Treasury, Presale, ERC20 {

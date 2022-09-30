@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "../finance/Venture.sol";
+import "../foundation/Venture.sol";
 import "./NounBank.sol";
 import "./NounData.sol";
 

@@ -5,13 +5,7 @@ import "./Ledger.sol";
 import "./Coin.sol";
 
 abstract contract Bank is Ledger {
-    address private _admin;
     mapping(uint => Coin) private _coins;
-
-    modifier onlyAdmin() {
-        require(msg.sender == _admin, "Caller is not the admin");
-        _;
-    }
 
     function addressOf(uint coinId) external view returns (Coin) {
         require(
@@ -39,10 +33,5 @@ abstract contract Bank is Ledger {
         );
     }
 
-    constructor(
-        address admin_,
-        string memory baseURI_
-    ) Ledger(baseURI_) {
-        _admin = admin_;
-    }
+    constructor(string memory baseURI_) Ledger(baseURI_) {}
 }

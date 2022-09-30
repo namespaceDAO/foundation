@@ -8,7 +8,7 @@ import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
 // Capitalism is an NFT that can be minted by staking an ERC20.
 // When you start your stake your ERC20 is locked in the Capitalism contract.
 // When you end your stake your ERC20 is transfered back to your address.
-// Each stake has an expiration date and Noun it was staked on.
+// Each stake has an expiration date and idea it was staked on.
 // Art for the stake is stored in the descriptor contract.
 struct StakeParams {
     address founder;
