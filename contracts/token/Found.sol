@@ -1,71 +1,57 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "../foundation/Treasury.sol";
-import "./Presale.sol";
 
-contract Found is Treasury, Presale, ERC20 {
-    uint foundClaim;
+contract Found is Ownable, ERC20 {
+    uint claimed;
 
-    event Mint(
-        address indexed to, 
-        uint value, 
-        uint found    
-    );
+    event Mint(address indexed to, uint found);
+    event Burn(address indexed from, address indexed to, uint found, uint value);
+    event Claim(address indexed to, uint found);
 
-    event Burn(
-        address indexed from, 
-        address indexed to,
-        uint value, 
-        uint found    
-    );
-
-    event Claim(
-        address indexed to, 
-        uint found,
-        string memo 
-    );
-
-    function forge(address from, address to, uint amount) external {
-        uint forged = _forgeFound(from, amount);
-        _mint(to, forged);
-        emit Forge(from, to, amount, forged);
+    function foundValue(uint found) public view returns (uint) {
+        return found * address(this).balance / totalSupply();
     }
 
     function mint(address to) external payable {
-        require(msg.value > 0, "Send more than 0");
-        uint amount = msg.value;
+        _mintFound(to, msg.value);
+    }
+
+    function mint2x(address to) external payable {
+        require(block.timestamp < 1666666667, "2x closed");
+        _mintFound(to, msg.value * 2);
+    }
+
+    function _mintFound(address to, uint amount) internal {
+        require(amount > 0, "Mint more than 0");
         _mint(to, amount);
-        emit Mint(to, msg.value, amount);
+        emit Mint(to, amount);
     }
 
     function burn(address from, address to, uint amount) external {
         require(amount > 0, "Burn more than 0");
-
-        uint value = burnValue(amount);
         
+        uint value = foundValue(amount);
+        bool burnable = address(this).balance >= value;
+        require(burnable, "Burn exceeds balance");
+
         _burn(from, amount);
-        _transferValue(to, value);
+        (bool success, ) = to.call{value:value}("");
+        require(success, "Burn failed");
 
-        emit Burn(from, to, value, amount);
+        emit Burn(from, to, amount, value);
     }
 
-    function claim(address to, uint amount, string memory memo) external onlyOwner {
-        require(
-            totalSupply() / 10 >= amount + foundClaim, 
-            "Claim too large"
-        );
+    function claim(address to, uint amount) external onlyOwner {
+        bool claimable = totalSupply() / 10 >= amount + claimed;
+        require(claimable, "Claim too large");
 
-        foundClaim += amount;
+        claimed += amount;
         _mint(to, amount);
-        emit Claim(to, amount, memo);
-    }
 
-    function burnValue(uint amount) public view returns (uint) {
-        uint balance = address(this).balance;
-        uint supply = totalSupply();
-        return amount * balance / supply;
+        emit Claim(to, amount);
     }
 
     constructor() ERC20("FOUND", "FOUND") {}
