@@ -1,12 +1,13 @@
 import { task } from 'hardhat/config'
 
 task('deploy', 'Deploys contracts', async (_, { ethers }) => {
-  const Found = await ethers.getContractFactory('FoundV1')
+  const [origin] = await ethers.getSigners()
+  const Found = await ethers.getContractFactory('Found')
 
-  const originAddress = '0x5E2DDebd950aAc94dE0eCCf981FF0ece6ed7eedE'
-  const found = await Found.deploy(originAddress, 1666666667)
+  const found = await Found.deploy()
+  const BASE_URI = 'https://bankofnouns.com/_/api/tokens/{id}.json'
 
-  console.log('ORIGIN: ' + originAddress)
+  console.log('ORIGIN: ' + origin.address)
   console.log('FOUND: ' + found.address)
 
   // const Govt = await ethers.getContractFactory('Government')

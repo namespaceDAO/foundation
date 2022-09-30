@@ -102,18 +102,8 @@ contract Venture is Treasury {
         _epochs[epoch] += value;
     }
 
-    constructor(
-        string memory name_, 
-        string memory symbol_,
-        TreasuryNote note_, 
-        ERC20 coin_
-    ) {
+    constructor(string memory name_, string memory symbol_, ERC20 coin_) {
+        _capitalism = new Capitalism(address(this), name_, symbol_);
         _coin = coin_;
-        _capitalism = new Capitalism(
-            address(this), 
-            name_, 
-            symbol_, 
-            note_
-        );
     }
 }

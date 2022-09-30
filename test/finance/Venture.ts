@@ -21,14 +21,10 @@ describe('Venture', () => {
     const Found = await ethers.getContractFactory('Found')
     found = await Found.deploy()
 
-    const Desc = await ethers.getContractFactory('NounNote')
-    const desc = await Desc.deploy()
-
     const Venture = await ethers.getContractFactory('Venture')
     venture = await Venture.deploy(
       'FOUND NOTE',
       'FOUND NOTE',
-      desc.address,
       found.address
     )
 

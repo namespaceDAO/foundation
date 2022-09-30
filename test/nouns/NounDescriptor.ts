@@ -12,20 +12,20 @@ describe('Noun', () => {
 
   beforeEach(async () => {
     [alice, bob] = await ethers.getSigners()
-    const NounNote = await ethers.getContractFactory('NounNote')
-    desc = await NounNote.deploy()
+    const NounBase = await ethers.getContractFactory('NounBase')
+    desc = await NounBase.deploy()
   })
 
   it('Creates descriptor', async () => {
-    const res = await desc.stakeJSON({
-      id: 1,
-      idea: 1,
-      amount: 0,
-      expiresAt: Math.floor(new Date().getTime() / 1000),
-      startedAt: Math.floor(new Date().getTime() / 1000),
-      endedAt: 0,
-      founder: alice.address,
-      redeemer: ethers.constants.AddressZero
-    })
+    // const res = await desc.dataJSON({
+    //   id: 1,
+    //   idea: 1,
+    //   amount: 0,
+    //   expiresAt: Math.floor(new Date().getTime() / 1000),
+    //   startedAt: Math.floor(new Date().getTime() / 1000),
+    //   endedAt: 0,
+    //   founder: alice.address,
+    //   redeemer: ethers.constants.AddressZero
+    // })
   })
 })

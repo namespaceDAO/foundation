@@ -2,6 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
 
 // TODO: fix comment
 // Capitalism is an NFT that can be minted by staking an ERC20.
@@ -28,14 +29,8 @@ struct Stake {
     address redeemer;
 }
 
-abstract contract TreasuryNote {
-    function dataURI(Stake memory stake) virtual public view returns (string memory);
-    function tokenURI(Stake memory stake) virtual public view returns (string memory);
-}
-
 contract Capitalism is ERC721 {
-    TreasuryNote private _note;
-    
+    using Strings for uint;
     address private _admin;
     uint private _stakeCount;
     uint private _minimumDuration = 1 days;
@@ -60,23 +55,6 @@ contract Capitalism is ERC721 {
     modifier onlyAdmin() {
         require(msg.sender == _admin, "Caller is not the admin");
         _;
-    }
-
-    function dataURI(uint stakeId) public view returns (string memory) {
-        return _note.tokenURI(getStake(stakeId));
-    }
-
-    function tokenURI(uint stakeId) public view override returns (string memory) {
-        return _note.tokenURI(getStake(stakeId));
-    }
-
-    function stakeCount() public view returns (uint) {
-        return _stakeCount;
-    }
-
-    function getStake(uint id) public view returns (Stake memory) {
-        _requireStake(id);
-        return _stakes[id];
     }
 
     function startStake(
@@ -136,6 +114,15 @@ contract Capitalism is ERC721 {
         return stake;
     }
 
+    function stakeCount() public view returns (uint) {
+        return _stakeCount;
+    }
+
+    function getStake(uint id) public view returns (Stake memory) {
+        _requireStake(id);
+        return _stakes[id];
+    }
+
     function _requireStake(uint stakeId) internal view {
         require(stakeId <= _stakeCount, "Stake not found");
     }
@@ -144,13 +131,44 @@ contract Capitalism is ERC721 {
         return msg.sender;
     }
 
+    function dataURI(uint stakeId) public view returns (string memory) {
+        return string(
+            abi.encodePacked(
+                'data:application/json;base64,',
+                _dataJSON(stakeId)
+                // Base64.encode(_stakeJSON(stake))
+            )
+        );
+    }
+
+    function dataJSON(uint stakeId) public view returns (string memory) {
+        return string(_dataJSON(stakeId));
+    }
+
+    function tokenURI(uint stakeId) public view override returns (string memory) {
+        return dataURI(stakeId);
+    }
+    
+    function _dataJSON(uint stakeId) internal view returns (bytes memory) {
+        _requireStake(stakeId);
+        Stake memory stake = _stakes[stakeId];
+        return abi.encodePacked(
+            '{',
+                '"id":"', stake.id.toString(), '",',
+                '"idea":"', stake.idea.toString(), '",',
+                '"amount":"', stake.amount.toString(), '",',
+                '"expiresAt":"', stake.expiresAt.toString(), '",',
+                '"startedAt":"', stake.startedAt.toString(), '",',
+                '"endedAt":"', stake.endedAt.toString(), '"',
+            '}'
+        );
+    }
+
     constructor(
         address admin_,
         string memory name_,
-        string memory symbol_,
-        TreasuryNote note_
+        string memory symbol_
     ) ERC721(name_, symbol_) {
         _admin = admin_;
-        _note = note_;
     }
 }

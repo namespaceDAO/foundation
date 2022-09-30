@@ -1,14 +1,11 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
-import { expect } from 'chai'
 import { Contract } from 'ethers'
 import { ethers } from 'hardhat'
-import { TreasuryNote__factory } from '../../typechain-types'
 
 describe('NounBank', () => {
   let alice: SignerWithAddress
   let bob: SignerWithAddress
   let found: Contract
-  let desc: Contract
   let bank: Contract
 
   const BASE_URI = 'https://bankofnouns.com/_/api/tokens/{id}.json'
@@ -19,11 +16,8 @@ describe('NounBank', () => {
     const Found = await ethers.getContractFactory('Found')
     found = await Found.deploy()
 
-    const NounNote = await ethers.getContractFactory('NounNote')
-    desc = await NounNote.deploy()
-
     const NounBank = await ethers.getContractFactory('NounGame')
-    bank = await NounBank.deploy(BASE_URI, desc.address, found.address)
+    bank = await NounBank.deploy(BASE_URI, found.address)
   })
 
   it('Creates bank', async () => {
