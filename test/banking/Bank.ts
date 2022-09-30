@@ -6,9 +6,6 @@ import { Coin__factory } from '../../typechain-types'
 
 const parseEther = ethers.utils.parseEther
 
-// TODO: test approval for all
-// TODO: test allowances
-
 describe('Bank', () => {
   let origin: SignerWithAddress
   let alice: SignerWithAddress
@@ -86,4 +83,6 @@ describe('Bank', () => {
     expect(a1).to.equal(b2)
     expect(a2).to.equal(0)
   })
+
+  // TODO: test approval for all, test allowances
 })
