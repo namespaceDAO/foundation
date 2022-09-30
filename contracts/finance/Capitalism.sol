@@ -28,13 +28,13 @@ struct Stake {
     address redeemer;
 }
 
-abstract contract CapitalismDescriptor {
+abstract contract TreasuryNote {
     function dataURI(Stake memory stake) virtual public view returns (string memory);
     function tokenURI(Stake memory stake) virtual public view returns (string memory);
 }
 
 contract Capitalism is ERC721 {
-    CapitalismDescriptor private _desc;
+    TreasuryNote private _note;
     
     address private _admin;
     uint private _stakeCount;
@@ -63,11 +63,11 @@ contract Capitalism is ERC721 {
     }
 
     function dataURI(uint stakeId) public view returns (string memory) {
-        return _desc.tokenURI(getStake(stakeId));
+        return _note.tokenURI(getStake(stakeId));
     }
 
     function tokenURI(uint stakeId) public view override returns (string memory) {
-        return _desc.tokenURI(getStake(stakeId));
+        return _note.tokenURI(getStake(stakeId));
     }
 
     function stakeCount() public view returns (uint) {
@@ -148,9 +148,9 @@ contract Capitalism is ERC721 {
         address admin_,
         string memory name_,
         string memory symbol_,
-        CapitalismDescriptor desc_
+        TreasuryNote note_
     ) ERC721(name_, symbol_) {
         _admin = admin_;
-        _desc = desc_;
+        _note = note_;
     }
 }

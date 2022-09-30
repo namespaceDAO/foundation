@@ -2,7 +2,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expect } from 'chai'
 import { Contract } from 'ethers'
 import { ethers } from 'hardhat'
-import { CapitalismDescriptor__factory } from '../../typechain-types'
+import { TreasuryNote__factory } from '../../typechain-types'
 
 describe('Noun', () => {
   let alice: SignerWithAddress
@@ -12,8 +12,8 @@ describe('Noun', () => {
 
   beforeEach(async () => {
     [alice, bob] = await ethers.getSigners()
-    const NounDescriptor = await ethers.getContractFactory('NounDescriptor')
-    desc = await NounDescriptor.deploy()
+    const NounNote = await ethers.getContractFactory('NounNote')
+    desc = await NounNote.deploy()
   })
 
   it('Creates descriptor', async () => {

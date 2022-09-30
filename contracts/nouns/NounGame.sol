@@ -3,12 +3,12 @@ pragma solidity ^0.8.10;
 
 import "../finance/Venture.sol";
 import "./NounBank.sol";
-import "./NounDescriptor.sol";
+import "./NounNote.sol";
 
 // NounBank creates a new cryptocurrency every day.
 contract NounGame is Venture {
     NounBank private _bank;
-    NounDescriptor private _desc;
+    NounNote private _note;
 
     mapping(uint => uint) private _nounToDay;
     mapping(uint => uint) private _dayToNoun;
@@ -58,7 +58,7 @@ contract NounGame is Venture {
         uint nounId,
         bytes memory data
     ) external payable {
-        _desc.requireNoun(nounId);
+        _note.requireNoun(nounId);
 
         uint day = currentDay();
         require(
@@ -75,7 +75,7 @@ contract NounGame is Venture {
     }
 
     function claim(uint nounId, bytes memory data) external {
-        Noun memory noun = _desc.getNoun(nounId);
+        Noun memory noun = _note.getNoun(nounId);
         uint amount = _totalOnNoun[nounId] / 10;
 
         _nounClaims[nounId] = true;
@@ -117,10 +117,10 @@ contract NounGame is Venture {
 
     constructor(
         string memory baseURI_,
-        NounDescriptor desc_,
+        NounNote note_,
         ERC20 coin_
-    ) Venture("NOUN NOTE", "NOUN NOTE", desc_, coin_) {
-        _desc = desc_;
-        _bank = new NounBank(address(this), baseURI_, desc_);
+    ) Venture("NOUN NOTE", "NOUN NOTE", note_, coin_) {
+        _note = note_;
+        _bank = new NounBank(address(this), baseURI_, note_);
     }
 }

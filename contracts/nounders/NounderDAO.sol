@@ -32,17 +32,17 @@ contract NounderDAO is Treasury {
         uint epoch = currentEpoch();
         uint balance = currentBalance();
 
-        uint lb = balance * 7 / 100;
-        uint ub = balance * 15 / 100;
+        uint lb = balance * 8 / 100;
+        uint ub = balance * 2 / 10;
 
         _funding[epoch] += amount;
-        require(_funding[epoch] < ub, "No more than 15%");
+        require(_funding[epoch] < ub, "No more than 20%");
 
-        // If last epoch did not spend 7%, send remainder to origin.
+        // If last epoch did not spend 8%, send remainder to zero address.
         if (_funding[epoch - 1] < lb) {
             uint excess = lb - _funding[epoch - 1];
             _funding[epoch - 1] += excess;
-            _transferValue(_origin, excess);
+            _transferValue(address(0), excess);
         }
     }
 

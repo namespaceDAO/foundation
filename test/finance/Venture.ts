@@ -21,7 +21,7 @@ describe('Venture', () => {
     const Found = await ethers.getContractFactory('Found')
     found = await Found.deploy()
 
-    const Desc = await ethers.getContractFactory('NounDescriptor')
+    const Desc = await ethers.getContractFactory('NounNote')
     const desc = await Desc.deploy()
 
     const Venture = await ethers.getContractFactory('Venture')
