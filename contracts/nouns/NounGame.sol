@@ -10,8 +10,8 @@ contract NounGame is Venture {
     NounData private _data;
     uint private _start;
 
-    mapping(uint => uint) private _nounToDay;
-    mapping(uint => uint) private _dayToNoun;
+    mapping(uint => uint) private _nounToCoin;
+    mapping(uint => uint) private _coinToNoun;
     mapping(uint => uint) private _totalOnNoun;
     mapping(uint => uint) private _totalOnDay;
     mapping(uint => bool) private _nounClaims;
@@ -19,6 +19,14 @@ contract NounGame is Venture {
     event Mint(uint coinId, address to, uint amount);
     event Vote(uint coinId, uint nounId, uint amount);
     event Claim(uint nounId, uint amount);
+
+    function data() public view returns (NounData) {
+        return _data;
+    }
+
+    function bank() public view returns (NounBank) {
+        return _bank;
+    }
 
     function totalCoins() public view returns (uint) {
         return (block.timestamp - _start) / 1 days;
@@ -28,13 +36,13 @@ contract NounGame is Venture {
         return (block.timestamp - _start) / 1 days;
     }
     
-    function nounToDay(uint noun) public view returns (uint) {
-        return _nounToDay[noun];
+    function nounToCoin(uint nounId) public view returns (uint) {
+        return _nounToCoin[nounId];
     }
 
-    function dayToNoun(uint day) public view returns (uint) {
-        require(day <= currentDay(), "Noun has not been found");
-        return _dayToNoun[day];
+    function coinToNoun(uint coinId) public view returns (uint) {
+        require(coinId <= currentDay(), "Noun has not been found");
+        return _coinToNoun[coinId];
     }
 
     function mint(
@@ -45,7 +53,7 @@ contract NounGame is Venture {
         require(msg.value > 0, "Must mint some Nouns");
         
         uint amount = convertValue(coinId, msg.value);
-        uint nounId = dayToNoun(coinId);
+        uint nounId = coinToNoun(coinId);
         
         _totalOnNoun[nounId] += msg.value;
         _bank.mint(to, coinId, amount, data);
@@ -62,7 +70,7 @@ contract NounGame is Venture {
 
         uint day = currentDay();
         require(
-            nounToDay(nounId) == 0 || nounToDay(nounId) == day,
+            nounToCoin(nounId) == 0 || nounToCoin(nounId) == day,
             "Noun has been minted"
         );
 
@@ -110,7 +118,7 @@ contract NounGame is Venture {
         _totalOnNoun[nounId] += value;
 
         if (_totalOnNoun[nounId] > _totalOnDay[day]) {
-            _dayToNoun[day] = nounId;
+            _coinToNoun[day] = nounId;
             _totalOnDay[day] = _totalOnNoun[nounId];
         }
     }

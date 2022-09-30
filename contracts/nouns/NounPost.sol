@@ -3,9 +3,8 @@ pragma solidity ^0.8.10;
 
 import "../finance/Treasury.sol";
 
-contract NounderDAO is Treasury {
+contract NounPost is Treasury {
     uint private _coinId;
-    address private _origin;
     uint epochDuration = 28 days;
 
     mapping(uint => uint) private _funding;
@@ -18,10 +17,6 @@ contract NounderDAO is Treasury {
 
     function coinId() external view returns (uint) {
         return _coinId;
-    }
-
-    function origin() external view returns (address) {
-        return _origin;
     }
 
     function currentEpoch() public view returns (uint) {
@@ -46,11 +41,7 @@ contract NounderDAO is Treasury {
         }
     }
 
-    constructor(
-        uint coinId_,
-        address origin_
-    ) {
+    constructor(uint coinId_) {
         _coinId = coinId_;
-        _origin = origin_;
     }
 }
