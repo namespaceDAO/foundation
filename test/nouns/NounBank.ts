@@ -4,28 +4,28 @@ import { Contract } from 'ethers'
 import { ethers } from 'hardhat'
 import { CapitalismDescriptor__factory } from '../../typechain-types'
 
-describe('Noun', () => {
+describe('NounBank', () => {
   let alice: SignerWithAddress
   let bob: SignerWithAddress
   let found: Contract
   let desc: Contract
+  let bank: Contract
+
+  const BASE_URI = 'https://bankofnouns.com/_/api/tokens/{id}.json'
 
   beforeEach(async () => {
     [alice, bob] = await ethers.getSigners()
+
+    const Found = await ethers.getContractFactory('Found')
+    found = await Found.deploy()
+
     const NounDescriptor = await ethers.getContractFactory('NounDescriptor')
     desc = await NounDescriptor.deploy()
+
+    const NounBank = await ethers.getContractFactory('NounGame')
+    bank = await NounBank.deploy(BASE_URI, desc.address, found.address)
   })
 
-  it('Creates descriptor', async () => {
-    const res = await desc.stakeJSON({
-      id: 1,
-      idea: 1,
-      amount: 0,
-      expiresAt: Math.floor(new Date().getTime() / 1000),
-      startedAt: Math.floor(new Date().getTime() / 1000),
-      endedAt: 0,
-      founder: alice.address,
-      redeemer: ethers.constants.AddressZero
-    })
+  it('Creates bank', async () => {
   })
 })

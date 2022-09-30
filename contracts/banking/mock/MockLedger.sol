@@ -21,19 +21,5 @@ contract MockLedger is Ledger {
         _mint(to, coinId, msg.value, data);
     }
 
-    function secretTransferFrom(
-        address from, 
-        address to, 
-        uint coinId, 
-        uint amount
-    ) override external {}
-
-    function secretApproveFrom(
-        address from, 
-        address spender, 
-        uint coinId, 
-        uint amount
-    ) override external {}
-
     constructor(string memory baseURI_) Ledger(baseURI_) {}    
 }

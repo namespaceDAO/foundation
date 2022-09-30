@@ -37,17 +37,19 @@ contract Coin is IERC20 {
     }
 
     function transfer(address to, uint amount) external returns (bool) {
-        _ledger.secretTransferFrom(msg.sender, to, _coinId, amount);
+        bytes memory data;
+        _ledger.safeTransferFrom(msg.sender, to, _coinId, amount, data);
         return true;
     }
 
     function transferFrom(address from, address to, uint amount) external returns (bool) {
-        _ledger.secretTransferFrom(from, to, _coinId, amount);
+        bytes memory data;
+        _ledger.safeTransferFrom(from, to, _coinId, amount, data);
         return true;
     }
 
     function approve(address spender, uint amount) external returns (bool) {
-        _ledger.secretApproveFrom(msg.sender, spender, amount, _coinId);
+        _ledger.approve(spender, amount, _coinId);
         return true;
     }
 

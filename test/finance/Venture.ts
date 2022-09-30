@@ -21,7 +21,7 @@ describe('Venture', () => {
     const Found = await ethers.getContractFactory('Found')
     found = await Found.deploy()
 
-    const Desc = await ethers.getContractFactory('NounsDescriptor')
+    const Desc = await ethers.getContractFactory('NounDescriptor')
     const desc = await Desc.deploy()
 
     const Venture = await ethers.getContractFactory('Venture')
@@ -56,7 +56,7 @@ describe('Venture', () => {
     const idea = Math.floor(Math.random() * 100)
     const amount = parseEther(`${Math.random()}`)
     const startedAt = getNow()
-    const duration = ONE_DAY * Math.floor(7 * Math.random() + 1)
+    const duration = ONE_DAY * Math.floor(7 * Math.random() + 2)
     const expiresAt = startedAt + duration
     const founder = alice.address
     const owner = alice.address
@@ -64,7 +64,7 @@ describe('Venture', () => {
     return { amount, expiresAt, startedAt, founder, owner, idea }
   }
 
-  it('Starts stake', async () => {
+  it('Starts stake with FOUND', async () => {
     const value = parseEther('10')
 
     await found.connect(alice).mint(alice.address, { value })
@@ -93,12 +93,13 @@ describe('Venture', () => {
     expect(stakeOwner).to.equal(params.owner)
   })
 
-  it('Ends stake', async () => {
+  it('Ends stake sending back ETH and FOUND', async () => {
+    const params = createStake()
     const value = parseEther('10')
 
     await found.connect(alice).mint(alice.address, { value })
     await found.connect(alice).approve(venture.address, value)
-    await venture.connect(alice).startStake(createStake())
+    await venture.connect(alice).startStake(params)
 
     await origin.sendTransaction({
       to: venture.address,
@@ -106,12 +107,16 @@ describe('Venture', () => {
     })
 
     const b1 = await bob.getBalance()
+    const a1 = await found.balanceOf(alice.address)
     const stakeId = await capitalism.stakeCount()
     const balance = await venture.currentBalance()
 
     await venture.connect(alice).endStake(bob.address, stakeId)
 
     const b2 = await bob.getBalance()
+    const a2 = await found.balanceOf(alice.address)
+
     expect(b1.add(balance)).to.equal(b2)
+    expect(a1.add(params.amount)).to.equal(a2)
   })
 })

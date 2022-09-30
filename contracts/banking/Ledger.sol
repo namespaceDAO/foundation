@@ -21,20 +21,6 @@ abstract contract Ledger is ERC1155 {
     function symbolOf(uint coinId) virtual public view returns (string memory);
     function decimals() virtual public view returns (uint8);
 
-    function secretTransferFrom(
-        address from, 
-        address to, 
-        uint coinId, 
-        uint amount
-    ) virtual external;
-
-    function secretApproveFrom(
-        address from, 
-        address spender, 
-        uint coinId, 
-        uint amount
-    ) virtual external;
-    
     function totalSupply() public view returns (uint) {
         return _supply;
     }

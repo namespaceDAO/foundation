@@ -24,5 +24,5 @@ contract MockBank is Bank {
         return 18;
     }
 
-    constructor(string memory baseURI_) Bank(baseURI_) {}    
+    constructor(string memory baseURI_) Bank(address(this), baseURI_) {}    
 }

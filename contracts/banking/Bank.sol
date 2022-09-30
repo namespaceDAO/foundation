@@ -5,38 +5,31 @@ import "./Ledger.sol";
 import "./Coin.sol";
 
 abstract contract Bank is Ledger {
+    address private _admin;
     mapping(uint => Coin) private _coins;
 
+    modifier onlyAdmin() {
+        require(msg.sender == _admin, "Caller is not the admin");
+        _;
+    }
+
     function addressOf(uint coinId) external view returns (Coin) {
-        _requireDeployed(coinId);
+        require(
+            address(_coins[coinId]) != address(0), 
+            "Bank coin has not been deployed"
+        );
+
         return _coins[coinId];
     }
 
     function deployCoin(uint coinId) external returns (Coin) {
-        _requireNotDeployed(coinId);
+        require(
+            address(_coins[coinId]) == address(0), 
+            "Bank coin has already been deployed"
+        );
+
         _coins[coinId] = new Coin(Ledger(this), coinId);
         return _coins[coinId];
-    }
-
-    function secretTransferFrom(
-        address from, 
-        address to, 
-        uint coinId, 
-        uint amount
-    ) virtual external override {
-        bytes memory data;
-        _requireCoinCaller(coinId);
-        _safeTransferFrom(from, to, coinId, amount, data);
-    }
-
-    function secretApproveFrom(
-        address from, 
-        address spender, 
-        uint coinId, 
-        uint amount
-    ) virtual external override {
-        _requireCoinCaller(coinId);
-        _approve(msg.sender, spender, coinId, amount);
     }
 
     function _requireCoinCaller(uint coinId) internal view {
@@ -46,19 +39,10 @@ abstract contract Bank is Ledger {
         );
     }
 
-    function _requireNotDeployed(uint coinId) internal view {
-        require(
-            address(_coins[coinId]) == address(0), 
-            "Bank coin has already been deployed"
-        );
+    constructor(
+        address admin_,
+        string memory baseURI_
+    ) Ledger(baseURI_) {
+        _admin = admin_;
     }
-
-    function _requireDeployed(uint coinId) internal view {
-        require(
-            address(_coins[coinId]) != address(0), 
-            "Bank coin has not been deployed"
-        );
-    }
-
-    constructor(string memory baseURI_) Ledger(baseURI_) {}
 }
