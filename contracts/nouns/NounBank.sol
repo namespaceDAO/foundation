@@ -2,6 +2,7 @@
 pragma solidity ^0.8.10;
 
 import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
+
 import "../money/Bank.sol";
 import "./NounData.sol";
 

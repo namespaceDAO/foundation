@@ -4,12 +4,11 @@ pragma solidity ^0.8.10;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./Capitalism.sol";
 import "./Governance.sol";
-import "./Treasury.sol";
 
-// Venture splits ETH among capitalist stakers.
+// Adventure splits ETH among capitalist stakers.
 // Ending a stake transfers ETH to an address.
 // Your share is determined by when you stake.
-contract Venture is Treasury {
+contract Adventure {
     Capitalism private _capitalism;
     Governance private _governance;
     ERC20 private _coin;
@@ -20,6 +19,9 @@ contract Venture is Treasury {
     
     mapping(uint => uint) private _epochs;
     mapping(uint => uint) private _shares;
+
+    receive() external payable {}
+    fallback() external payable {}
 
     function startStake(StakeParams memory params) external {
         _coin.transferFrom(
@@ -59,12 +61,16 @@ contract Venture is Treasury {
         return amount * amount / last;
     }
 
+    function currentBalance() public view returns (uint) {
+        return address(this).balance;
+    }
+
     function stakeShares(uint stakeId) public view returns (uint) {
         return _shares[stakeId];
     }
 
     function currentStakeValue(uint stakeId) public view returns (uint) {
-        return currentBalance() * stakeShares(stakeId) / totalShares();
+        return address(this).balance * _shares[stakeId] / _totalShares;
     }
 
     function currentEpoch() public view returns (uint) {
@@ -93,13 +99,22 @@ contract Venture is Treasury {
 
     function _payStakeValue(uint stakeId, address payee) internal {
         uint value = currentStakeValue(stakeId);
-        _totalShares -= stakeShares(stakeId);
+        _totalShares -= _shares[stakeId];
         if (value > 0) _transferValue(payee, value);
     }
 
     function _addValue(uint value) internal {
         uint epoch = currentEpoch();
         _epochs[epoch] += value;
+    }
+
+    function _transferValue(address to, uint amount) internal {
+        require(
+            address(this).balance >= amount, 
+            "Treasury transfer exceeds balance"
+        );
+        (bool success, ) = to.call{value:amount}("");
+        require(success, "Treasury transfer failed");
     }
 
     constructor(string memory name_, string memory symbol_, ERC20 coin_) {

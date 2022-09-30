@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "../foundation/Venture.sol";
+import "../foundation/Adventure.sol";
 import "./NounBank.sol";
 import "./NounData.sol";
 
-contract NounGame is NounCoin, Venture {
+contract NounGame is NounCoin, Adventure {
     uint private _start;
 
     NounData private _data;
@@ -147,7 +147,7 @@ contract NounGame is NounCoin, Venture {
     }
 
     constructor(ERC20 coin_, string memory baseURI_) 
-    Venture("NOUN DEPOSIT", "NOUN DEPOSIT", coin_) 
+    Adventure("FOUND NOUN", "FOUND NOUN", coin_) 
     {
         NounCoin base = NounCoin(address(this));
 

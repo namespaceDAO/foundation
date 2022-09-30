@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "./Treasury.sol";
-
-contract Governance is Treasury {
+contract Governance {
     uint private _tax = 0;
     uint private _bps = 10000;
 
@@ -19,7 +17,7 @@ contract Governance is Treasury {
         return value * _tax / _bps;
     }
 
-    function setTax(uint tax_) external onlyOwner {
+    function setTax(uint tax_) external {
         require(3000 >= tax_, "Too many apples");
         _tax = tax_; 
     }

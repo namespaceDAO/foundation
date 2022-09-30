@@ -18,6 +18,7 @@ struct Noun {
 
 contract NounData {
     uint private _nounCount;
+    
     mapping(uint => Noun) private _nouns;
 
     event NounAdded(
@@ -42,10 +43,17 @@ contract NounData {
 
     function addNoun(NounParams memory params) external {
         Noun storage noun = _nouns[++_nounCount];
+
         noun.id = _nounCount;
         noun.name = params.name;
         noun.pixels = params.pixels;
         noun.creator = params.creator;
-        emit NounAdded(noun.id, noun.name, noun.pixels, noun.creator);
+
+        emit NounAdded(
+            noun.id, 
+            noun.name, 
+            noun.pixels, 
+            noun.creator
+        );
     }
 }

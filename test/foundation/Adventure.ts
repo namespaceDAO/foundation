@@ -6,7 +6,7 @@ import { ethers } from 'hardhat'
 
 const ONE_DAY = 3600 * 24
 
-describe('Venture', () => {
+describe('Adventure', () => {
   let origin: SignerWithAddress
   let alice: SignerWithAddress
   let bob: SignerWithAddress
@@ -21,8 +21,8 @@ describe('Venture', () => {
     const Found = await ethers.getContractFactory('Found')
     found = await Found.deploy()
 
-    const Venture = await ethers.getContractFactory('Venture')
-    venture = await Venture.deploy(
+    const Adventure = await ethers.getContractFactory('Adventure')
+    venture = await Adventure.deploy(
       'FOUND NOTE',
       'FOUND NOTE',
       found.address
@@ -32,7 +32,7 @@ describe('Venture', () => {
     capitalism = await Capitalism.attach(await venture.capitalism())
   })
 
-  it('Creates Venture', async () => {
+  it('Creates Adventure', async () => {
     const name = await capitalism.name()
     const symbol = await capitalism.symbol()
 
