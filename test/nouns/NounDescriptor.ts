@@ -12,8 +12,8 @@ describe('Noun', () => {
 
   beforeEach(async () => {
     [alice, bob] = await ethers.getSigners()
-    const NounBase = await ethers.getContractFactory('NounBase')
-    desc = await NounBase.deploy()
+    const NounData = await ethers.getContractFactory('NounData')
+    desc = await NounData.deploy()
   })
 
   it('Creates descriptor', async () => {

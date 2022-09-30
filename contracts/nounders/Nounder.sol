@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "../banking/Ledger.sol";
-import "../nouns/NounBase.sol";
+import "../nouns/NounData.sol";
 
 struct Body {
     uint id;
@@ -37,7 +37,7 @@ contract Nounder is ERC721 {
         _mint(nouner, body.id);
     }
 
-    constructor(NounBase base_) 
+    constructor(NounData base_) 
     ERC721("NOUNDER", "NOUNDER") {
 
     }

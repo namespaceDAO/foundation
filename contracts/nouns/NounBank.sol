@@ -2,10 +2,10 @@
 pragma solidity ^0.8.10;
 
 import "../banking/Bank.sol";
-import "./NounBase.sol";
+import "./NounData.sol";
 
 contract NounBank is Bank {
-    NounBase private _base;
+    NounData private _data;
 
     function nameOf(uint coinId) override public view returns (string memory) {
         return "NOUN COIN";
@@ -31,8 +31,8 @@ contract NounBank is Bank {
     constructor(
         address admin_,
         string memory baseURI_,
-        NounBase base_
+        NounData home_
     ) Bank(admin_, baseURI_) {
-        _base = base_;
+        _data = home_;
     }
 }

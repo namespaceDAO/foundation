@@ -3,12 +3,12 @@ pragma solidity ^0.8.10;
 
 import "../finance/Venture.sol";
 import "./NounBank.sol";
-import "./NounBase.sol";
+import "./NounData.sol";
 
-// NounBank creates a new cryptocurrency every day.
 contract NounGame is Venture {
     NounBank private _bank;
-    NounBase private _base;
+    NounData private _data;
+    uint private _start;
 
     mapping(uint => uint) private _nounToDay;
     mapping(uint => uint) private _dayToNoun;
@@ -21,11 +21,11 @@ contract NounGame is Venture {
     event Claim(uint nounId, uint amount);
 
     function totalCoins() public view returns (uint) {
-        return block.timestamp / 1 days;
+        return (block.timestamp - _start) / 1 days;
     }
 
     function currentDay() public view returns (uint) {
-        return block.timestamp / 1 days;
+        return (block.timestamp - _start) / 1 days;
     }
     
     function nounToDay(uint noun) public view returns (uint) {
@@ -58,7 +58,7 @@ contract NounGame is Venture {
         uint nounId,
         bytes memory data
     ) external payable {
-        _base.requireNoun(nounId);
+        _data.requireNoun(nounId);
 
         uint day = currentDay();
         require(
@@ -75,7 +75,7 @@ contract NounGame is Venture {
     }
 
     function claim(uint nounId, bytes memory data) external {
-        Noun memory noun = _base.getNoun(nounId);
+        Noun memory noun = _data.getNoun(nounId);
         uint amount = _totalOnNoun[nounId] / 10;
 
         _nounClaims[nounId] = true;
@@ -117,7 +117,8 @@ contract NounGame is Venture {
 
     constructor(string memory baseURI_, ERC20 coin_) 
     Venture("NOUN NOTE", "NOUN NOTE", coin_) {
-        _base = new NounBase();
-        _bank = new NounBank(address(this), baseURI_, _base);
+        _data = new NounData();
+        _bank = new NounBank(address(this), baseURI_, _data);
+        _start = block.timestamp;
     }
 }
