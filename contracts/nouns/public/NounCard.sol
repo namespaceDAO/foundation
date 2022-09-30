@@ -36,11 +36,15 @@ contract NounCard is ERC721 {
         card.power = power;
 
         // TODO: burn coins
-        address minter = msg.sender;
-        bytes memory data;
-        _ledger.safeTransferFrom(minter, address(this), coinId, amount, data);
+        _ledger.safeTransferFrom(
+            msg.sender, 
+            address(this), 
+            coinId, 
+            amount, 
+            new bytes(0)
+        );
 
-        _mint(minter, card.id);
+        _mint(msg.sender, card.id);
     }
 
     constructor(NounGame game_) ERC721("NOUN CARD", "NOUN CARD") {

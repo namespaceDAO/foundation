@@ -33,21 +33,29 @@ contract NounGame is NounCoin, Venture {
         return (block.timestamp - _start) / 1 days;
     }
 
-    function currentDay() public view returns (uint) {
+    function currentDay() override public view returns (uint) {
         return (block.timestamp - _start) / 1 days;
     }
     
-    function nounToCoin(uint nounId) override public view returns (uint) {
+    function nounToCoin(uint nounId) public view returns (uint) {
         return _nounToCoin[nounId];
     }
 
-    function requireCoin(uint coinId) override public view {
-        require(coinId <= currentDay(), "Noun has not been found");
-    }
-
     function coinToNoun(uint coinId) override public view returns (uint) {
-        requireCoin(coinId);
+        _requireMintedCoin(coinId);
         return _coinToNoun[coinId];
+    }
+    
+    function totalOnNoun(uint nounId) external view returns (uint) {
+        return _totalOnNoun[nounId];
+    }
+    
+    function totalOnCoin(uint nounId) external view returns (uint) {
+        return _totalOnCoin[nounId];
+    }
+    
+    function nounClaims(uint nounId) external view returns (uint) {
+        return _nounClaims[nounId];
     }
 
     function mint(address to, uint coinId) external payable {
@@ -75,7 +83,8 @@ contract NounGame is NounCoin, Venture {
         emit Vote(day, nounId, bonus);
     }
 
-    function claim(uint nounId, uint amount) external {
+    function claim(uint coinId, uint amount) external {
+        uint nounId = coinToNoun(coinId);
         Noun memory noun = _data.getNoun(nounId);
 
         uint claimed = _nounClaims[nounId];
@@ -124,10 +133,15 @@ contract NounGame is NounCoin, Venture {
         }
     }
 
+    function _requireMintedCoin(uint coinId) internal view {
+        require(coinId <= currentDay(), "Coin has not been minted");
+    }
+
     function _requireMintableNoun(uint nounId) internal view {
-        _data.requireNoun(nounId);
+        require(nounId <= _data.nounCount(), "Noun not found");
+        uint coinId = _nounToCoin[nounId];
         require(
-            nounToCoin(nounId) == 0 || nounToCoin(nounId) == currentDay(),
+            coinId == 0 || coinId == currentDay(),
             "Noun has been minted"
         );
     }

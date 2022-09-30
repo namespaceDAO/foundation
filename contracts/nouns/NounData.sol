@@ -32,7 +32,7 @@ contract NounData {
     }
 
     function getNoun(uint id) public view returns (Noun memory) {
-        requireNoun(id);
+        require(id <= _nounCount, "Noun not found");
         return _nouns[id];
     }
     
@@ -47,9 +47,5 @@ contract NounData {
         noun.pixels = params.pixels;
         noun.creator = params.creator;
         emit NounAdded(noun.id, noun.name, noun.pixels, noun.creator);
-    }
-
-    function requireNoun(uint id) public view {
-        require(id <= _nounCount, "Noun not found");
     }
 }

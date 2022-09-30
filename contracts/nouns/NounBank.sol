@@ -6,8 +6,7 @@ import "../money/Bank.sol";
 import "./NounData.sol";
 
 abstract contract NounCoin {
-    function requireCoin(uint coinId) virtual public view;
-    function nounToCoin(uint nounId) virtual public view returns (uint);
+    function currentDay() virtual public view returns (uint);
     function coinToNoun(uint coinId) virtual public view returns (uint);
 }
 
@@ -37,7 +36,7 @@ contract NounBank is Bank {
     }
 
     function deployCoin(uint coinId) external returns (Coin) {
-        _base.requireCoin(coinId);
+        require(coinId <= _base.currentDay(), "Noun has not been found");
         return _deployCoin(coinId);
     }
 
