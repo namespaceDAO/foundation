@@ -18,7 +18,7 @@ contract NounBank is Bank {
     NounCoin private _base;
 
     modifier onlyAdmin() {
-        require(msg.sender == address(_base), "Caller is not the admin");
+        require(msg.sender == address(_base), "Caller is not based");
         _;
     }
 
@@ -28,11 +28,11 @@ contract NounBank is Bank {
         return noun.name;
     }
 
-    function symbolOf(uint coinId) override public view returns (string memory) {
+    function symbolOf(uint coinId) override public pure returns (string memory) {
         return string(abi.encodePacked('NOUN COIN ', coinId.toString()));
     }
 
-    function decimals() override virtual public view returns (uint8) {
+    function decimals() override virtual public pure returns (uint8) {
         return 14;
     }
 
@@ -41,13 +41,8 @@ contract NounBank is Bank {
         return _deployCoin(coinId);
     }
 
-    function mint(
-        address to, 
-        uint id, 
-        uint amount, 
-        bytes memory data
-    ) external onlyAdmin {
-        _mint(to, id, amount, data);
+    function mint(address to, uint id, uint amount) external onlyAdmin {
+        _mint(to, id, amount, new bytes(0));
     }
 
     constructor(

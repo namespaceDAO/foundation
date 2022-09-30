@@ -40,7 +40,7 @@ describe('NounBank', () => {
     const day = await game.currentDay()
 
     const value = parseEther(`${Math.random()}`)
-    await game.vote(alice.address, 1, 0, { value })
+    await game.vote(alice.address, 1, { value })
 
     const balance1 = await bank.balanceOf(alice.address, 0)
     const noun1 = await game.coinToNoun(day)

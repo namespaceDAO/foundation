@@ -36,7 +36,7 @@ contract NounData {
         return _nouns[id];
     }
     
-    function tokenURI(uint tokenId) public view returns (string memory) {
+    function tokenURI(uint tokenId) public pure returns (string memory) {
         return "";
     }
 

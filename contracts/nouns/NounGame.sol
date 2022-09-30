@@ -7,6 +7,7 @@ import "./NounData.sol";
 
 contract NounGame is NounCoin, Venture {
     uint private _start;
+
     NounData private _data;
     NounBank private _bank;
 
@@ -49,41 +50,29 @@ contract NounGame is NounCoin, Venture {
         return _coinToNoun[coinId];
     }
 
-    function mint(
-        address to, 
-        uint coinId, 
-        bytes memory data
-    ) external payable {
+    function mint(address to, uint coinId) external payable {
         require(msg.value > 0, "Must mint some Nouns");
-        
+
+        uint nounId = coinToNoun(coinId);        
         uint amount = convertValue(coinId, msg.value);
-        uint nounId = coinToNoun(coinId);
-        
-        _totalOnNoun[nounId] += msg.value;
-        _bank.mint(to, coinId, amount, data);
+
+        _addNounValue(nounId, msg.value);
+        _bank.mint(to, coinId, amount);
 
         emit Mint(coinId, to, amount);
     }
 
-    function vote(
-        address payee, 
-        uint nounId,
-        bytes memory data
-    ) external payable {
-        _data.requireNoun(nounId);
+    function vote(address payee, uint nounId) external payable {
+        _requireMintableNoun(nounId);
 
-        uint day = currentDay();
-        require(
-            nounToCoin(nounId) == 0 || nounToCoin(nounId) == day,
-            "Noun has been minted"
-        );
-
-        uint amount = msg.value;
-
-        _updateDailyNouns(nounId, amount);
-        _bank.mint(payee, day, amount * amplitude, data);
+        _addNounValue(nounId, msg.value);
+        _updateDailyNouns(nounId, msg.value);
         
-        emit Vote(day, nounId, amount);
+        uint day = currentDay();
+        uint bonus = amplitude * msg.value;
+        _bank.mint(payee, day, bonus);
+        
+        emit Vote(day, nounId, bonus);
     }
 
     function claim(uint nounId, uint amount) external {
@@ -96,9 +85,7 @@ contract NounGame is NounCoin, Venture {
         require(claimable, "Claim too large");
 
         _nounClaims[nounId] += amount;
-
-        bytes memory data;
-        _bank.mint(noun.creator, nounId, amount, data);
+        _bank.mint(noun.creator, nounId, amount);
 
         emit Claim(nounId, amount);
     }
@@ -124,14 +111,25 @@ contract NounGame is NounCoin, Venture {
         return value * avgSupply / tokenSupply;
     }
 
+    function _addNounValue(uint nounId, uint value) internal {
+        _addValue(value);
+        _totalOnNoun[nounId] += value;
+    }
+
     function _updateDailyNouns(uint nounId, uint value) internal {
         uint day = currentDay();
-        _totalOnNoun[nounId] += value;
-
         if (_totalOnNoun[nounId] > _totalOnCoin[day]) {
             _coinToNoun[day] = nounId;
             _totalOnCoin[day] = _totalOnNoun[nounId];
         }
+    }
+
+    function _requireMintableNoun(uint nounId) internal view {
+        _data.requireNoun(nounId);
+        require(
+            nounToCoin(nounId) == 0 || nounToCoin(nounId) == currentDay(),
+            "Noun has been minted"
+        );
     }
 
     constructor(ERC20 coin_, string memory baseURI_) 
