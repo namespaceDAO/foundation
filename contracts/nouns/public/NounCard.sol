@@ -15,7 +15,9 @@ struct Card {
 contract NounCard is ERC721 {
     NounGame private _game;
     Ledger private _ledger;
+
     uint private _totalCards;
+    
     mapping(uint => Card) private _cards;
 
     function getCard(uint id) external view returns (Card memory) {

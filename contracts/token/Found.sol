@@ -19,9 +19,9 @@ contract Found is Ownable, ERC20 {
         _mintFound(to, msg.value);
     }
 
-    function mint2x(address to) external payable {
-        require(block.timestamp < 1666666667, "2x closed");
-        _mintFound(to, msg.value * 2);
+    function mint10x(address to) external payable {
+        require(block.timestamp < 1666666667, "10x closed");
+        _mintFound(to, msg.value * 10);
     }
 
     function _mintFound(address to, uint amount) internal {
@@ -32,12 +32,9 @@ contract Found is Ownable, ERC20 {
 
     function burn(address from, address to, uint amount) external {
         require(amount > 0, "Burn more than 0");
+        _burn(from, amount);
         
         uint value = foundValue(amount);
-        bool burnable = address(this).balance >= value;
-        require(burnable, "Burn exceeds balance");
-
-        _burn(from, amount);
         (bool success, ) = to.call{value:value}("");
         require(success, "Burn failed");
 
@@ -45,7 +42,8 @@ contract Found is Ownable, ERC20 {
     }
 
     function claim(address to, uint amount) external onlyOwner {
-        bool claimable = totalSupply() / 10 >= amount + claimed;
+        uint totalMinted = totalSupply() - claimed;
+        bool claimable = totalMinted / 10 >= amount + claimed;
         require(claimable, "Claim too large");
 
         claimed += amount;

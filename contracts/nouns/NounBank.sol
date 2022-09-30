@@ -5,7 +5,8 @@ import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
 import "../money/Bank.sol";
 import "./NounData.sol";
 
-abstract contract Nouns {
+abstract contract NounCoin {
+    function requireCoin(uint coinId) virtual public view;
     function nounToCoin(uint nounId) virtual public view returns (uint);
     function coinToNoun(uint coinId) virtual public view returns (uint);
 }
@@ -13,16 +14,16 @@ abstract contract Nouns {
 contract NounBank is Bank {
     using Strings for uint;
     
-    Nouns private _nouns;
     NounData private _data;
+    NounCoin private _base;
 
     modifier onlyAdmin() {
-        require(msg.sender == address(_nouns), "Caller is not the admin");
+        require(msg.sender == address(_base), "Caller is not the admin");
         _;
     }
 
     function nameOf(uint coinId) override public view returns (string memory) {
-        uint nounId = _nouns.coinToNoun(coinId);
+        uint nounId = _base.coinToNoun(coinId);
         Noun memory noun = _data.getNoun(nounId);
         return noun.name;
     }
@@ -35,6 +36,11 @@ contract NounBank is Bank {
         return 14;
     }
 
+    function deployCoin(uint coinId) external returns (Coin) {
+        _base.requireCoin(coinId);
+        return _deployCoin(coinId);
+    }
+
     function mint(
         address to, 
         uint id, 
@@ -45,11 +51,11 @@ contract NounBank is Bank {
     }
 
     constructor(
-        string memory baseURI_,
-        Nouns nouns_,
-        NounData data_
+        NounData data_,
+        NounCoin base_,
+        string memory baseURI_
     ) Bank(baseURI_) {
-        _nouns = nouns_;
         _data = data_;
+        _base = base_;
     }
 }

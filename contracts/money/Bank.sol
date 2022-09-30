@@ -10,16 +10,16 @@ abstract contract Bank is Ledger {
     function addressOf(uint coinId) external view returns (Coin) {
         require(
             address(_coins[coinId]) != address(0), 
-            "Bank coin has not been deployed"
+            "Coin has not been deployed"
         );
 
         return _coins[coinId];
     }
 
-    function deployCoin(uint coinId) external returns (Coin) {
+    function _deployCoin(uint coinId) internal returns (Coin) {
         require(
             address(_coins[coinId]) == address(0), 
-            "Bank coin has already been deployed"
+            "Coin has already been deployed"
         );
 
         _coins[coinId] = new Coin(Ledger(this), coinId);

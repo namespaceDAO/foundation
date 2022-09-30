@@ -5,16 +5,16 @@ import "../foundation/Venture.sol";
 import "./NounBank.sol";
 import "./NounData.sol";
 
-contract NounGame is Nouns, Venture {
-    NounBank private _bank;
-    NounData private _data;
+contract NounGame is NounCoin, Venture {
     uint private _start;
+    NounData private _data;
+    NounBank private _bank;
 
     mapping(uint => uint) private _nounToCoin;
     mapping(uint => uint) private _coinToNoun;
     mapping(uint => uint) private _totalOnNoun;
-    mapping(uint => uint) private _totalOnDay;
-    mapping(uint => bool) private _nounClaims;
+    mapping(uint => uint) private _totalOnCoin;
+    mapping(uint => uint) private _nounClaims;
     
     event Mint(uint coinId, address to, uint amount);
     event Vote(uint coinId, uint nounId, uint amount);
@@ -40,8 +40,12 @@ contract NounGame is Nouns, Venture {
         return _nounToCoin[nounId];
     }
 
-    function coinToNoun(uint coinId) override public view returns (uint) {
+    function requireCoin(uint coinId) override public view {
         require(coinId <= currentDay(), "Noun has not been found");
+    }
+
+    function coinToNoun(uint coinId) override public view returns (uint) {
+        requireCoin(coinId);
         return _coinToNoun[coinId];
     }
 
@@ -82,11 +86,18 @@ contract NounGame is Nouns, Venture {
         emit Vote(day, nounId, amount);
     }
 
-    function claim(uint nounId, bytes memory data) external {
+    function claim(uint nounId, uint amount) external {
         Noun memory noun = _data.getNoun(nounId);
-        uint amount = _totalOnNoun[nounId] / 10;
 
-        _nounClaims[nounId] = true;
+        uint claimed = _nounClaims[nounId];
+        uint totalMinted = _totalOnNoun[nounId] - claimed;
+
+        bool claimable = totalMinted / 10 >= amount + claimed;
+        require(claimable, "Claim too large");
+
+        _nounClaims[nounId] += amount;
+
+        bytes memory data;
         _bank.mint(noun.creator, nounId, amount, data);
 
         emit Claim(nounId, amount);
@@ -117,16 +128,19 @@ contract NounGame is Nouns, Venture {
         uint day = currentDay();
         _totalOnNoun[nounId] += value;
 
-        if (_totalOnNoun[nounId] > _totalOnDay[day]) {
+        if (_totalOnNoun[nounId] > _totalOnCoin[day]) {
             _coinToNoun[day] = nounId;
-            _totalOnDay[day] = _totalOnNoun[nounId];
+            _totalOnCoin[day] = _totalOnNoun[nounId];
         }
     }
 
-    constructor(string memory baseURI_, ERC20 coin_) 
-    Venture("NOUN NOTE", "NOUN NOTE", coin_) {
-        _data = new NounData();
-        _bank = new NounBank(baseURI_, Nouns(address(this)), _data);
+    constructor(ERC20 coin_, string memory baseURI_) 
+    Venture("NOUN DEPOSIT", "NOUN DEPOSIT", coin_) 
+    {
+        NounCoin base = NounCoin(address(this));
+
         _start = block.timestamp;
+        _data = new NounData();
+        _bank = new NounBank(_data, base, baseURI_);
     }
 }
