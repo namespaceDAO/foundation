@@ -1,19 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "../finance/Treasury.sol";
+import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
 
-contract NounPost is Treasury {
+// TODO: implement some sort of DAO
+contract NounPost is PaymentSplitter {
     uint private _coinId;
     uint epochDuration = 28 days;
 
     mapping(uint => uint) private _funding;
-
-    // TODO: governance contract
-    function sendValue(address to, uint amount) external {
-        _goodAccounting(amount);
-        _transferValue(to, amount);
-    }
 
     function coinId() external view returns (uint) {
         return _coinId;
@@ -25,7 +20,7 @@ contract NounPost is Treasury {
 
     function _goodAccounting(uint amount) internal {
         uint epoch = currentEpoch();
-        uint balance = currentBalance();
+        uint balance = address(this).balance;
 
         uint lb = balance * 8 / 100;
         uint ub = balance * 2 / 10;
@@ -41,7 +36,20 @@ contract NounPost is Treasury {
         }
     }
 
-    constructor(uint coinId_) {
+    function _transferValue(address to, uint amount) internal {
+        require(
+            address(this).balance >= amount, 
+            "Treasury transfer exceeds balance"
+        );
+        (bool success, ) = to.call{value:amount}("");
+        require(success, "Treasury transfer failed");
+    }
+
+    constructor(
+        uint coinId_,
+        address[] memory payees,
+        uint[] memory shares
+    ) PaymentSplitter(payees, shares) {
         _coinId = coinId_;
     }
 }
