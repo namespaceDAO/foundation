@@ -5,7 +5,7 @@ import "../foundation/Adventure.sol";
 import "./NounBank.sol";
 import "./NounData.sol";
 
-contract NounGame is NounCoin, Adventure {
+contract NounGame is NounBase, Adventure {
     uint private _start;
 
     NounData private _data;
@@ -30,11 +30,11 @@ contract NounGame is NounCoin, Adventure {
     }
 
     function totalCoins() public view returns (uint) {
-        return (block.timestamp - _start) / 1 days;
+        return (block.timestamp - _start) / 1 days + 1;
     }
 
     function currentDay() override public view returns (uint) {
-        return (block.timestamp - _start) / 1 days;
+        return (block.timestamp - _start) / 1 days + 1;
     }
     
     function nounToCoin(uint nounId) public view returns (uint) {
@@ -149,7 +149,7 @@ contract NounGame is NounCoin, Adventure {
     constructor(ERC20 coin_, string memory baseURI_) 
     Adventure("FOUND NOUN", "FOUND NOUN", coin_) 
     {
-        NounCoin base = NounCoin(address(this));
+        NounBase base = NounBase(address(this));
 
         _start = block.timestamp;
         _data = new NounData();

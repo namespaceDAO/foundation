@@ -5,8 +5,9 @@ import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
 
 import "../money/Bank.sol";
 import "./NounData.sol";
+import "./NounCoin.sol";
 
-abstract contract NounCoin {
+abstract contract NounBase {
     function currentDay() virtual public view returns (uint);
     function coinToNoun(uint coinId) virtual public view returns (uint);
 }
@@ -15,7 +16,9 @@ contract NounBank is Bank {
     using Strings for uint;
     
     NounData private _data;
-    NounCoin private _base;
+    NounBase private _base;
+
+    mapping(uint => NounCoin) private _coins;
 
     modifier onlyAdmin() {
         require(msg.sender == address(_base), "Caller is not based");
@@ -36,9 +39,24 @@ contract NounBank is Bank {
         return 14;
     }
 
+    function addressOf(uint coinId) external view returns (Coin) {
+        require(
+            address(_coins[coinId]) != address(0), 
+            "Coin has not been deployed"
+        );
+
+        return _coins[coinId];
+    }
+
     function deployCoin(uint coinId) external returns (Coin) {
         require(coinId <= _base.currentDay(), "Noun has not been found");
-        return _deployCoin(coinId);
+        require(
+            address(_coins[coinId]) == address(0), 
+            "Coin has already been deployed"
+        );
+
+        _coins[coinId] = new NounCoin(Bank(this), coinId);
+        return _coins[coinId];
     }
 
     function mint(address to, uint id, uint amount) external onlyAdmin {
@@ -47,7 +65,7 @@ contract NounBank is Bank {
 
     constructor(
         NounData data_,
-        NounCoin base_,
+        NounBase base_,
         string memory baseURI_
     ) Bank(baseURI_) {
         _data = data_;

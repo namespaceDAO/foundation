@@ -96,7 +96,7 @@ contract Adventure {
     }
 
     function _transferValue(address to, uint amount) internal {
-        uint capped = address(this).balance >= amount;
+        bool capped = address(this).balance >= amount;
         require(capped, "Transfer exceeds balance");
         (bool success, ) = to.call{value:amount}("");
         require(success, "Treasury transfer failed");

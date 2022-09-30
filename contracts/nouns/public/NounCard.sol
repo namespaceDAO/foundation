@@ -2,7 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "../../money/Ledger.sol";
+import "../../money/Bank.sol";
 import "../NounGame.sol";
 
 struct Card {
@@ -14,7 +14,7 @@ struct Card {
 
 contract NounCard is ERC721 {
     NounGame private _game;
-    Ledger private _ledger;
+    Bank private _bank;
 
     uint private _totalCards;
     
@@ -36,7 +36,7 @@ contract NounCard is ERC721 {
         card.power = power;
 
         // TODO: burn coins
-        _ledger.safeTransferFrom(
+        _bank.safeTransferFrom(
             msg.sender, 
             address(this), 
             coinId, 

@@ -2,7 +2,6 @@ import { ethers } from 'hardhat'
 import { expect } from 'chai'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { Contract } from 'ethers'
-import { Coin__factory } from '../../typechain-types'
 
 const parseEther = ethers.utils.parseEther
 
@@ -11,13 +10,11 @@ describe('Bank', () => {
   let alice: SignerWithAddress
   let bob: SignerWithAddress
   let bank: Contract
-  let Coin: Coin__factory
 
   const BASE_URI = 'https://bankofnouns.com/_/api/tokens/{id}.json'
 
   it('Create coin bank', async () => {
     [origin, alice, bob] = await ethers.getSigners()
-    Coin = await ethers.getContractFactory('Coin')
     const Bank = await ethers.getContractFactory('MockBank')
     bank = await Bank.deploy(BASE_URI)
 
@@ -26,18 +23,6 @@ describe('Bank', () => {
 
     expect(supply).to.equal(0)
     expect(supply1).to.equal(0)
-  })
-
-  it('Deploys coin', async () => {
-    await bank.deployCoin(1)
-    const a1 = await bank.addressOf(1)
-
-    const coin1 = Coin.attach(a1)
-    const name1 = await coin1.name()
-    const symbol1 = await coin1.symbol()
-
-    expect(name1).to.equal('COIN 1')
-    expect(symbol1).to.equal('SYMBOL 1')
   })
 
   it('Mint coins to Alice and Bob', async () => {

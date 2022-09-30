@@ -42,10 +42,35 @@ describe('NounBank', () => {
     const value = parseEther(`${Math.random()}`)
     await game.vote(alice.address, 1, { value })
 
-    const balance1 = await bank.balanceOf(alice.address, 0)
+    const balance1 = await bank.balanceOf(alice.address, 1)
     const noun1 = await game.coinToNoun(day)
 
     expect(value.mul(10)).to.equal(balance1)
     expect(noun1).to.equal(1)
+  })
+
+  it('Deploys coin', async () => {
+    await data.addNoun({
+      name: 'Rubber Ducky',
+      creator: alice.address,
+      pixels: 0
+    })
+
+    const value = parseEther(`${Math.random()}`)
+    await game.vote(alice.address, 1, { value })
+
+    await bank.deployCoin(1)
+    const a1 = await bank.addressOf(1)
+
+    const x = await game.coinToNoun(1)
+    console.log(x)
+
+    const Coin = await ethers.getContractFactory('Coin')
+    const coin1 = Coin.attach(a1)
+    const name1 = await coin1.name()
+    const symbol1 = await coin1.symbol()
+
+    expect(name1).to.equal('Rubber Ducky')
+    expect(symbol1).to.equal('NOUN COIN 1')
   })
 })

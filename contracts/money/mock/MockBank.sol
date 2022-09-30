@@ -24,9 +24,5 @@ contract MockBank is Bank {
         _mint(to, coinId, msg.value, data);
     }
 
-    function deployCoin(uint coinId) external returns (Coin) {
-        return _deployCoin(coinId);
-    }
-
     constructor(string memory baseURI_) Bank(baseURI_) {}    
 }
