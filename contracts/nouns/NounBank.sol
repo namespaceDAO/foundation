@@ -5,12 +5,8 @@ import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
 
 import "../money/Bank.sol";
 import "./NounData.sol";
+import "./NounBase.sol";
 import "./NounCoin.sol";
-
-abstract contract NounBase {
-    function currentDay() virtual public view returns (uint);
-    function coinToNoun(uint coinId) virtual public view returns (uint);
-}
 
 contract NounBank is Bank {
     using Strings for uint;
