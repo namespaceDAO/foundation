@@ -21,7 +21,7 @@ contract NounData {
     
     mapping(uint => Noun) private _nouns;
 
-    event NounAdded(
+    event NounSubmitted(
         uint id,
         string name,
         bytes pixels,
@@ -41,7 +41,7 @@ contract NounData {
         return "";
     }
 
-    function addNoun(NounParams memory params) external {
+    function submitNoun(NounParams memory params) external {
         Noun storage noun = _nouns[++_nounCount];
 
         noun.id = _nounCount;
@@ -49,7 +49,7 @@ contract NounData {
         noun.pixels = params.pixels;
         noun.creator = params.creator;
 
-        emit NounAdded(
+        emit NounSubmitted(
             noun.id, 
             noun.name, 
             noun.pixels, 

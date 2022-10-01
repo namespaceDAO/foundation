@@ -5,8 +5,7 @@ import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
 
 import "../money/Bank.sol";
 import "./NounData.sol";
-import "./NounBase.sol";
-import "./NounCoin.sol";
+import "./shared.sol";
 
 contract NounBank is Bank {
     using Strings for uint;
@@ -45,11 +44,10 @@ contract NounBank is Bank {
     }
 
     function deployCoin(uint coinId) external returns (Coin) {
-        require(coinId <= _base.currentDay(), "Noun has not been found");
-        require(
-            address(_coins[coinId]) == address(0), 
-            "Coin has already been deployed"
-        );
+        require(coinId <= _base.currentDay(), "Coin has not been found");
+
+        bool deployed = address(_coins[coinId]) != address(0);
+        require(!deployed, "Coin has already been deployed");
 
         _coins[coinId] = new NounCoin(Bank(this), coinId);
         return _coins[coinId];

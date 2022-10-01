@@ -38,13 +38,12 @@ contract Coin is IERC20 {
 
     function transfer(address to, uint amount) external returns (bool) {
         bytes memory data;
-        _bank.safeTransferFrom(msg.sender, to, _coin, amount, data);
+        _bank.safeTransferFrom(msg.sender, to, _coin, amount, new bytes(0));
         return true;
     }
 
     function transferFrom(address from, address to, uint amount) external returns (bool) {
-        bytes memory data;
-        _bank.safeTransferFrom(from, to, _coin, amount, data);
+        _bank.safeTransferFrom(from, to, _coin, amount, new bytes(0));
         return true;
     }
 

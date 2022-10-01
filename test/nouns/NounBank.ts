@@ -31,7 +31,7 @@ describe('NounBank', () => {
   })
 
   it('Creates bank', async () => {
-    await data.addNoun({
+    await data.submitNoun({
       name: 'Rubber Ducky',
       creator: alice.address,
       pixels: 0
@@ -50,7 +50,7 @@ describe('NounBank', () => {
   })
 
   it('Deploys coin', async () => {
-    await data.addNoun({
+    await data.submitNoun({
       name: 'Rubber Ducky',
       creator: alice.address,
       pixels: 0

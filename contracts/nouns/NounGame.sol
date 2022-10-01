@@ -3,8 +3,8 @@ pragma solidity ^0.8.10;
 
 import "../foundation/Adventure.sol";
 import "./NounData.sol";
-import "./NounBase.sol";
 import "./NounBank.sol";
+import "./shared.sol";
 
 contract NounGame is NounBase, Adventure {
     uint private _start;
