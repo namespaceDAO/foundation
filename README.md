@@ -23,7 +23,7 @@ Bank of Nouns creates one crypto currency every day. The coin for each day is de
 
 ## Adventure
 
-Adventure is a contract for distributing FOUND among multiple parties. FOUND is distributed via shares created by staking FOUND. Share rates are determined by the mint activity and stake duration. FOUND is paid by unstaking. 
+Adventure is a contract for distributing FOUND among multiple parties. FOUND is distributed via shares created by staking FOUND. Share rates are determined by the mint activity and stake duration. FOUND is paid by unstaking FOUND. 
 
 ## Governance
 
