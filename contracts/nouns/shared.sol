@@ -9,5 +9,18 @@ contract NounCoin is Coin {
 
 abstract contract NounBase {
     function currentDay() virtual public view returns (uint);
-    function coinToNoun(uint coinId) virtual public view returns (uint);
+    function coinToNoun(uint coinId) virtual public view returns (Noun memory);
+}
+
+struct NounParams {
+    string name;
+    bytes pixels;
+    address creator;
+}
+
+struct Noun {
+    uint id;
+    string name;
+    bytes pixels;
+    address creator;
 }

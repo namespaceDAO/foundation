@@ -3,18 +3,7 @@ pragma solidity ^0.8.10;
 
 // import { Base64 } from 'base64-sol/base64.sol';
 
-struct NounParams {
-    string name;
-    bytes pixels;
-    address creator;
-}
-
-struct Noun {
-    uint id;
-    string name;
-    bytes pixels;
-    address creator;
-}
+import "./shared.sol";
 
 contract NounData {
     uint private _nounCount;

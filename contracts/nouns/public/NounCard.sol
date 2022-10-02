@@ -2,8 +2,8 @@
 pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "../../money/Bank.sol";
 import "../NounGame.sol";
+import "../NounBank.sol";
 
 struct Card {
     uint id;
@@ -14,7 +14,7 @@ struct Card {
 
 contract NounCard is ERC721 {
     NounGame private _game;
-    Bank private _bank;
+    NounBank private _bank;
 
     uint private _totalCards;
     
@@ -26,12 +26,12 @@ contract NounCard is ERC721 {
     }
 
     function mint(uint to, uint coinId, uint amount) external {
-        uint nounId = _game.coinToNoun(coinId);
-        uint power = _game.convertValue(coinId, amount);
+        Noun memory noun = _game.coinToNoun(coinId);
+        uint power = _bank.convertCoin(coinId, amount);
 
         Card storage card = _cards[++_totalCards];
         card.id = _totalCards;
-        card.nounId = nounId;
+        card.nounId = noun.id;
         card.coinId = coinId;
         card.power = power;
 

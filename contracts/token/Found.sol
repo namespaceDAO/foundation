@@ -24,12 +24,6 @@ contract Found is Ownable, ERC20 {
         _mintFound(to, msg.value * 10);
     }
 
-    function _mintFound(address to, uint amount) internal {
-        require(amount > 0, "Mint more than 0");
-        _mint(to, amount);
-        emit Mint(to, amount);
-    }
-
     function burn(address from, address to, uint amount) external {
         require(amount > 0, "Burn more than 0");
         _burn(from, amount);
@@ -50,6 +44,12 @@ contract Found is Ownable, ERC20 {
         _mint(to, amount);
 
         emit Claim(to, amount);
+    }
+
+    function _mintFound(address to, uint amount) internal {
+        require(amount > 0, "Mint more than 0");
+        _mint(to, amount);
+        emit Mint(to, amount);
     }
 
     constructor() ERC20("FOUND", "FOUND") {}

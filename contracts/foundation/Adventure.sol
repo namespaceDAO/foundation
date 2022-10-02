@@ -11,9 +11,9 @@ import "./Governance.sol";
 contract Adventure {
     Capitalism private _capitalism;
     Governance private _governance;
-    ERC20 private _coin;
+    ERC20 private _token;
 
-    uint amplitude = 10;
+    uint sharestrength = 10;
     uint epochDuration = 1 days;
     uint private _totalShares = 0;
     
@@ -32,15 +32,19 @@ contract Adventure {
     }
 
     function startStake(StakeParams memory params) external {
-        _coin.transferFrom(params.founder, address(this), params.amount);
+        _token.transferFrom(params.founder, address(this), params.amount);
         Stake memory stake = _capitalism.startStake(params);
         _setupStake(stake.id, params.amount);
     }
 
     function endStake(address payee, uint id) external {
         Stake memory stake = _capitalism.endStake(msg.sender, payee, id);
-        _coin.transfer(msg.sender, stake.amount);
+        _token.transferFrom(address(this), msg.sender, stake.amount);
         _transferStakeValue(stake.id, payee);
+    }
+
+    function currentStakeValue(uint stakeId) public view returns (uint) {
+        return _token.balanceOf(address(this)) * _shares[stakeId] / _totalShares;
     }
 
     function getShares(uint epoch, uint amount) public view returns (uint) {
@@ -50,27 +54,19 @@ contract Adventure {
             return amount;
         }
 
-        if (last > amount * amplitude) {
-            return amount / amplitude;
+        if (last > amount * sharestrength) {
+            return amount / sharestrength;
         }
 
-        if (last < amount / amplitude) {
-            return amount * amplitude;
+        if (last < amount / sharestrength) {
+            return amount * sharestrength;
         }
 
         return amount * amount / last;
     }
 
-    function currentBalance() public view returns (uint) {
-        return address(this).balance;
-    }
-
     function stakeShares(uint stakeId) public view returns (uint) {
         return _shares[stakeId];
-    }
-
-    function currentStakeValue(uint stakeId) public view returns (uint) {
-        return address(this).balance * _shares[stakeId] / _totalShares;
     }
 
     function currentEpoch() public view returns (uint) {
@@ -92,7 +88,10 @@ contract Adventure {
     function _transferStakeValue(uint stakeId, address payee) internal {
         uint value = currentStakeValue(stakeId);
         _totalShares -= _shares[stakeId];
-        if (value > 0) _transferValue(payee, value);
+        
+        if (value > 0) {
+            _token.transferFrom(address(this), payee, value);
+        }
     }
 
     function _transferValue(address to, uint amount) internal {
@@ -109,6 +108,6 @@ contract Adventure {
 
     constructor(string memory name_, string memory symbol_, ERC20 coin_) {
         _capitalism = new Capitalism(address(this), name_, symbol_);
-        _coin = coin_;
+        _token = coin_;
     }
 }

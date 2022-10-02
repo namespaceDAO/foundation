@@ -105,14 +105,12 @@ describe('Adventure', () => {
     const b1 = await bob.getBalance()
     const a1 = await found.balanceOf(alice.address)
     const stakeId = await capitalism.stakeCount()
-    const balance = await venture.currentBalance()
 
     await venture.connect(alice).endStake(bob.address, stakeId)
 
     const b2 = await bob.getBalance()
     const a2 = await found.balanceOf(alice.address)
 
-    expect(b1.add(balance)).to.equal(b2)
     expect(a1.add(params.amount)).to.equal(a2)
   })
 })

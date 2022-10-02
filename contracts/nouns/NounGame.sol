@@ -1,159 +1,67 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "../foundation/Adventure.sol";
 import "./NounData.sol";
 import "./NounBank.sol";
+import "./NounTime.sol";
 import "./shared.sol";
 
-contract NounGame is NounBase, Adventure {
-    uint private _start;
-
-    NounData private _data;
+contract NounGame is NounTime {
     NounBank private _bank;
 
-    mapping(uint => uint) private _nounToCoin;
-    mapping(uint => uint) private _coinToNoun;
-    mapping(uint => uint) private _totalOnNoun;
-    mapping(uint => uint) private _totalOnCoin;
-    mapping(uint => uint) private _nounClaims;
-    
-    event Mint(uint coinId, address to, uint amount);
-    event Vote(uint coinId, uint nounId, uint amount);
-    event Claim(uint nounId, uint amount);
+    event Mint(
+        uint coinId,
+        address to,
+        uint found,
+        uint coins
+    );
 
-    function data() public view returns (NounData) {
-        return _data;
-    }
+    event Vote(
+        uint coinId,
+        uint nounId,
+        uint found,
+        uint coins
+    );
 
-    function bank() public view returns (NounBank) {
+    event Claim(
+        uint coinId,
+        uint coins
+    );
+
+    function bank() external view returns (NounBank) {
         return _bank;
     }
 
-    function totalCoins() public view returns (uint) {
-        return (block.timestamp - _start) / 1 days + 1;
+    function mint(address from, address to, uint coinId, uint amount) external {
+        _collectMint(from, coinId, amount);
+
+        uint minted = _bank.convertCoin(coinId, amount);
+        _bank.mint(to, coinId, minted);
+
+        emit Mint(coinId, to, amount, minted);
     }
 
-    function currentDay() override public view returns (uint) {
-        return (block.timestamp - _start) / 1 days + 1;
-    }
-    
-    function nounToCoin(uint nounId) public view returns (uint) {
-        return _nounToCoin[nounId];
-    }
+    function vote(address payee, uint nounId, uint amount) external {
+        uint coinId = _currentCoin(nounId);
+        _collectVote(payee, nounId, amount);
 
-    function coinToNoun(uint coinId) override public view returns (uint) {
-        _requireMintedCoin(coinId);
-        return _coinToNoun[coinId];
-    }
-    
-    function totalOnNoun(uint nounId) external view returns (uint) {
-        return _totalOnNoun[nounId];
-    }
-    
-    function totalOnCoin(uint nounId) external view returns (uint) {
-        return _totalOnCoin[nounId];
-    }
-    
-    function nounClaims(uint nounId) external view returns (uint) {
-        return _nounClaims[nounId];
-    }
-
-    function mint(address to, uint coinId) external payable {
-        require(msg.value > 0, "Must mint some Nouns");
-
-        uint nounId = coinToNoun(coinId);        
-        uint amount = convertValue(coinId, msg.value);
-
-        _addNounValue(nounId, msg.value);
-        _bank.mint(to, coinId, amount);
-
-        emit Mint(coinId, to, amount);
-    }
-
-    function vote(address payee, uint nounId) external payable {
-        _requireMintableNoun(nounId);
-
-        _addNounValue(nounId, msg.value);
-        _updateDailyNouns(nounId, msg.value);
+        uint bonus = _bank.difficulty();
+        uint coins = bonus * amount;
+        _bank.mint(payee, coinId, bonus);
         
-        uint day = currentDay();
-        uint bonus = amplitude * msg.value;
-        _bank.mint(payee, day, bonus);
-        
-        emit Vote(day, nounId, bonus);
+        emit Vote(coinId, nounId, amount, bonus);
     }
 
     function claim(uint coinId, uint amount) external {
-        uint nounId = coinToNoun(coinId);
-        Noun memory noun = _data.getNoun(nounId);
+        Noun memory noun = coinToNoun(coinId);
 
-        uint claimed = _nounClaims[nounId];
-        uint totalMinted = _totalOnNoun[nounId] - claimed;
+        _addClaimValue(coinId, amount);
+        _bank.mint(noun.creator, coinId, amount);
 
-        bool claimable = totalMinted / 10 >= amount + claimed;
-        require(claimable, "Claim too large");
-
-        _nounClaims[nounId] += amount;
-        _bank.mint(noun.creator, nounId, amount);
-
-        emit Claim(nounId, amount);
+        emit Claim(coinId, amount);
     }
 
-    function convertValue(
-        uint coinId, 
-        uint value
-    ) public view returns (uint) {
-        uint totalSupply = _bank.totalSupply();
-        if (totalSupply == 0) return value;
-
-        uint avgSupply = totalSupply / totalCoins();
-        uint tokenSupply = _bank.totalSupplyOf(coinId);
-
-        if (tokenSupply > avgSupply * amplitude) {
-            return value / amplitude;
-        }
-
-        if (avgSupply > tokenSupply * amplitude) {
-            return value * amplitude;
-        }
-
-        return value * avgSupply / tokenSupply;
-    }
-
-    function _addNounValue(uint nounId, uint value) internal {
-        _addValue(value);
-        _totalOnNoun[nounId] += value;
-    }
-
-    function _updateDailyNouns(uint nounId, uint value) internal {
-        uint day = currentDay();
-        if (_totalOnNoun[nounId] > _totalOnCoin[day]) {
-            _coinToNoun[day] = nounId;
-            _totalOnCoin[day] = _totalOnNoun[nounId];
-        }
-    }
-
-    function _requireMintedCoin(uint coinId) internal view {
-        require(coinId <= currentDay(), "Coin has not been minted");
-    }
-
-    function _requireMintableNoun(uint nounId) internal view {
-        require(nounId <= _data.nounCount(), "Noun not found");
-        uint coinId = _nounToCoin[nounId];
-        require(
-            coinId == 0 || coinId == currentDay(),
-            "Noun has been minted"
-        );
-    }
-
-    constructor(ERC20 coin_, string memory baseURI_) 
-    Adventure("FOUND NOUN", "FOUND NOUN", coin_) 
-    {
-        NounBase base = NounBase(address(this));
-
-        _start = block.timestamp;
-        _data = new NounData();
-        _bank = new NounBank(_data, base, baseURI_);
+    constructor(ERC20 coin_, string memory baseURI_) NounTime(coin_) {
+        _bank = new NounBank(NounBase(this), baseURI_);
     }
 }
