@@ -89,7 +89,7 @@ describe('Adventure', () => {
     expect(stakeOwner).to.equal(params.owner)
   })
 
-  it('Ends stake sending back ETH and FOUND', async () => {
+  it('Ends stake sending FOUND', async () => {
     const params = createStake()
     const value = parseEther('10')
 
@@ -97,20 +97,15 @@ describe('Adventure', () => {
     await found.connect(alice).approve(venture.address, value)
     await venture.connect(alice).startStake(params)
 
-    await origin.sendTransaction({
-      to: venture.address,
-      value: parseEther('10')
-    })
+    await found.connect(origin).mint(origin.address, { value })
+    await found.connect(origin).transfer(venture.address, value)
 
-    const b1 = await bob.getBalance()
     const a1 = await found.balanceOf(alice.address)
     const stakeId = await capitalism.stakeCount()
-
-    await venture.connect(alice).endStake(bob.address, stakeId)
-
-    const b2 = await bob.getBalance()
+    await venture.connect(alice).endStake(alice.address, stakeId)
     const a2 = await found.balanceOf(alice.address)
 
-    expect(a1.add(params.amount)).to.equal(a2)
+    expect(value.sub(a1)).to.equal(params.amount)
+    expect(a2).to.equal(value.mul(2))
   })
 })

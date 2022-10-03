@@ -47,9 +47,10 @@ contract NounGame is NounTime {
 
         uint bonus = _bank.difficulty();
         uint coins = bonus * amount;
-        _bank.mint(payee, coinId, bonus);
         
-        emit Vote(coinId, nounId, amount, bonus);
+        _bank.mint(payee, coinId, coins);
+        
+        emit Vote(coinId, nounId, amount, coins);
     }
 
     function claim(uint coinId, uint amount) external {

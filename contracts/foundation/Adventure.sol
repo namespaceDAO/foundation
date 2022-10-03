@@ -5,9 +5,9 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./Capitalism.sol";
 import "./Governance.sol";
 
-// Adventure splits ETH among capitalist stakers.
-// Ending a stake transfers ETH to an address.
-// Your share is determined by when you stake.
+// Adventure splits an ERC20 among stakers.
+// Ending a stake transfers the ERC20 to an address.
+// Your share is determined by when and how long you stake.
 contract Adventure {
     Capitalism private _capitalism;
     Governance private _governance;
@@ -107,7 +107,8 @@ contract Adventure {
     }
 
     constructor(string memory name_, string memory symbol_, ERC20 coin_) {
-        _capitalism = new Capitalism(address(this), name_, symbol_);
         _token = coin_;
+        _token.approve(address(this), type(uint).max);
+        _capitalism = new Capitalism(address(this), name_, symbol_);
     }
 }
