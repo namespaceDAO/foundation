@@ -11,16 +11,12 @@ task('deploy', 'Deploys contracts', async (_, { ethers }) => {
   const NounGame = await ethers.getContractFactory('NounGame')
   const game = await NounGame.deploy(found.address, BASE_URI)
 
-  const NounData = await ethers.getContractFactory('NounData')
-  const data = NounData.attach(await game.data())
-
   const NounBank = await ethers.getContractFactory('NounBank')
   const bank = NounBank.attach(await game.bank())
 
   console.log('ORIGIN: ' + origin.address)
   console.log('FOUND: ' + found.address)
   console.log('GAME: ' + game.address)
-  console.log('DATA: ' + data.address)
   console.log('BANK: ' + bank.address)
 
   // const Govt = await ethers.getContractFactory('Government')

@@ -5,8 +5,7 @@ import "../foundation/Adventure.sol";
 import "./shared.sol";
 import "./NounData.sol";
 
-contract NounTime is NounBase, Adventure {
-    NounData private _data;
+contract NounTime is NounData, NounBase, Adventure {
     ERC20 private _coin;
     uint private _start;
 
@@ -20,26 +19,26 @@ contract NounTime is NounBase, Adventure {
         return _coin;
     }
 
-    function data() external view returns (NounData) {
-        return _data;
-    }
-
     function totalCoins() public view returns (uint) {
-        return (block.timestamp - _start) / 1 days + 1;
+        return _currentDay();
     }
 
-    function currentDay() override public view returns (uint) {
+    function currentDay() override external view returns (uint) {
+        return _currentDay();
+    }
+
+    function _currentDay() internal view returns (uint) {
         return (block.timestamp - _start) / 1 days + 1;
     }
     
     function nounToCoin(uint nounId) public view returns (uint) {
-        require(nounId <= _data.nounCount(), "Noun not found");
+        require(nounId <= nounCount(), "Noun not found");
         return _nounToCoin[nounId];
     }
 
-    function coinToNoun(uint coinId) override public view returns (Noun memory) {
+    function coinToNoun(uint coinId) public view returns (Noun memory) {
         uint nounId = _requireMintedNoun(coinId);
-        return _data.getNoun(nounId);
+        return getNoun(nounId);
     }
 
     function cashOnNoun(uint nounId) external view returns (uint) {
@@ -57,9 +56,9 @@ contract NounTime is NounBase, Adventure {
     // TODO: EVERYTHING BELOW HERE NEEDS A PASS
 
     function _collectVote(address payee, uint nounId, uint amount) internal returns (uint) {
-        require(nounId <= _data.nounCount(), "Noun not found");
+        require(nounId <= nounCount(), "Noun not found");
 
-        uint coinId = currentDay();
+        uint coinId = _currentDay();
         uint existing = _nounToCoin[nounId];
 
         require(
@@ -88,24 +87,23 @@ contract NounTime is NounBase, Adventure {
         _addValue(amount);
     }
 
-    function _addClaimValue(uint coinId, uint amount) internal returns (address) {
+    function _addClaimValue(uint coinId, uint amount) internal returns (Noun memory) {
         // TODO: ensure that this account is the owner of the claim
 
-        uint nounId = _requireMintedNoun(coinId);
-        Noun memory noun = _data.getNoun(nounId);
+        Noun memory noun = coinToNoun(coinId);
 
-        uint claimed = _nounClaims[nounId];
-        uint cashMinted = _cashOnNoun[nounId] - claimed;
+        uint claimed = _nounClaims[noun.id];
+        uint cashMinted = _cashOnNoun[noun.id] - claimed;
 
         bool claimable = cashMinted / 10 >= amount + claimed;
         require(claimable, "Claim too large");
 
-        _nounClaims[nounId] += amount;
-        return noun.creator;
+        _nounClaims[noun.id] += amount;
+        return noun;
     }
 
     function _updateDailyNouns(uint nounId, uint value) internal {
-        uint coinId = currentDay();
+        uint coinId = _currentDay();
         uint current = _cashOnCoin[coinId];
 
         // TODO: could relying on current (without slippage) here cause a problem with MEV?
@@ -124,7 +122,6 @@ contract NounTime is NounBase, Adventure {
     constructor(ERC20 coin_) 
     Adventure("FOUND NOUN", "FOUND NOUN", coin_) {
         _start = block.timestamp;
-        _data = new NounData();
         _coin = coin_;
     }
 }

@@ -9,7 +9,6 @@ describe('NounBank', () => {
   let bob: SignerWithAddress
   let found: Contract
   let game: Contract
-  let data: Contract
   let bank: Contract
 
   const BASE_URI = 'https://bankofnouns.com/_/api/tokens/{id}.json'
@@ -23,9 +22,6 @@ describe('NounBank', () => {
     const NounGame = await ethers.getContractFactory('NounGame')
     game = await NounGame.deploy(found.address, BASE_URI)
 
-    const NounData = await ethers.getContractFactory('NounData')
-    data = NounData.attach(await game.data())
-
     const NounBank = await ethers.getContractFactory('NounBank')
     bank = NounBank.attach(await game.bank())
 
@@ -35,7 +31,7 @@ describe('NounBank', () => {
   })
 
   it('Deploys coin', async () => {
-    await data.submitNoun({
+    await game.submitNoun({
       name: 'Rubber Ducky',
       creator: alice.address,
       pixels: 0

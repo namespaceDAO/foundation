@@ -6,7 +6,7 @@ import "./NounBank.sol";
 import "./NounTime.sol";
 import "./shared.sol";
 
-contract NounGame is NounTime {
+contract NounGame is NounBase, NounTime {
     NounBank private _bank;
 
     event Mint(
@@ -31,6 +31,7 @@ contract NounGame is NounTime {
         address creator,
         address minter,
         uint coinId,
+        uint nounId,
         uint coins
     );
 
@@ -86,15 +87,15 @@ contract NounGame is NounTime {
         uint coinId, 
         uint amount
     ) external {
-        address creator = _addClaimValue(coinId, amount);
+        Noun memory noun = _addClaimValue(coinId, amount);
         
         _bank.mint(minter, coinId, amount);
         
         emit Claim(
-            creator,
+            noun.creator,
             minter,
             coinId, 
-            // TODO: nounID
+            noun.id,
             amount
         );
     }

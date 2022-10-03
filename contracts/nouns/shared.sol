@@ -7,9 +7,9 @@ contract NounCoin is Coin {
     constructor(Bank bank_, uint coinId_) Coin(bank_, coinId_) {}
 }
 
-abstract contract NounBase {
-    function currentDay() virtual public view returns (uint);
-    function coinToNoun(uint coinId) virtual public view returns (Noun memory);
+interface NounBase {
+    function currentDay() virtual external view returns (uint);
+    function coinToNoun(uint coinId) virtual external view returns (Noun memory);
 }
 
 struct NounParams {
