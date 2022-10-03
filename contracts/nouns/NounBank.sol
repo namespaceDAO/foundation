@@ -2,7 +2,6 @@
 pragma solidity ^0.8.10;
 
 import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
-
 import "../money/Bank.sol";
 import "./shared.sol";
 import "./NounData.sol";
@@ -79,7 +78,8 @@ contract NounBank is Bank {
     }
 
     constructor(
-        NounBase base_, string memory baseURI_
+        NounBase base_, 
+        string memory baseURI_
     ) Bank(baseURI_) {
         _base = base_;
     }

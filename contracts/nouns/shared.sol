@@ -14,13 +14,13 @@ interface NounBase {
 
 struct NounParams {
     string name;
-    bytes pixels;
     address creator;
+    uint64[] parts;
 }
 
 struct Noun {
     uint id;
     string name;
-    bytes pixels;
     address creator;
+    uint64[] parts;
 }

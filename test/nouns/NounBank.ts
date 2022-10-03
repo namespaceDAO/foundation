@@ -1,6 +1,6 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expect } from 'chai'
-import { Contract } from 'ethers'
+import { BigNumber, Contract } from 'ethers'
 import { parseEther } from 'ethers/lib/utils'
 import { ethers } from 'hardhat'
 
@@ -34,7 +34,11 @@ describe('NounBank', () => {
     await game.submitNoun({
       name: 'Rubber Ducky',
       creator: alice.address,
-      pixels: 0
+      parts: [
+        BigNumber.from('0x0000fffffafafaff'),
+        BigNumber.from('0x32236e5dff00ffff'),
+        BigNumber.from('0x50500f0fffff00ff')
+      ]
     })
 
     const value = parseEther(`${Math.random()}`)
