@@ -16,6 +16,7 @@ struct NounParams {
     string name;
     address creator;
     uint64[] image;
+    string[] traits;
 }
 
 struct Noun {
@@ -23,4 +24,5 @@ struct Noun {
     string name;
     address creator;
     uint64[] image;
+    string[] traits;
 }
