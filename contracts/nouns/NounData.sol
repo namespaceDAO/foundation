@@ -18,7 +18,7 @@ contract NounData is NounView {
         uint id,
         string name,
         address creator,
-        uint64[] parts
+        uint64[] image
     );
 
     function nounCount() public view returns (uint) {
@@ -36,7 +36,7 @@ contract NounData is NounView {
 
     function nounSVG(uint nounId) external view returns (string memory) {
         Noun memory noun = getNoun(nounId); 
-        return string(_generateSVG(noun.parts));
+        return string(_generateSVG(noun.image));
     }
     
     function nounURI(uint nounId) public view returns (string memory) {
@@ -59,7 +59,7 @@ contract NounData is NounView {
                 '"image":"', string(
                     abi.encodePacked(
                         'data:image/svg+xml;base64,', 
-                        Base64.encode(_generateSVG(noun.parts))
+                        Base64.encode(_generateSVG(noun.image))
                     )
                 ), '"',
             '}'
@@ -68,7 +68,7 @@ contract NounData is NounView {
 
     function submitNoun(NounParams memory params) external {
         require(
-            params.parts.length < 256 * 256,
+            params.image.length < 256 * 256,
             "Noun too large"
         );
 
@@ -76,14 +76,14 @@ contract NounData is NounView {
 
         noun.id = _nounCount;
         noun.name = params.name;
-        noun.parts = params.parts;
+        noun.image = params.image;
         noun.creator = params.creator;
 
         emit NounSubmitted(
             noun.id, 
             noun.name, 
             noun.creator,
-            noun.parts
+            noun.image
         );
     }
 }

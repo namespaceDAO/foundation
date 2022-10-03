@@ -4,7 +4,7 @@ Updated on Sep 30 2022
 
 ## Nouns
 
-Nouns are pixel art. Anyone can create a Noun, you just need a name and a 32x32 image. For example this rubber ducky.
+Nouns are pixel art. Anyone can create a Noun, you just need a name and an image. For example this rubber ducky.
 
 ![Noun example](assets/ducky.png)
 
@@ -13,8 +13,8 @@ Nouns are stored 100% on chain in the `NounData` contract.
     struct Noun {
         uint id;
         string name;
-        bytes pixels;
         address creator;
+        uint64[] image;
     }
 
 ## Game of Nouns

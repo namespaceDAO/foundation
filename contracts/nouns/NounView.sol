@@ -11,11 +11,11 @@ contract NounView {
     string private constant _SVG_START_TAG = '<svg width="420" height="420" viewBox="0 0 255 255" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">';
     string private constant _SVG_END_TAG = '</svg>';
 
-    function _generateSVG(uint64[] memory parts) internal view returns (bytes memory) {
+    function _generateSVG(uint64[] memory image) internal view returns (bytes memory) {
         bytes memory chunk;
        
-        for (uint i = 0; i < parts.length; i += 1) {
-            chunk = abi.encodePacked(chunk, _generateSVGPart(parts[i]));
+        for (uint i = 0; i < image.length; i += 1) {
+            chunk = abi.encodePacked(chunk, _generateSVGPart(image[i]));
         }
        
         return abi.encodePacked(

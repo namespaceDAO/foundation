@@ -15,12 +15,12 @@ interface NounBase {
 struct NounParams {
     string name;
     address creator;
-    uint64[] parts;
+    uint64[] image;
 }
 
 struct Noun {
     uint id;
     string name;
     address creator;
-    uint64[] parts;
+    uint64[] image;
 }
