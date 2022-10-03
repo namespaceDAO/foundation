@@ -25,7 +25,7 @@ contract NounCard is ERC721 {
         return _cards[id];
     }
 
-    function mint(uint to, uint coinId, uint amount) external {
+    function mint(address to, address from, uint coinId, uint amount) external {
         Noun memory noun = _game.coinToNoun(coinId);
         uint power = _bank.convertCoin(coinId, amount);
 
@@ -35,16 +35,15 @@ contract NounCard is ERC721 {
         card.coinId = coinId;
         card.power = power;
 
-        // TODO: burn coins
         _bank.safeTransferFrom(
-            msg.sender, 
+            from, 
             address(this), 
             coinId, 
             amount, 
             new bytes(0)
         );
 
-        _mint(msg.sender, card.id);
+        _mint(to, card.id);
     }
 
     constructor(NounGame game_) ERC721("NOUN CARD", "NOUN CARD") {

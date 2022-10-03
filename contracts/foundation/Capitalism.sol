@@ -27,6 +27,7 @@ struct Stake {
     uint endedAt;
     address founder;
     address redeemer;
+    address payee;
 }
 
 contract Capitalism is ERC721 {
@@ -106,6 +107,7 @@ contract Capitalism is ERC721 {
         require(stake.endedAt == 0, "Stake already ended");
         stake.endedAt = block.timestamp;
         stake.redeemer = owner;
+        stake.payee = payee;
 
         _burn(id);
 
@@ -125,10 +127,6 @@ contract Capitalism is ERC721 {
 
     function _requireStake(uint stakeId) internal view {
         require(stakeId <= _stakeCount, "Stake not found");
-    }
-
-    function _requireOwner(uint founder, uint stakeId) internal view returns (address) {
-        return msg.sender;
     }
 
     function dataURI(uint stakeId) public view returns (string memory) {

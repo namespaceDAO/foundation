@@ -69,14 +69,14 @@ contract NounData {
         );
     }
 
-    function _nounURI(Noun memory noun) internal view returns (bytes memory) {
+    function _nounURI(Noun memory noun) internal pure returns (bytes memory) {
         return abi.encodePacked(
             'data:application/json;base64,',
             Base64.encode(_nounJSON(noun))
         );
     }
 
-    function _nounJSON(Noun memory noun) internal view returns (bytes memory) {
+    function _nounJSON(Noun memory noun) internal pure returns (bytes memory) {
         return abi.encodePacked(
             '{',
                 '"id":', noun.id.toString(), ',',
@@ -94,7 +94,7 @@ contract NounData {
         );
     }
 
-    function _nounTraits(Noun memory noun) internal view returns (bytes memory) {
+    function _nounTraits(Noun memory noun) internal pure returns (bytes memory) {
         bytes memory list;
         for (uint i = 0; i < noun.traits.length; i += 1) {
             list = abi.encodePacked(
@@ -106,7 +106,7 @@ contract NounData {
         return list;
     }
 
-    function _nounShapes(Noun memory noun) internal view returns (bytes memory) {
+    function _nounShapes(Noun memory noun) internal pure returns (bytes memory) {
         bytes memory list;
         for (uint i = 0; i < noun.shapes.length; i += 1) {
             list = abi.encodePacked(
@@ -118,7 +118,7 @@ contract NounData {
         return list;
     }
 
-    function _nounSVG(uint64[] memory shapes) internal view returns (bytes memory) {
+    function _nounSVG(uint64[] memory shapes) internal pure returns (bytes memory) {
         bytes memory image;
        
         for (uint i = 0; i < shapes.length; i += 1) {

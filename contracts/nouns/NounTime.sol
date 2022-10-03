@@ -102,7 +102,7 @@ contract NounTime is NounData, NounBase, Adventure {
         return noun;
     }
 
-    function _updateDailyNouns(uint nounId, uint value) internal {
+    function _updateDailyNouns(uint nounId, uint) internal {
         uint coinId = _currentDay();
         uint current = _cashOnCoin[coinId];
 
