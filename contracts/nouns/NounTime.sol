@@ -54,6 +54,8 @@ contract NounTime is NounBase, Adventure {
         return _nounClaims[nounId];
     }
 
+    // TODO: EVERYTHING BELOW HERE NEEDS A PASS
+
     function _collectVote(address payee, uint nounId, uint amount) internal returns (uint) {
         require(nounId <= _data.nounCount(), "Noun not found");
 
@@ -73,10 +75,11 @@ contract NounTime is NounBase, Adventure {
         return coinId;
     }
 
-    function _collectMint(address from, uint coinId, uint amount) internal {
+    function _collectMint(address from, uint coinId, uint amount) internal returns (uint nounId) {
         require(amount > 0, "Must mint some Nouns");
         _addMintValue(coinId, amount);
         _coin.transferFrom(from, address(this), amount);
+        return _coinToNoun[coinId];
     }
 
     function _addMintValue(uint coinId, uint amount) internal {

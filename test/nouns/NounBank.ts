@@ -28,27 +28,10 @@ describe('NounBank', () => {
 
     const NounBank = await ethers.getContractFactory('NounBank')
     bank = NounBank.attach(await game.bank())
-  })
 
-  it('Creates bank', async () => {
-    await data.submitNoun({
-      name: 'Rubber Ducky',
-      creator: alice.address,
-      pixels: 0
-    })
-
-    const day = await game.currentDay()
-
-    const value = parseEther(`${Math.random()}`)
-    await found.connect(alice).mint(alice.address, { value })
+    const value = parseEther('100')
     await found.connect(alice).approve(game.address, value)
-    await game.connect(alice).vote(alice.address, 1, value)
-
-    const balance1 = await bank.balanceOf(alice.address, 1)
-    const noun1 = await game.coinToNoun(day)
-
-    expect(value.mul(10)).to.equal(balance1)
-    expect(noun1.id).to.equal(1)
+    await found.connect(alice).mint(alice.address, { value })
   })
 
   it('Deploys coin', async () => {
@@ -59,9 +42,7 @@ describe('NounBank', () => {
     })
 
     const value = parseEther(`${Math.random()}`)
-    await found.connect(alice).mint(alice.address, { value })
-    await found.connect(alice).approve(game.address, value)
-    await game.connect(alice).vote(alice.address, 1, value)
+    await game.connect(alice).vote(alice.address, alice.address, 1, value)
 
     await bank.deployCoin(1)
     const a1 = await bank.addressOf(1)
