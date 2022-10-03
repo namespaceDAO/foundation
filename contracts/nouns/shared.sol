@@ -8,14 +8,14 @@ contract NounCoin is Coin {
 }
 
 interface NounBase {
-    function currentDay() virtual external view returns (uint);
-    function coinToNoun(uint coinId) virtual external view returns (Noun memory);
+    function currentDay() external view returns (uint);
+    function coinToNoun(uint coinId) external view returns (Noun memory);
 }
 
 struct NounParams {
     string name;
     address creator;
-    uint64[] image;
+    uint64[] shapes;
     string[] traits;
 }
 
@@ -23,6 +23,6 @@ struct Noun {
     uint id;
     string name;
     address creator;
-    uint64[] image;
+    uint64[] shapes;
     string[] traits;
 }

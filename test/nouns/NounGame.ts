@@ -43,7 +43,7 @@ describe('NounGame', () => {
       name: 'Rubber Ducky',
       creator: alice.address,
       traits: [],
-      image: [
+      shapes: [
         BigNumber.from('0x0000fffffafafaff'),
         BigNumber.from('0x32236e5dff00ffff'),
         BigNumber.from('0x50500f0fffff00ff')
@@ -67,7 +67,7 @@ describe('NounGame', () => {
       name: 'Rubber Ducky',
       creator: alice.address,
       traits: [],
-      image: [
+      shapes: [
         BigNumber.from('0x0000fffffafafaff'),
         BigNumber.from('0x32236e5dff00ffff'),
         BigNumber.from('0x50500f0fffff00ff')
@@ -91,7 +91,7 @@ describe('NounGame', () => {
       name: 'Rubber Ducky',
       creator: alice.address,
       traits: [],
-      image: [
+      shapes: [
         BigNumber.from('0x0000fffffafafaff'),
         BigNumber.from('0x32236e5dff00ffff'),
         BigNumber.from('0x50500f0fffff00ff')

@@ -14,7 +14,8 @@ Nouns are stored 100% on chain in the `NounData` contract.
         uint id;
         string name;
         address creator;
-        uint64[] image;
+        uint64[] shapes;
+        string[] traits;
     }
 
 ## Game of Nouns
