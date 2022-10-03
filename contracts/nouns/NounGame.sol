@@ -42,23 +42,17 @@ contract NounGame is NounTime {
     }
 
     function vote(address payee, uint nounId, uint amount) external {
-        uint coinId = _currentCoin(nounId);
-        _collectVote(payee, nounId, amount);
-
+        uint coinId = _collectVote(payee, nounId, amount);
         uint bonus = _bank.difficulty();
         uint coins = bonus * amount;
         
         _bank.mint(payee, coinId, coins);
-        
         emit Vote(coinId, nounId, amount, coins);
     }
 
     function claim(uint coinId, uint amount) external {
-        Noun memory noun = coinToNoun(coinId);
-
-        _addClaimValue(coinId, amount);
-        _bank.mint(noun.creator, coinId, amount);
-
+        address creator = _addClaimValue(coinId, amount);
+        _bank.mint(creator, coinId, amount);
         emit Claim(coinId, amount);
     }
 

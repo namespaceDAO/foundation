@@ -42,16 +42,6 @@ contract NounTime is NounBase, Adventure {
         return _data.getNoun(nounId);
     }
 
-    function _currentCoin(uint nounId) internal view returns (uint) {
-        require(nounId <= _data.nounCount(), "Noun not found");
-        uint coinId = nounToCoin(nounId);
-        require(
-            coinId == 0 || coinId == currentDay(),
-            "Noun has been minted"
-        );
-        return coinId;
-    }
-    
     function cashOnNoun(uint nounId) external view returns (uint) {
         return _cashOnNoun[nounId];
     }
@@ -64,11 +54,23 @@ contract NounTime is NounBase, Adventure {
         return _nounClaims[nounId];
     }
 
-    function _collectVote(address payee, uint nounId, uint amount) internal {
+    function _collectVote(address payee, uint nounId, uint amount) internal returns (uint) {
+        require(nounId <= _data.nounCount(), "Noun not found");
+
+        uint coinId = currentDay();
+        uint existing = _nounToCoin[nounId];
+
+        require(
+            existing == 0 || existing == coinId, 
+            "Noun has been minted"
+        );
+
         _coin.transferFrom(payee, address(this), amount);
 
         _addMintValue(nounId, amount);
         _updateDailyNouns(nounId, amount);
+
+        return coinId;
     }
 
     function _collectMint(address from, uint coinId, uint amount) internal {
@@ -83,10 +85,12 @@ contract NounTime is NounBase, Adventure {
         _addValue(amount);
     }
 
-    function _addClaimValue(uint coinId, uint amount) internal {
+    function _addClaimValue(uint coinId, uint amount) internal returns (address) {
         // TODO: ensure that this account is the owner of the claim
 
         uint nounId = _requireMintedNoun(coinId);
+        Noun memory noun = _data.getNoun(nounId);
+
         uint claimed = _nounClaims[nounId];
         uint cashMinted = _cashOnNoun[nounId] - claimed;
 
@@ -94,11 +98,15 @@ contract NounTime is NounBase, Adventure {
         require(claimable, "Claim too large");
 
         _nounClaims[nounId] += amount;
+        return noun.creator;
     }
 
     function _updateDailyNouns(uint nounId, uint value) internal {
         uint coinId = currentDay();
-        if (_cashOnNoun[nounId] > _cashOnCoin[coinId]) {
+        uint current = _cashOnCoin[coinId];
+
+        // TODO: could relying on current (without slippage) here cause a problem with MEV?
+        if (_cashOnNoun[nounId] > current || current == 0) {
             _coinToNoun[coinId] = nounId;
             _nounToCoin[nounId] = coinId;
             _cashOnCoin[coinId] = _cashOnNoun[nounId];
@@ -114,5 +122,6 @@ contract NounTime is NounBase, Adventure {
     Adventure("FOUND NOUN", "FOUND NOUN", coin_) {
         _start = block.timestamp;
         _data = new NounData();
+        _coin = coin_;
     }
 }
