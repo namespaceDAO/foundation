@@ -19,11 +19,19 @@ Nouns are stored 100% on chain in the `NounData` contract.
 
 ## Game of Nouns
 
-Bank of Nouns creates one crypto currency every day. The coin for each day is determined by mystery minting on a Noun you like. The Noun with the most FOUND mystery minted becomes the coin for the day. Every early minter receives a 10x early minting bonus. After the first day the price of the coin is determined by the supply relative to every other coin. The more coins there are, the more expensive they are to mint and vice versa. Noun coins are bounded between 1 and 10000 coins to every FOUND with the target of 100. Early minting gives you 1000 Noun coins = 1 FOUND. 
+Bank of Nouns creates one ERC20 every day. The coin for each day is determined by voting for a Noun you like. The Noun with the most votes becomes the Noun coin for the day. 
+
+- Every early minters receive a 10x early minting bonus of the new coin. 
+- After the first day the mint price of the coin is determined by the supply relative to every other coin. The more demand the higher the price. 
+- The treasury mains an average mint price of 1 Noun coin = 1 FOUND.
+- Early minting 10x bonus is 10 Noun coins = 1 FOUND.
 
 ## Adventure
 
-Adventure is a contract for distributing FOUND among multiple parties. FOUND is distributed via shares created by staking FOUND. Share rates are determined by the mint activity and stake duration. FOUND is paid by unstaking FOUND. 
+Adventure is a contract for distributing FOUND among multiple parties. 
+- FOUND is distributed by staking FOUND. 
+- Shares are determined by the mint activity and stake duration. 
+- Ending your stake returns the prinicipal plus proceeds.
 
 ## Governance
 
@@ -32,6 +40,10 @@ Governance contains a tax on mint fees to create a community treasury. The treas
 ## Future: Noun Cards
 
 Create Noun cards by forging Noun coins. The power of the Noun card is determined by how many Noun coins were forged to create it. Players vote who can withdraw money from the treasury. Each treasurer has a number of shares that determines their claim of proceeds. 
+
+## Future: Forged Coins
+
+Create forged Noun coins by combining multiple Noun coins together. For example, combine a rubber ducky and a paper hat to create a new Noun coin that reflects the combined value of the originals. 
 
 # Development
 ```
