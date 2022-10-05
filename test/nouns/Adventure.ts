@@ -6,7 +6,7 @@ import { ethers } from 'hardhat'
 
 const ONE_DAY = 3600 * 24
 
-describe('Adventure', () => {
+describe('NounReserve', () => {
   let origin: SignerWithAddress
   let alice: SignerWithAddress
   let bob: SignerWithAddress

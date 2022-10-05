@@ -11,6 +11,7 @@ contract NounData {
     using Strings for uint64;
     using Strings for address;
 
+    uint private _start;
     uint private _nounCount;
     mapping(uint => Noun) private _nouns;
     
@@ -24,6 +25,14 @@ contract NounData {
 
     function nounCount() public view returns (uint) {
         return _nounCount;
+    }
+
+    function currentDay() external view returns (uint) {
+        return _currentDay();
+    }
+
+    function _currentDay() internal view returns (uint) {
+        return (block.timestamp - _start) / 1 days + 1;
     }
 
     function getNoun(uint id) public view returns (Noun memory) {
@@ -161,5 +170,9 @@ contract NounData {
                 ')"',
             '/>'
         );
+    }
+
+    constructor() {
+        _start = block.timestamp;
     }
 }

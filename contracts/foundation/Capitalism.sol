@@ -32,7 +32,7 @@ struct Stake {
 
 contract Capitalism is ERC721 {
     using Strings for uint;
-    address private _admin;
+
     uint private _stakeCount;
     uint private _minimumDuration = 1 days;
 
@@ -53,14 +53,9 @@ contract Capitalism is ERC721 {
         uint endedAt
     );
 
-    modifier onlyAdmin() {
-        require(msg.sender == _admin, "Caller is not the admin");
-        _;
-    }
-
-    function startStake(
+    function _startStake(
         StakeParams memory params
-    ) external onlyAdmin returns (
+    ) internal returns (
         Stake memory
     ) {
         require(
@@ -94,11 +89,11 @@ contract Capitalism is ERC721 {
         return stake;
     }
 
-    function endStake(
+    function _endStake(
         address owner,
         address payee, 
         uint id
-    ) external onlyAdmin returns (
+    ) internal returns (
         Stake memory
     ) {
         require(owner == ownerOf(id), "You are not the stake owner");
@@ -163,10 +158,7 @@ contract Capitalism is ERC721 {
     }
 
     constructor(
-        address admin_,
-        string memory name_,
+        string memory name_, 
         string memory symbol_
-    ) ERC721(name_, symbol_) {
-        _admin = admin_;
-    }
+    ) ERC721(name_, symbol_) {}
 }

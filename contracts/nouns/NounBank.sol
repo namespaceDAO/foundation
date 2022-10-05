@@ -3,17 +3,20 @@ pragma solidity ^0.8.10;
 
 import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
 import "../money/Bank.sol";
+import "../money/Coin.sol";
 import "./shared.sol";
 import "./NounData.sol";
+import "./NounNote.sol";
 
 contract NounBank is Bank {
     using Strings for uint;
     
-    NounBase private _base;
+    NounData private _data;
+    NounBased private _base;
 
     uint private _difficulty = 10;    
 
-    mapping(uint => NounCoin) private _coins;
+    mapping(uint => Coin) private _coins;
 
     modifier onlyAdmin() {
         require(msg.sender == address(_base), "Caller is not based");
@@ -50,12 +53,12 @@ contract NounBank is Bank {
     }
 
     function deployCoin(uint coinId) external returns (Coin) {
-        require(coinId <= _base.currentDay(), "Coin has not been found");
+        require(coinId <= _data.currentDay(), "Coin has not been found");
 
         bool deployed = address(_coins[coinId]) != address(0);
         require(!deployed, "Coin has already been deployed");
 
-        _coins[coinId] = new NounCoin(Bank(this), coinId);
+        _coins[coinId] = new Coin(Bank(this), coinId);
         return _coins[coinId];
     }
 
@@ -63,7 +66,7 @@ contract NounBank is Bank {
         uint totalSupply = totalSupply();
         if (totalSupply == 0) return amount;
 
-        uint avgSupply = totalSupply / _base.currentDay();
+        uint avgSupply = totalSupply / _data.currentDay();
         uint tokenSupply = totalSupplyOf(coinId);
 
         if (tokenSupply > avgSupply * _difficulty) {
@@ -78,9 +81,11 @@ contract NounBank is Bank {
     }
 
     constructor(
-        NounBase base_, 
+        NounData data_, 
+        NounBased base_,
         string memory baseURI_
     ) Bank(baseURI_) {
+        _data = data_;
         _base = base_;
     }
 }

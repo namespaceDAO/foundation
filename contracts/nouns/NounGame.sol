@@ -3,10 +3,11 @@ pragma solidity ^0.8.10;
 
 import "./NounData.sol";
 import "./NounBank.sol";
-import "./NounTime.sol";
+import "./NounNote.sol";
 import "./shared.sol";
 
-contract NounGame is NounBase, NounTime {
+contract NounGame is NounNote {
+    IERC20 private _cash; 
     NounBank private _bank;
 
     event Mint(
@@ -39,15 +40,30 @@ contract NounGame is NounBase, NounTime {
         return _bank;
     }
 
+    // function stake(
+    //     address payer,
+    //     address minter,
+    //     uint found
+    // ) internal {
+    //     _startStake();
+    // }
+
+    // function burn(
+    //     address payer,
+    // ) internal {
+    //     _endStake()
+    // }
+
     function mint(
         address payer, 
         address minter, 
         uint coinId, 
-        uint amount
+        uint found
     ) external {
-        uint nounId = _collectMint(payer, coinId, amount);
-        uint minted = _bank.convertCoin(coinId, amount);
+        uint nounId = _collectMint(coinId, found);
+        uint minted = _bank.convertCoin(coinId, found);
 
+        _cash.transferFrom(payer, address(this), found);
         _bank.mint(minter, coinId, minted);
 
         emit Mint(
@@ -55,7 +71,7 @@ contract NounGame is NounBase, NounTime {
             minter, 
             coinId, 
             nounId,
-            amount, 
+            found, 
             minted
         );
     }
@@ -64,21 +80,21 @@ contract NounGame is NounBase, NounTime {
         address payer, 
         address minter, 
         uint nounId, 
-        uint amount
+        uint found
     ) external {
-        uint coinId = _collectVote(payer, nounId, amount);
-        uint bonus = _bank.difficulty();
-        uint coins = bonus * amount;
+        uint minted = found * _bank.difficulty();
+        uint coinId = _collectVote(nounId, minted);
         
-        _bank.mint(minter, coinId, coins);
+        _cash.transferFrom(payer, address(this), found);
+        _bank.mint(minter, coinId, minted);
 
         emit Vote(
-            payer, 
+            payer,
             minter, 
-            coinId, 
+            coinId,
             nounId, 
-            amount, 
-            coins
+            found,
+            minted
         );
     }
 
@@ -87,8 +103,7 @@ contract NounGame is NounBase, NounTime {
         uint coinId, 
         uint amount
     ) external {
-        Noun memory noun = _addClaimValue(coinId, amount);
-        
+        Noun memory noun = coinToNoun(coinId);
         _bank.mint(minter, coinId, amount);
         
         emit Claim(
@@ -101,12 +116,11 @@ contract NounGame is NounBase, NounTime {
     }
 
     constructor(
-        ERC20 coin_, 
+        IERC20 cash_, 
+        NounData data_,
         string memory baseURI_
-    ) NounTime(coin_) {
-        _bank = new NounBank(
-            NounBase(this), 
-            baseURI_
-        );
+    ) NounNote(cash_, data_) {
+        NounBased _base = NounBased(address(this));
+        _bank = new NounBank(data_, _base, baseURI_);
     }
 }

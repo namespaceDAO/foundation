@@ -105,4 +105,65 @@ describe('NounGame', () => {
 
     expect(value).to.equal(balance1)
   })
+
+  const createStake = (): any => {
+    const idea = Math.floor(Math.random() * 100)
+    const amount = parseEther(`${Math.random()}`)
+    const startedAt = getNow()
+    const duration = ONE_DAY * Math.floor(7 * Math.random() + 2)
+    const expiresAt = startedAt + duration
+    const founder = alice.address
+    const owner = alice.address
+
+    return { amount, expiresAt, startedAt, founder, owner, idea }
+  }
+
+  it('Starts stake with FOUND', async () => {
+    const value = parseEther('10')
+
+    await found.connect(alice).mint(alice.address, { value })
+    await found.connect(alice).approve(venture.address, value)
+
+    const params = createStake()
+    await venture.connect(alice).startStake(params)
+
+    const stakeId = await capitalism.stakeCount()
+    const totalShares = await venture.totalShares()
+    const stake = await capitalism.getStake(stakeId)
+    const shares = await venture.stakeShares(stakeId)
+    const stakeOwner = await capitalism.ownerOf(stakeId)
+
+    expect(shares).to.equal(totalShares)
+    expect(shares).to.greaterThan(0)
+
+    expect(stake.id).to.equal(stakeId)
+    expect(stake.idea).to.equal(params.idea)
+    expect(stake.amount).to.equal(params.amount)
+    expect(stake.expiresAt).to.equal(params.expiresAt)
+    expect(stake.startedAt).to.greaterThanOrEqual(params.startedAt)
+    expect(stake.endedAt).to.equal(0)
+    expect(stake.founder).to.equal(params.founder)
+    expect(stake.redeemer).to.equal(ethers.constants.AddressZero)
+    expect(stakeOwner).to.equal(params.owner)
+  })
+
+  it('Ends stake sending FOUND', async () => {
+    const params = createStake()
+    const value = parseEther('10')
+
+    await found.connect(alice).mint(alice.address, { value })
+    await found.connect(alice).approve(venture.address, value)
+    await venture.connect(alice).startStake(params)
+
+    await found.connect(origin).mint(origin.address, { value })
+    await found.connect(origin).transfer(venture.address, value)
+
+    const a1 = await found.balanceOf(alice.address)
+    const stakeId = await capitalism.stakeCount()
+    await venture.connect(alice).endStake(alice.address, stakeId)
+    const a2 = await found.balanceOf(alice.address)
+
+    expect(value.sub(a1)).to.equal(params.amount)
+    expect(a2).to.equal(value.mul(2))
+  })
 })
