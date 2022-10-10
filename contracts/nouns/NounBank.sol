@@ -23,7 +23,8 @@ contract NounBank is Bank {
     }
 
     function nameOf(uint coinId) override public view returns (string memory) {
-        return _base.coinToNoun(coinId).name;
+        uint nounId = _base.coinToNoun(coinId);
+        return _data.getNoun(nounId).name;
     }
 
     function symbolOf(uint coinId) override public pure returns (string memory) {

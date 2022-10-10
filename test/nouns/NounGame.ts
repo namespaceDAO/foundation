@@ -62,7 +62,7 @@ describe('NounGame', () => {
     const noun1 = await game.coinToNoun(day)
 
     expect(value.mul(10)).to.equal(balance1)
-    expect(noun1.id).to.equal(1)
+    expect(noun1).to.equal(1)
   })
 
   it('Votes on noun', async () => {
@@ -86,7 +86,7 @@ describe('NounGame', () => {
     const noun1 = await game.coinToNoun(day)
 
     expect(value.mul(10)).to.equal(balance1)
-    expect(noun1.id).to.equal(1)
+    expect(noun1).to.equal(1)
   })
 
   it('Mints noun', async () => {
