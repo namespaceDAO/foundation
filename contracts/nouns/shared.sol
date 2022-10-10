@@ -23,23 +23,16 @@ struct Noun {
 }
 
 struct NoteParams {
-    address founder;
-    address owner;
-    uint idea;
+    uint nounId;
     uint amount; 
     uint expiresAt;
 }
 
 struct Note {
     uint id;
-    uint idea;
+    uint nounId;
     uint amount;
     uint expiresAt;
     uint startedAt;
     uint endedAt;
-    address founder;
-    address redeemer;
-    address payee;
-    uint earnings;
-    uint penalty;
 }

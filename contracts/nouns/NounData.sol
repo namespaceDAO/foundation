@@ -73,6 +73,11 @@ contract NounData is ERC721 {
         return string(_nounJSON(noun));
     }
 
+    function tokenImage(uint nounId) external view returns (string memory) {
+        Noun memory noun = getNoun(nounId); 
+        return string(_nounImage(noun));
+    }
+
     function tokenSVG(uint nounId) external view returns (string memory) {
         Noun memory noun = getNoun(nounId); 
         return string(_nounSVG(noun.shapes));
@@ -93,13 +98,15 @@ contract NounData is ERC721 {
                 '"description":"', noun.name, ' is a Noun coin.",',
                 '"traits":[', string(_nounTraits(noun)), '],',
                 '"shapes":[', string(_nounShapes(noun)), '],',
-                '"image":"', string(
-                    abi.encodePacked(
-                        'data:image/svg+xml;base64,', 
-                        Base64.encode(_nounSVG(noun.shapes))
-                    )
-                ), '"',
+                '"image":"', string(_nounImage(noun)), '"',
             '}'
+        );
+    }
+
+    function _nounImage(Noun memory noun) internal pure returns (bytes memory) {
+        return abi.encodePacked(
+            'data:image/svg+xml;base64,', 
+            Base64.encode(_nounSVG(noun.shapes))
         );
     }
 

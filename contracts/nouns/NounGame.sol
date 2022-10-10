@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
+import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./NounBank.sol";
@@ -9,15 +10,12 @@ import "./shared.sol";
 
 /*
 TODO:
-ERC721 contract URI for notes
-data URI, token URI
-special card art?
-
 optional governance tax, optional card art changes?
-
 */
 
 contract NounGame is Nounish, ERC721 {
+    using Strings for uint;
+
     NounBank private _bank;
     NounData private _data;
     IERC20 private _cash;
@@ -31,6 +29,7 @@ contract NounGame is Nounish, ERC721 {
     uint private _totalShares;
     uint private _minimumDuration = 1 days;
     
+    mapping(uint => uint) private _claims;
     mapping(uint => uint) private _shares;
     mapping(uint => Note) private _notes;
 
@@ -119,7 +118,7 @@ contract NounGame is Nounish, ERC721 {
         return _shares[noteId];
     }
 
-    function getNote(uint stakeId) external view returns (Note memory) {
+    function getNote(uint stakeId) public view returns (Note memory) {
         require(stakeId <= _stakeCount, "Note not found");
         return _notes[stakeId];
     }
@@ -142,33 +141,100 @@ contract NounGame is Nounish, ERC721 {
 
         return amount * amount / last;
     }
+    
+    function calculatePayout(uint noteId, uint timestamp) external view returns (uint, uint) {
+        Note memory note = getNote(noteId);
+        
+        uint earnings = _calculateEarnings(noteId);
+        uint penalty = _calculatePenalty(note, timestamp);
 
-    // TODO: check if the creator is the claimer
-    // TODO: increment the claim count to prevent over minting
-    // TODO: transfer the ownership of the claim via an NFT
+        return (earnings, penalty);
+    }
+
+    function _calculateEarnings(uint noteId) internal view returns (uint) {
+        uint balance = _cash.balanceOf(address(this));
+        uint earnings = balance * _shares[noteId] / _totalShares;
+        return earnings;
+    }
+
+    function _calculatePenalty(Note memory note, uint timestamp) internal pure returns (uint) {
+        if (timestamp > note.expiresAt + 2 weeks) {
+            uint late = (timestamp - note.expiresAt - 2 weeks) / 1 days;
+            return late * note.amount / 14;
+        }
+
+        return 0;
+    }
+
+    function tokenURI(uint noteId) public view virtual override returns (string memory) {
+        Note memory note = getNote(noteId); 
+        return string(_noteURI(note));
+    }
+
+    function tokenData(uint noteId) external view returns (string memory) {
+        Note memory note = getNote(noteId); 
+        return string(_noteJSON(note));
+    }
+
+    function _noteURI(Note memory note) internal view returns (bytes memory) {
+        return abi.encodePacked(
+            'data:application/json;base64,',
+            Base64.encode(_noteJSON(note))
+        );
+    }
+
+    function _noteJSON(Note memory note) internal view returns (bytes memory) {
+        Noun memory noun = _data.getNoun(note.nounId); 
+        return abi.encodePacked(
+            '{',
+                '"id":', note.id.toString(), ',',
+                '"name":"FOUND ', noun.name, '",',
+                '"description":"', noun.name, ' is FOUND.",',
+                '"noun":[', _data.tokenData(note.nounId), '],',
+                '"image":"', _data.tokenImage(note.nounId), '"',
+            '}'
+        );
+    }
+
     function claim(
         address minter, 
         uint coinId, 
         uint amount
     ) external {
-        uint nounId = _coinToNoun[coinId];
+        uint nounId = _requireFoundNoun(coinId);
+        address owner = _verifyClaim(nounId, coinId, amount);
 
-        Noun memory noun = _data.getNoun(nounId);
-
-        require(
-            msg.sender == noun.creator, 
-            "Sender is not the Noun creaotr"
-        );
-
+        _claims[coinId] += amount;
         _bank.mint(minter, coinId, amount);
         
         emit Claim(
-            noun.creator,
+            owner,
             minter,
             coinId, 
             nounId,
             amount
         );
+    }
+
+    function _verifyClaim(
+        uint nounId, 
+        uint coinId, 
+        uint amount
+    ) internal view returns (address) {
+        address owner = _data.ownerOf(nounId);
+
+        require(
+            msg.sender == owner, 
+            "Caller is not the Noun owner"
+        );
+
+        uint claimed = _claims[coinId];
+        uint minted = _bank.totalSupplyOf(coinId) - claimed;
+
+        bool claimable = minted / 10 >= amount + claimed;
+        require(claimable, "Claim too large");
+
+        return owner;
     }
     
     function vote(
@@ -264,14 +330,14 @@ contract NounGame is Nounish, ERC721 {
 
     // TODO: double check the params
     // TODO: transfer the found to the appropriate address
-    function stake(NoteParams memory params) external {
+    function stake(address minter, NoteParams memory params) external {
         Note memory note = _createNote(params);
 
-        _mint(params.owner, note.id);
+        _mint(minter, note.id);
 
         emit Stake(
             note.id, 
-            note.idea,
+            note.nounId,
             note.amount,
             note.expiresAt,
             note.startedAt
@@ -291,11 +357,10 @@ contract NounGame is Nounish, ERC721 {
 
         Note storage note = _notes[++_stakeCount];
         note.id = _stakeCount;
-        note.idea = params.idea;
+        note.nounId = params.nounId;
         note.amount = params.amount;
         note.expiresAt = params.expiresAt;
         note.startedAt = block.timestamp;
-        note.founder = params.founder;
 
         uint day = _data.currentDay();
         uint shares = calculateShares(day, params.amount);
@@ -307,53 +372,27 @@ contract NounGame is Nounish, ERC721 {
     }
 
     function burn(address payee, uint noteId) internal {
-        address owner = ownerOf(noteId);
+        Note memory note = getNote(noteId);
+        uint payout = _burnNote(note);
+
+        _cash.transferFrom(address(this), payee, payout);
+
+        emit Burn(note.id, note.nounId, note.amount, note.endedAt);
+    }
+
+    function _burnNote(Note memory note) internal returns (uint payout) {
+        address owner = ownerOf(note.id);
         require(owner == msg.sender, "You are not the owner");
 
-        Note storage note = _notes[noteId];
         require(note.endedAt == 0, "Note already ended");
         note.endedAt = block.timestamp;
-        note.redeemer = owner;
-        note.payee = payee;
-        (note.earnings, note.penalty) = _calculatePayout(note, block.timestamp);
-
-        _cash.transferFrom(
-            address(this), 
-            payee, 
-            note.earnings - note.penalty
-        );
 
         _burn(note.id);
 
-        emit Burn(note.id, note.idea, note.amount, note.endedAt);
-    }
-    
-    function calculatePayout(
-        uint noteId, 
-        uint timestamp
-    ) external view returns (
-        uint earnings, 
-        uint penalty
-    ) {
-       Note memory note = _notes[noteId];
-       return _calculatePayout(note, timestamp);
-    }
+        uint earnings = _calculateEarnings(note.id);
+        uint penalty = _calculatePenalty(note, block.timestamp);
 
-    function _calculatePayout(
-        Note memory note, 
-        uint timestamp
-    ) internal view returns (uint, uint) {
-        uint penalty;
-
-         if (timestamp > note.expiresAt + 2 weeks) {
-            uint late = (timestamp - note.expiresAt - 2 weeks) / 1 days;
-            penalty = late * note.amount / 14;
-        }
-
-        uint balance = _cash.balanceOf(address(this));
-        uint earnings = balance * _shares[note.id] / _totalShares;
-
-        return (earnings, penalty);
+        return earnings - penalty;
     }
 
     constructor(
