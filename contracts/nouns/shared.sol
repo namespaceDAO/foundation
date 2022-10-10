@@ -40,4 +40,6 @@ struct Note {
     address founder;
     address redeemer;
     address payee;
+    uint earnings;
+    uint penalty;
 }

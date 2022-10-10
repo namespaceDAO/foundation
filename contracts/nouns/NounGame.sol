@@ -7,69 +7,34 @@ import "./NounBank.sol";
 import "./NounData.sol";
 import "./shared.sol";
 
+/*
+TODO:
+ERC721 contract URI for notes
+data URI, token URI
+special card art?
+*/
+
 contract NounGame is ERC721 {
     NounBank private _bank;
     NounData private _data;
     IERC20 private _cash;
 
-    uint private _stakeCount;
-    uint private _amplitude = 10;
-    uint private _totalShares = 0;
-    uint private _minimumDuration = 1 days;
+    function bank() external view returns (NounBank) { 
+        return _bank; 
+    }
 
-    mapping(uint => uint) private _shares;
+    function data() external view returns (NounData) {
+        return _data;
+    }
+
+    function cash() external view returns (IERC20) {
+        return _cash;
+    }
+
     mapping(uint => uint) private _nounToCoin;
     mapping(uint => uint) private _coinToNoun;
     mapping(uint => uint) private _cashOnNoun;
     mapping(uint => uint) private _cashOnCoin;
-    mapping(uint => Note) private _notes;
-
-    event Claim(
-        address creator,
-        address minter,
-        uint coinId,
-        uint nounId,
-        uint coins
-    );
-
-    event Vote(
-        address payer,
-        address minter,
-        uint coinId,
-        uint nounId,
-        uint found,
-        uint coins
-    );
-
-    event Mint(
-        address payer,
-        address minter,
-        uint coinId,
-        uint nounId,
-        uint found,
-        uint coins
-    );
-
-    event Stake(
-        uint id,
-        uint idea,
-        uint amount,
-        uint expiresAt,
-        uint startedAt
-    );
-
-    event Burn(
-        uint id,
-        uint idea,
-        uint amount,
-        uint endedAt
-    );
-
-    function stakeCount() public view returns (uint) { return _stakeCount; }
-
-    function bank() external view returns (NounBank) { return _bank; }
-    function data() external view returns (NounData) { return _data; }
-    function cash() external view returns (IERC20) { return _cash; }
 
     function nounToCoin(uint nounId) external view returns (uint coinId) {
         return _nounToCoin[nounId];
@@ -79,15 +44,49 @@ contract NounGame is ERC721 {
         return _coinToNoun[coinId];
     }
 
-    function cashOnNoun(uint nounId) external view returns (uint) {
+    function cashOnNoun(uint nounId) external view returns (uint amount) {
         return _cashOnNoun[nounId];
     }
     
-    function cashOnCoin(uint nounId) external view returns (uint) {
+    function cashOnCoin(uint nounId) external view returns (uint amount) {
         return _cashOnCoin[nounId];
     }
 
-    function getNoteShares(uint day, uint amount) public view returns (uint) {
+    uint private _stakeCount;
+    uint private _amplitude = 10;
+    uint private _totalShares = 0;
+    uint private _minimumDuration = 1 days;
+    
+    mapping(uint => uint) private _shares;
+    mapping(uint => Note) private _notes;
+
+    function stakeCount() external view returns (uint) {
+        return _stakeCount;
+    }
+
+    function amplitude() external view returns (uint) {
+        return _amplitude;
+    }
+
+    function totalShares() external view returns (uint) {
+        return _totalShares;
+    }
+
+    function minimumDuration() external view returns (uint) {
+        return _minimumDuration;
+    }
+
+    function getShares(uint noteId) external view returns (uint) {
+        return _shares[noteId];
+    }
+
+    function getNote(uint stakeId) external view returns (Note memory) {
+        require(stakeId <= _stakeCount, "Note not found");
+        return _notes[stakeId];
+    }
+
+    // TODO: test this function
+    function calculateShares(uint day, uint amount) public view returns (uint) {
         uint last = _cashOnCoin[day - 1];
 
         if (last == 0) {
@@ -105,25 +104,22 @@ contract NounGame is ERC721 {
         return amount * amount / last;
     }
 
-    function stakeShares(uint stakeId) public view returns (uint) {
-        return _shares[stakeId];
-    }
+    event Claim(
+        address creator,
+        address minter,
+        uint coinId,
+        uint nounId,
+        uint coins
+    );
 
-    function totalShares() public view returns (uint) {
-        return _totalShares;
-    }
-
-    function getNote(uint id) public view returns (Note memory) {
-        _requireNote(id);
-        return _notes[id];
-    }
-
+    // TODO: check if the creator is the claimer
+    // TODO: increment the claim count to prevent over minting
+    // TODO: transfer the ownership of the claim via an NFT
     function claim(
         address minter, 
         uint coinId, 
         uint amount
     ) external {
-        // TODO: check if the creator is the claimer
         uint nounId = _coinToNoun[coinId];
 
         Noun memory noun = _data.getNoun(nounId);
@@ -144,6 +140,15 @@ contract NounGame is ERC721 {
         );
     }
 
+    event Vote(
+        address payer,
+        address minter,
+        uint coinId,
+        uint nounId,
+        uint found,
+        uint coins
+    );
+    
     function vote(
         address payer, 
         address minter, 
@@ -165,6 +170,44 @@ contract NounGame is ERC721 {
             minted
         );
     }
+
+    function _collectVote(uint nounId, uint amount) internal returns (uint) {
+        uint coinId = _requireFreshNoun(nounId);
+        uint minimum = _cashOnCoin[coinId] * 101 / 100;
+        
+        _cashOnNoun[nounId] += amount;
+        
+        if (_cashOnNoun[nounId] > minimum || minimum == 0) {
+            _coinToNoun[coinId] = nounId;
+            _nounToCoin[nounId] = coinId;
+            _cashOnCoin[coinId] = _cashOnNoun[nounId];
+        }
+
+        return coinId;
+    }
+
+    function _requireFreshNoun(uint nounId) internal view returns (uint) {
+        require(nounId <= _data.nounCount(), "Noun not found");
+        
+        uint coinId = _data.currentDay();
+        uint existing = _nounToCoin[nounId];
+        
+        require(
+            existing == 0 || existing == coinId, 
+            "Noun has been minted"
+        );
+        
+        return coinId;
+    }
+
+    event Mint(
+        address payer,
+        address minter,
+        uint coinId,
+        uint nounId,
+        uint found,
+        uint coins
+    );
 
     function mint(
         address payer, 
@@ -188,7 +231,49 @@ contract NounGame is ERC721 {
         );
     }
 
+    function _collectMint(uint coinId, uint amount) internal returns (uint) {
+        uint nounId = _requireFoundNoun(coinId);
+        
+        require(amount > 0, "Must mint some Nouns");
+        _cashOnNoun[nounId] += amount;
+
+        return _coinToNoun[coinId];
+    }
+
+    function _requireFoundNoun(uint coinId) internal view returns (uint nounId) {
+        require(
+            coinId > 0 && coinId <= _data.currentDay(), 
+            "Coin has not been minted"
+        );
+
+        return _coinToNoun[coinId];
+    }
+
+    event Stake(
+        uint id,
+        uint idea,
+        uint amount,
+        uint expiresAt,
+        uint startedAt
+    );
+
+    // TODO: double check the params
+    // TODO: transfer the found to the appropriate address
     function stake(NoteParams memory params) external {
+        Note memory stake = _collectStake(params);
+
+        _mint(params.owner, stake.id);
+
+        emit Stake(
+            stake.id, 
+            stake.idea,
+            stake.amount,
+            stake.expiresAt,
+            stake.startedAt
+        );
+    }
+
+    function _collectStake(NoteParams memory params) internal returns (Note memory) {
         require(
             params.amount > 0, 
             "Note more than 0"
@@ -208,23 +293,34 @@ contract NounGame is ERC721 {
         stake.founder = params.founder;
 
         uint day = _data.currentDay();
-        uint shares = getNoteShares(day, params.amount);
+        uint shares = calculateShares(day, params.amount);
     
         _shares[stake.id] = shares;
         _totalShares += shares;
-
-        _mint(params.owner, stake.id);
-
-        emit Stake(
-            stake.id, 
-            stake.idea,
-            stake.amount,
-            stake.expiresAt,
-            stake.startedAt
-        );
     }
 
+    event Burn(
+        uint id,
+        uint idea,
+        uint amount,
+        uint endedAt
+    );
+
     function burn(address payee, uint stakeId) internal {
+        Note memory stake = _collectBurn(payee, stakeId);
+
+        _cash.transferFrom(
+            address(this), 
+            payee, 
+            stake.earnings - stake.penalty
+        );
+
+        _burn(stake.id);
+
+        emit Burn(stake.id, stake.idea, stake.amount, stake.endedAt);
+    }
+    
+    function _collectBurn(address payee, uint stakeId) internal returns (Note memory) {
         address owner = ownerOf(stakeId);
 
         require(owner == msg.sender, "You are not the stake owner");
@@ -235,74 +331,15 @@ contract NounGame is ERC721 {
         stake.redeemer = owner;
         stake.payee = payee;
 
-        uint penalty;
         if (block.timestamp > stake.expiresAt + 2 weeks) {
             uint late = (block.timestamp - stake.expiresAt - 2 weeks) / 1 days;
-            penalty = late * stake.amount / 14;
+            stake.penalty = late * stake.amount / 14;
         }
-
-        uint shares = _shares[stakeId];
 
         uint balance = _cash.balanceOf(address(this));
-        uint earnings = balance * shares / _totalShares;
+        stake.earnings = balance * _shares[stakeId] / _totalShares;
 
-        uint payout = earnings - penalty;
-
-        _cash.transferFrom(address(this), payee, payout);
-
-        _burn(stake.id);
-
-        emit Burn(stake.id, stake.idea, stake.amount, stake.endedAt);
-    }
-
-    function _requireNote(uint stakeId) internal view {
-        require(stakeId <= _stakeCount, "Note not found");
-    }
-
-    function _updateDailyNouns(uint coinId, uint nounId) internal {
-        uint minimum = _cashOnCoin[coinId] * 101 / 100;
-        if (_cashOnNoun[nounId] > minimum || minimum == 0) {
-            _coinToNoun[coinId] = nounId;
-            _nounToCoin[nounId] = coinId;
-            _cashOnCoin[coinId] = _cashOnNoun[nounId];
-        }
-    }
-
-    function _collectMint(uint coinId, uint amount) internal returns (uint) {
-        uint nounId = _requireFoundNoun(coinId);
-        require(amount > 0, "Must mint some Nouns");
-        _cashOnNoun[nounId] += amount;
-        return _coinToNoun[coinId];
-    }
-
-    function _collectVote(uint nounId, uint amount) internal returns (uint) {
-        uint coinId = _requireFreshNoun(nounId);
-        _cashOnNoun[nounId] += amount;
-        _updateDailyNouns(coinId, nounId);
-        return coinId;
-    }
-
-    function _requireFreshNoun(uint nounId) internal view returns (uint) {
-        require(nounId <= _data.nounCount(), "Noun not found");
-        
-        uint coinId = _data.currentDay();
-        uint existing = _nounToCoin[nounId];
-        
-        require(
-            existing == 0 || existing == coinId, 
-            "Noun has been minted"
-        );
-        
-        return coinId;
-    }
-
-    function _requireFoundNoun(uint coinId) internal view returns (uint nounId) {
-        require(
-            coinId > 0 && coinId <= _data.currentDay(), 
-            "Coin has not been minted"
-        );
-
-        return _coinToNoun[coinId];
+        return stake;
     }
 
     constructor(
