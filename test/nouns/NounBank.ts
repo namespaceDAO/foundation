@@ -8,6 +8,7 @@ describe('NounBank', () => {
   let alice: SignerWithAddress
   let bob: SignerWithAddress
   let found: Contract
+  let data: Contract
   let game: Contract
   let bank: Contract
 
@@ -19,8 +20,11 @@ describe('NounBank', () => {
     const Found = await ethers.getContractFactory('Found')
     found = await Found.deploy()
 
+    const NounData = await ethers.getContractFactory('NounData')
+    data = await NounData.deploy()
+
     const NounGame = await ethers.getContractFactory('NounGame')
-    game = await NounGame.deploy(found.address, BASE_URI)
+    game = await NounGame.deploy(found.address, data.address, BASE_URI)
 
     const NounBank = await ethers.getContractFactory('NounBank')
     bank = NounBank.attach(await game.bank())
@@ -31,7 +35,7 @@ describe('NounBank', () => {
   })
 
   it('Deploys coin', async () => {
-    await game.submitNoun({
+    await data.submitNoun({
       name: 'Rubber Ducky',
       creator: alice.address,
       traits: [],

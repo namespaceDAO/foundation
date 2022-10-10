@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 
 import "../money/Coin.sol";
 
-abstract contract NounBased {
+abstract contract Nounish {
     function coinToNoun(uint coinId) virtual public view returns (Noun memory);
 }
 

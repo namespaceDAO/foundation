@@ -123,40 +123,7 @@ contract Capitalism is ERC721 {
     function _requireStake(uint stakeId) internal view {
         require(stakeId <= _stakeCount, "Stake not found");
     }
-
-    function dataURI(uint stakeId) public view returns (string memory) {
-        return string(
-            abi.encodePacked(
-                'data:application/json;base64,',
-                _dataJSON(stakeId)
-                // Base64.encode(_stakeJSON(stake))
-            )
-        );
-    }
-
-    function dataJSON(uint stakeId) public view returns (string memory) {
-        return string(_dataJSON(stakeId));
-    }
-
-    function tokenURI(uint stakeId) public view override returns (string memory) {
-        return dataURI(stakeId);
-    }
     
-    function _dataJSON(uint stakeId) internal view returns (bytes memory) {
-        _requireStake(stakeId);
-        Stake memory stake = _stakes[stakeId];
-        return abi.encodePacked(
-            '{',
-                '"id":"', stake.id.toString(), '",',
-                '"idea":"', stake.idea.toString(), '",',
-                '"amount":"', stake.amount.toString(), '",',
-                '"expiresAt":"', stake.expiresAt.toString(), '",',
-                '"startedAt":"', stake.startedAt.toString(), '",',
-                '"endedAt":"', stake.endedAt.toString(), '"',
-            '}'
-        );
-    }
-
     constructor(
         string memory name_, 
         string memory symbol_

@@ -4,15 +4,14 @@ pragma solidity ^0.8.10;
 import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
 import "../money/Bank.sol";
 import "../money/Coin.sol";
-import "./shared.sol";
 import "./NounData.sol";
-import "./NounNote.sol";
+import "./shared.sol";
 
 contract NounBank is Bank {
     using Strings for uint;
     
     NounData private _data;
-    NounBased private _base;
+    Nounish private _base;
 
     uint private _difficulty = 10;    
 
@@ -82,7 +81,7 @@ contract NounBank is Bank {
 
     constructor(
         NounData data_, 
-        NounBased base_,
+        Nounish base_,
         string memory baseURI_
     ) Bank(baseURI_) {
         _data = data_;

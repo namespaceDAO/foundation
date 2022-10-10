@@ -32,6 +32,7 @@ contract NounData {
     }
 
     function _currentDay() internal view returns (uint) {
+        // uint _mountainous = 7 hours;
         return (block.timestamp - _start) / 1 days + 1;
     }
 
