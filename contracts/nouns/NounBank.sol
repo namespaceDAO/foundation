@@ -4,9 +4,18 @@ pragma solidity ^0.8.10;
 import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
 import "../money/Bank.sol";
 import "../money/Coin.sol";
-import "./NounData.sol";
 import "./shared.sol";
-
+import "./NounData.sol";
+                                                                                                                          
+ /*$$$$$$   /$$$$$$  /$$   /$$ /$$   /$$                                                                                  
+| $$__  $$ /$$__  $$| $$$ | $$| $$  /$$/                                                                                  
+| $$  \ $$| $$  \ $$| $$$$| $$| $$ /$$/                                                                                   
+| $$$$$$$ | $$$$$$$$| $$ $$ $$| $$$$$/                                                                                    
+| $$__  $$| $$__  $$| $$  $$$$| $$  $$                                                                                    
+| $$  \ $$| $$  | $$| $$\  $$$| $$\  $$                                                                                   
+| $$$$$$$/| $$  | $$| $$ \  $$| $$ \  $$                                                                                  
+|_______/ |__/  |__/|__/  \__/|__/  \_*/                                                                                  
+                                                   
 contract NounBank is Nounish, Bank {
     using Strings for uint;
     
