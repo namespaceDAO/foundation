@@ -402,20 +402,7 @@ contract NounGame is Nounish, ERC721 {
         uint penalty = _calculatePenalty(note, block.timestamp);
 
         return earnings - penalty;
-    }                                                
-
-    constructor(
-        IERC20 cash_, 
-        NounData data_,
-        string memory baseURI_
-    ) ERC721("FOUND NOUN", "FOUND NOUN") {
-        _data = data_;
-        _cash = cash_;
-
-        Nounish _base = Nounish(address(this));
-        _bank = new NounBank(data_, _base, baseURI_);
-        _cash.approve(address(this), type(uint).max);
-    }         
+    }                
                                                                                                                           
       /*$$$$$  /$$        /$$$$$$  /$$$$$$ /$$      /$$                                                                       
      /$$__  $$| $$       /$$__  $$|_  $$_/| $$$    /$$$                                                                       
@@ -480,4 +467,28 @@ contract NounGame is Nounish, ERC721 {
 
         return owner;
     }
+
+        /*$       /$$       /$$   
+      /$$$$$$   /$$$$$$   /$$$$$$ 
+     /$$__  $$ /$$__  $$ /$$__  $$
+    | $$  \__/| $$  \__/| $$  \__/
+    |  $$$$$$ |  $$$$$$ |  $$$$$$ 
+     \____  $$ \____  $$ \____  $$
+     /$$  \ $$ /$$  \ $$ /$$  \ $$
+    |  $$$$$$/|  $$$$$$/|  $$$$$$/
+     \_  $$_/  \_  $$_/  \_  $$_/ 
+       \__/      \__/      \_*/   
+
+    constructor(
+        IERC20 cash_, 
+        NounData data_,
+        string memory baseURI_
+    ) ERC721("FOUND NOUN", "FOUND NOUN") {
+        _data = data_;
+        _cash = cash_;
+
+        Nounish _base = Nounish(address(this));
+        _bank = new NounBank(data_, _base, baseURI_);
+        _cash.approve(address(this), type(uint).max);
+    }  
 }
