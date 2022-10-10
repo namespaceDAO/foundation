@@ -260,20 +260,20 @@ contract NounGame is ERC721 {
     // TODO: double check the params
     // TODO: transfer the found to the appropriate address
     function stake(NoteParams memory params) external {
-        Note memory stake = _collectStake(params);
+        Note memory note = _createNote(params);
 
-        _mint(params.owner, stake.id);
+        _mint(params.owner, note.id);
 
         emit Stake(
-            stake.id, 
-            stake.idea,
-            stake.amount,
-            stake.expiresAt,
-            stake.startedAt
+            note.id, 
+            note.idea,
+            note.amount,
+            note.expiresAt,
+            note.startedAt
         );
     }
 
-    function _collectStake(NoteParams memory params) internal returns (Note memory) {
+    function _createNote(NoteParams memory params) internal returns (Note memory) {
         require(
             params.amount > 0, 
             "Note more than 0"
@@ -284,19 +284,21 @@ contract NounGame is ERC721 {
             "Must expire further in the future"
         );
 
-        Note storage stake = _notes[++_stakeCount];
-        stake.id = _stakeCount;
-        stake.idea = params.idea;
-        stake.amount = params.amount;
-        stake.expiresAt = params.expiresAt;
-        stake.startedAt = block.timestamp;
-        stake.founder = params.founder;
+        Note storage note = _notes[++_stakeCount];
+        note.id = _stakeCount;
+        note.idea = params.idea;
+        note.amount = params.amount;
+        note.expiresAt = params.expiresAt;
+        note.startedAt = block.timestamp;
+        note.founder = params.founder;
 
         uint day = _data.currentDay();
         uint shares = calculateShares(day, params.amount);
     
-        _shares[stake.id] = shares;
+        _shares[note.id] = shares;
         _totalShares += shares;
+
+        return note;
     }
 
     event Burn(
@@ -306,40 +308,54 @@ contract NounGame is ERC721 {
         uint endedAt
     );
 
-    function burn(address payee, uint stakeId) internal {
-        Note memory stake = _collectBurn(payee, stakeId);
+    function burn(address payee, uint noteId) internal {
+        address owner = ownerOf(noteId);
+        require(owner == msg.sender, "You are not the owner");
+
+        Note storage note = _notes[noteId];
+        require(note.endedAt == 0, "Note already ended");
+        note.endedAt = block.timestamp;
+        note.redeemer = owner;
+        note.payee = payee;
+        (note.earnings, note.penalty) = _calculatePayout(note, block.timestamp);
 
         _cash.transferFrom(
             address(this), 
             payee, 
-            stake.earnings - stake.penalty
+            note.earnings - note.penalty
         );
 
-        _burn(stake.id);
+        _burn(note.id);
 
-        emit Burn(stake.id, stake.idea, stake.amount, stake.endedAt);
+        emit Burn(note.id, note.idea, note.amount, note.endedAt);
     }
     
-    function _collectBurn(address payee, uint stakeId) internal returns (Note memory) {
-        address owner = ownerOf(stakeId);
+    function calculatePayout(
+        uint noteId, 
+        uint timestamp
+    ) external view returns (
+        uint earnings, 
+        uint penalty
+    ) {
+       Note memory note = _notes[noteId];
+       return _calculatePayout(note, timestamp);
+    }
 
-        require(owner == msg.sender, "You are not the stake owner");
-        Note storage stake = _notes[stakeId];
+    function _calculatePayout(
+        Note memory note, 
+        uint timestamp
+    ) internal view returns (uint, uint) {
+        uint penalty;
 
-        require(stake.endedAt == 0, "Note already ended");
-        stake.endedAt = block.timestamp;
-        stake.redeemer = owner;
-        stake.payee = payee;
-
-        if (block.timestamp > stake.expiresAt + 2 weeks) {
-            uint late = (block.timestamp - stake.expiresAt - 2 weeks) / 1 days;
-            stake.penalty = late * stake.amount / 14;
+         if (timestamp > note.expiresAt + 2 weeks) {
+            uint late = (timestamp - note.expiresAt - 2 weeks) / 1 days;
+            penalty = late * note.amount / 14;
         }
 
         uint balance = _cash.balanceOf(address(this));
-        stake.earnings = balance * _shares[stakeId] / _totalShares;
+        uint earnings = balance * _shares[note.id] / _totalShares;
 
-        return stake;
+        return (earnings, penalty);
     }
 
     constructor(

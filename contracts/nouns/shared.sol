@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 import "../money/Coin.sol";
 
 interface Nounish {
-    function coinToNoun(uint coinId) virtual external view returns (uint nounId);
+    function coinToNoun(uint coinId) external view returns (uint nounId);
 }
 
 struct NounParams {
