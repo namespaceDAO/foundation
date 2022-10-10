@@ -35,7 +35,7 @@ describe('NounData', () => {
       shapes: shapes.map(BigNumber.from)
     })
 
-    const jsonData = await data.nounJSON(1)
+    const jsonData = await data.tokenData(1)
     const noun = JSON.parse(jsonData)
 
     expect(noun.id).to.equal(1)
@@ -44,8 +44,8 @@ describe('NounData', () => {
     expect(noun.traits).to.have.ordered.members(['rubber', 'ducky'])
     expect(noun.shapes).to.have.ordered.members(shapes)
 
-    const nounSVG = await data.nounSVG(1)
-    const nounURI = await data.nounURI(1)
+    const nounSVG = await data.tokenSVG(1)
+    const nounURI = await data.tokenURI(1)
 
     const image64 = Buffer.from(nounSVG).toString('base64')
     expect(noun.image).to.equal(`data:image/svg+xml;base64,${image64}`)

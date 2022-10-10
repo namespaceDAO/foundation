@@ -2,10 +2,11 @@
 pragma solidity ^0.8.10;
 
 import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "./shared.sol";
 
-contract NounData {
+contract NounData is ERC721 {
     using Strings for uint;
     using Strings for uint8;
     using Strings for uint64;
@@ -23,37 +24,18 @@ contract NounData {
         string[] traits
     );
 
+    function getNoun(uint nounId) public view returns (Noun memory) {
+        require(nounId <= _nounCount, "Noun not found");
+        return _nouns[nounId];
+    }
+
     function nounCount() public view returns (uint) {
         return _nounCount;
     }
 
     function currentDay() external view returns (uint) {
-        return _currentDay();
-    }
-
-    function _currentDay() internal view returns (uint) {
         // uint _mountainous = 7 hours;
         return (block.timestamp - _start) / 1 days + 1;
-    }
-
-    function getNoun(uint id) public view returns (Noun memory) {
-        require(id <= _nounCount, "Noun not found");
-        return _nouns[id];
-    }
-
-    function nounJSON(uint nounId) external view returns (string memory) {
-        Noun memory noun = getNoun(nounId); 
-        return string(_nounJSON(noun));
-    }
-    
-    function nounURI(uint nounId) public view returns (string memory) {
-        Noun memory noun = getNoun(nounId); 
-        return string(_nounURI(noun));
-    }
-
-    function nounSVG(uint nounId) external view returns (string memory) {
-        Noun memory noun = getNoun(nounId); 
-        return string(_nounSVG(noun.shapes));
     }
 
     function submitNoun(NounParams memory params) external {
@@ -70,6 +52,8 @@ contract NounData {
         noun.creator = params.creator;
         noun.traits = params.traits;
 
+        _mint(params.creator, noun.id);
+
         emit NounSubmitted(
             noun.id, 
             noun.name, 
@@ -77,6 +61,21 @@ contract NounData {
             noun.shapes,
             noun.traits
         );
+    }
+
+    function tokenURI(uint nounId) public view virtual override returns (string memory) {
+        Noun memory noun = getNoun(nounId); 
+        return string(_nounURI(noun));
+    }
+
+    function tokenData(uint nounId) external view returns (string memory) {
+        Noun memory noun = getNoun(nounId); 
+        return string(_nounJSON(noun));
+    }
+
+    function tokenSVG(uint nounId) external view returns (string memory) {
+        Noun memory noun = getNoun(nounId); 
+        return string(_nounSVG(noun.shapes));
     }
 
     function _nounURI(Noun memory noun) internal pure returns (bytes memory) {
@@ -173,7 +172,7 @@ contract NounData {
         );
     }
 
-    constructor() {
+    constructor() ERC721("ORIGINAL NOUN", "ORIGINAL NOUN") {
         _start = block.timestamp;
     }
 }

@@ -12,6 +12,9 @@ TODO:
 ERC721 contract URI for notes
 data URI, token URI
 special card art?
+
+optional governance tax, optional card art changes?
+
 */
 
 contract NounGame is ERC721 {
