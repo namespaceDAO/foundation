@@ -17,7 +17,7 @@ optional governance tax, optional card art changes?
 
 */
 
-contract NounGame is ERC721 {
+contract NounGame is Nounish, ERC721 {
     NounBank private _bank;
     NounData private _data;
     IERC20 private _cash;

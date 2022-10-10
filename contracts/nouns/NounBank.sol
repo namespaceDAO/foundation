@@ -7,7 +7,7 @@ import "../money/Coin.sol";
 import "./NounData.sol";
 import "./shared.sol";
 
-contract NounBank is Bank {
+contract NounBank is Nounish, Bank {
     using Strings for uint;
     
     NounData private _data;
@@ -20,6 +20,10 @@ contract NounBank is Bank {
     modifier onlyAdmin() {
         require(msg.sender == address(_base), "Caller is not based");
         _;
+    }
+
+    function coinToNoun(uint coinId) external view returns (uint nounId) {
+        return _base.coinToNoun(coinId);
     }
 
     function nameOf(uint coinId) override public view returns (string memory) {
