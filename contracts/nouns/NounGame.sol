@@ -22,6 +22,59 @@ contract NounGame is ERC721 {
     NounData private _data;
     IERC20 private _cash;
 
+    mapping(uint => uint) private _nounToCoin;
+    mapping(uint => uint) private _coinToNoun;
+    mapping(uint => uint) private _cashOnNoun;
+    mapping(uint => uint) private _cashOnCoin;
+    
+    uint private _stakeCount;
+    uint private _totalShares;
+    uint private _minimumDuration = 1 days;
+    
+    mapping(uint => uint) private _shares;
+    mapping(uint => Note) private _notes;
+
+    event Claim(
+        address creator,
+        address minter,
+        uint coinId,
+        uint nounId,
+        uint coins
+    );
+
+    event Vote(
+        address payer,
+        address minter,
+        uint coinId,
+        uint nounId,
+        uint found,
+        uint coins
+    );
+
+    event Mint(
+        address payer,
+        address minter,
+        uint coinId,
+        uint nounId,
+        uint found,
+        uint coins
+    );
+
+    event Stake(
+        uint id,
+        uint idea,
+        uint amount,
+        uint expiresAt,
+        uint startedAt
+    );
+
+    event Burn(
+        uint id,
+        uint idea,
+        uint amount,
+        uint endedAt
+    );
+
     function bank() external view returns (NounBank) { 
         return _bank; 
     }
@@ -33,11 +86,6 @@ contract NounGame is ERC721 {
     function cash() external view returns (IERC20) {
         return _cash;
     }
-
-    mapping(uint => uint) private _nounToCoin;
-    mapping(uint => uint) private _coinToNoun;
-    mapping(uint => uint) private _cashOnNoun;
-    mapping(uint => uint) private _cashOnCoin;
 
     function nounToCoin(uint nounId) external view returns (uint coinId) {
         return _nounToCoin[nounId];
@@ -55,20 +103,8 @@ contract NounGame is ERC721 {
         return _cashOnCoin[nounId];
     }
 
-    uint private _stakeCount;
-    uint private _amplitude = 10;
-    uint private _totalShares = 0;
-    uint private _minimumDuration = 1 days;
-    
-    mapping(uint => uint) private _shares;
-    mapping(uint => Note) private _notes;
-
     function stakeCount() external view returns (uint) {
         return _stakeCount;
-    }
-
-    function amplitude() external view returns (uint) {
-        return _amplitude;
     }
 
     function totalShares() external view returns (uint) {
@@ -88,32 +124,24 @@ contract NounGame is ERC721 {
         return _notes[stakeId];
     }
 
-    // TODO: test this function
     function calculateShares(uint day, uint amount) public view returns (uint) {
         uint last = _cashOnCoin[day - 1];
+        uint ampl = 10;
 
         if (last == 0) {
             return amount;
         }
 
-        if (last > amount * _amplitude) {
-            return amount / _amplitude;
+        if (last > amount * ampl) {
+            return amount / ampl;
         }
 
-        if (last < amount / _amplitude) {
-            return amount * _amplitude;
+        if (last < amount / ampl) {
+            return amount * ampl;
         }
 
         return amount * amount / last;
     }
-
-    event Claim(
-        address creator,
-        address minter,
-        uint coinId,
-        uint nounId,
-        uint coins
-    );
 
     // TODO: check if the creator is the claimer
     // TODO: increment the claim count to prevent over minting
@@ -142,15 +170,6 @@ contract NounGame is ERC721 {
             amount
         );
     }
-
-    event Vote(
-        address payer,
-        address minter,
-        uint coinId,
-        uint nounId,
-        uint found,
-        uint coins
-    );
     
     function vote(
         address payer, 
@@ -203,15 +222,6 @@ contract NounGame is ERC721 {
         return coinId;
     }
 
-    event Mint(
-        address payer,
-        address minter,
-        uint coinId,
-        uint nounId,
-        uint found,
-        uint coins
-    );
-
     function mint(
         address payer, 
         address minter, 
@@ -251,14 +261,6 @@ contract NounGame is ERC721 {
 
         return _coinToNoun[coinId];
     }
-
-    event Stake(
-        uint id,
-        uint idea,
-        uint amount,
-        uint expiresAt,
-        uint startedAt
-    );
 
     // TODO: double check the params
     // TODO: transfer the found to the appropriate address
@@ -303,13 +305,6 @@ contract NounGame is ERC721 {
 
         return note;
     }
-
-    event Burn(
-        uint id,
-        uint idea,
-        uint amount,
-        uint endedAt
-    );
 
     function burn(address payee, uint noteId) internal {
         address owner = ownerOf(noteId);
