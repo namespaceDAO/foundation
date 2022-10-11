@@ -10,6 +10,7 @@ struct Card {
     uint coinId;
     uint nounId;
     uint amount;
+    uint power;
 }
 
 contract NounCard is Nounish, ERC721 {
@@ -26,6 +27,15 @@ contract NounCard is Nounish, ERC721 {
         uint amount
     );
 
+    function getCard(uint cardId) external view returns (Card memory) {
+        return _requireCard(cardId);
+    }
+
+    function _requireCard(uint cardId) internal view returns (Card memory) {
+        require(cardId <= _cardCount, "Card not found");
+        return _cards[cardId];
+    }
+
     function coinToNoun(uint coinId) external view returns (uint nounId) {
         return _base.coinToNoun(coinId);
     }
@@ -38,6 +48,7 @@ contract NounCard is Nounish, ERC721 {
         card.coinId = coinId;
         card.nounId = nounId;
         card.amount = amount;
+        card.power = _bank.convertCoin(coinId, amount);
 
         _bank.safeTransferFrom(
             msg.sender, 
@@ -53,7 +64,7 @@ contract NounCard is Nounish, ERC721 {
     }
 
     constructor(NounBank bank_, Nounish base_) 
-    ERC721("FORGED NOUN", "FORGED NOUN") {
+    ERC721("NOUN CARD", "NOUN CARD") {
         _bank = bank_;
         _base = base_;
     }

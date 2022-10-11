@@ -10,11 +10,9 @@ Nouns are pixel art stored 100% on chain. Anyone can create a Noun you just need
 
 Creating a Noun mints an NFT to the creator. The holder of the original Noun can claim up to 10% of the supply of that coin. Burning original Nouns is a bull signal.
 
-## Mint Coins
+## Minting Crypto
 
-Every day collectors vote for art. The Noun with the most votes becomes the day's coin. Everyone who voted early gets a 10x early minting bonus and recieves the new coin.
-
-After the first day the price of each coin is proportional to the supply of every other coin. The more demand, the more expensive the coin.
+Every day crypto collectors vote for art. The Noun with the most votes becomes the day's coin. Everyone who voted early gets a 10x early minting bonus. After the first day the price of each coin is proportional to the supply of every other coin. The more demand, the more expensive the coin.
 
 |        | Supply      | Mint Price   
 | ------ | ----------- | ------------- 
@@ -24,11 +22,11 @@ After the first day the price of each coin is proportional to the supply of ever
 | Coin D | 7000        | ` 714 / FOUND` 
 | Coin E | 9000        | ` 555 / FOUND`
 
-## Stake and Share
+## Earning Money
 
 Mint proceeds can be claimed by the community using a secondary token called FOUND. FOUND can be minted for 1 ETH each. An origin address holds a 10% claim on FOUND.
 
-Every day there are shares in the Bank of Nouns for sale. The price is proportional to how many coins were minted on the previous day. The more FOUND the bank earned yesterday, the more expensive the shares are today. Capped at `10 shares / FOUND`
+Every day there are shares in the Bank of Nouns for sale. The price is proportional to how many coins were minted on the previous day. The more FOUND the bank earned yesterday the more expensive the shares are today. Capped at `10 shares / FOUND`
 
 |        | Last week avg | Yesterday   | Base Share Price
 | ------ | ------------- | ----------- | ------------- 
@@ -59,6 +57,23 @@ Stakes over 60 days late are considered fully expired and do not recieve mint pr
 
 You are paid your principal plus earnings when you unstake. Your proceeds are the current bank's balance of FOUND times your stake's shares times the total number of outstanding shares. Each stake is tradable as an NFT.
 
-## Future: Governance
+## Governance
 
-At a later date a governance mechanism could be enabled. Owners of Noun coins would vote on the tax rate (30% maximum) and destination of the proceeds. 
+40% of the proceeds go to bootstrap a treasury to be used by the community to proliferate memes and fund public goods. 
+
+Noun coins can be forged into Noun cards that can be used to vote in governace. Each Noun card has a power that is proportional to the number of Noun coins used to forge it times conversion rate of those coins. 
+
+The treasury is organized like a tree where each branch in the tree has a claim on the proceeds claimed by the branch before. New branches of the tree can be deployed with one click and configured with a number of parameters.
+
+
+
+All the money from the treasury goes to a central contract address, each Noun card staked on that contract holds a claim on a portion of the funds in the pool. No more than 20% of the funds of the main treasury can be withdrawn every 28 days.
+
+With one click you can deploy a new contract that can hold Noun coins and stake those coins on the main DAO. This allows communities to bootstrap their own DAOs using their own coins. Stake on an address in that contract and recieve a portion of proceeds.
+
+
+            Bank of Nouns
+            /         \
+        branch1      user1
+        /      \
+    branch1a branch1b
