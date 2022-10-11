@@ -23,8 +23,8 @@ describe('NounBank', () => {
     const NounData = await ethers.getContractFactory('NounData')
     data = await NounData.deploy()
 
-    const NounMint = await ethers.getContractFactory('NounMint')
-    game = await NounMint.deploy(found.address, data.address, BASE_URI)
+    const NounMove = await ethers.getContractFactory('NounMove')
+    game = await NounMove.deploy(found.address, data.address, BASE_URI)
 
     const NounBank = await ethers.getContractFactory('NounBank')
     bank = NounBank.attach(await game.bank())

@@ -17,9 +17,7 @@ import "./shared.sol";
 | $$$$$$$/| $$  | $$| $$ \  $$| $$ \  $$      |  $$$$$$/| $$            | $$ \  $$|  $$$$$$/|  $$$$$$/| $$ \  $$|  $$$$$$/
 |_______/ |__/  |__/|__/  \__/|__/  \__/       \______/ |__/            |__/  \__/ \______/  \______/ |__/  \__/ \_____*/ 
                                                                                                                           
-// TODO: governance tax
-contract NounMint is Nounish, ERC721 {
-
+contract NounMove is Nounish, ERC721 {
     IERC20 private _cash;
     NounData private _data;
     NounBank private _bank;
