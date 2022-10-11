@@ -12,8 +12,6 @@ describe('NounMove', () => {
   let game: Contract
   let bank: Contract
 
-  const BASE_URI = 'https://bankofnouns.com/_/api/tokens/{id}.json'
-
   beforeEach(async () => {
     [alice, bob] = await ethers.getSigners()
 
@@ -24,7 +22,7 @@ describe('NounMove', () => {
     data = await NounData.deploy()
 
     const NounMove = await ethers.getContractFactory('NounMove')
-    game = await NounMove.deploy(found.address, data.address, BASE_URI)
+    game = await NounMove.deploy(found.address, data.address)
 
     const NounBank = await ethers.getContractFactory('NounBank')
     bank = NounBank.attach(await game.bank())

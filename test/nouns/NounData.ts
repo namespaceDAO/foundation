@@ -9,8 +9,6 @@ describe('NounData', () => {
   let found: Contract
   let data: Contract
 
-  const BASE_URI = 'https://bankofnouns.com/_/api/tokens/{id}.json'
-
   beforeEach(async () => {
     [alice, bob] = await ethers.getSigners()
 

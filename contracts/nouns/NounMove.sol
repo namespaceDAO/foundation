@@ -17,7 +17,7 @@ import "./shared.sol";
 | $$$$$$$/| $$  | $$| $$ \  $$| $$ \  $$      |  $$$$$$/| $$            | $$ \  $$|  $$$$$$/|  $$$$$$/| $$ \  $$|  $$$$$$/
 |_______/ |__/  |__/|__/  \__/|__/  \__/       \______/ |__/            |__/  \__/ \______/  \______/ |__/  \__/ \_____*/ 
                                                                                                                           
-contract NounMove is Nounish, ERC721 {
+contract NounMove is NounBase, ERC721 {
     IERC20 private _cash;
     NounData private _data;
     NounBank private _bank;
@@ -210,7 +210,7 @@ contract NounMove is Nounish, ERC721 {
         uint coinId = _collectVote(nounId, minted);
 
         _cash.transferFrom(payer, address(this), found);
-        _bank.mint(minter, coinId, minted);
+        _bank.mintCoin(minter, coinId, minted);
 
         emit Vote(
             payer,
@@ -279,7 +279,7 @@ contract NounMove is Nounish, ERC721 {
         uint minted = _bank.convertCoin(coinId, found);
 
         _cash.transferFrom(payer, address(this), found);
-        _bank.mint(minter, coinId, minted);
+        _bank.mintCoin(minter, coinId, minted);
 
         emit Mint(
             payer, 
@@ -439,7 +439,7 @@ contract NounMove is Nounish, ERC721 {
         address owner = _verifyClaim(nounId, coinId, amount);
 
         _claims[coinId] += amount;
-        _bank.mint(minter, coinId, amount);
+        _bank.mintCoin(minter, coinId, amount);
         
         emit Claim(
             owner,
@@ -486,16 +486,13 @@ contract NounMove is Nounish, ERC721 {
         // TODO: fund the game if it exists
     }
 
-    constructor(
-        IERC20 cash_, 
-        NounData data_,
-        string memory baseURI_
-    ) ERC721("FOUND NOUN", "FOUND NOUN") {
+    constructor(IERC20 cash_, NounData data_) 
+    ERC721("FOUND NOUN", "FOUND NOUN") {
         _data = data_;
         _cash = cash_;
 
-        Nounish _base = Nounish(address(this));
-        _bank = new NounBank(data_, _base, baseURI_);
+        NounBase _base = NounBase(address(this));
+        _bank = new NounBank(data_, _base);
         _cash.approve(address(this), type(uint).max);
     }  
 }

@@ -14,7 +14,7 @@ import "./shared.sol";
 | $$\  $$$| $$  | $$| $$  | $$| $$\  $$$ /$$  \ $$                                                                        
 | $$ \  $$|  $$$$$$/|  $$$$$$/| $$ \  $$|  $$$$$$/                                                                        
 |__/  \__/ \______/  \______/ |__/  \__/ \_____*/                                                                         
-                                                                                                                          
+
 contract NounData is ERC721 {
     using Strings for uint;
     using Strings for uint8;

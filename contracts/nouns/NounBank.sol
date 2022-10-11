@@ -16,11 +16,11 @@ import "./NounData.sol";
 | $$$$$$$/| $$  | $$| $$ \  $$| $$ \  $$                                                                                  
 |_______/ |__/  |__/|__/  \__/|__/  \_*/                                                                                  
                                                    
-contract NounBank is Nounish, Bank {
+contract NounBank is NounBase, Bank {
     using Strings for uint;
     
     NounData private _data;
-    Nounish private _base;
+    NounBase private _base;
 
     uint private _difficulty = 10;    
 
@@ -31,8 +31,12 @@ contract NounBank is Nounish, Bank {
         _;
     }
 
-    function coinToNoun(uint coinId) external view returns (uint nounId) {
-        return _base.coinToNoun(coinId);
+    function data() external view returns (NounData) { 
+        return _data;
+    }
+
+    function base() external view returns (NounBase) { 
+        return _base; 
     }
 
     function nameOf(uint coinId) override public view returns (string memory) {
@@ -48,8 +52,17 @@ contract NounBank is Nounish, Bank {
         return 14;
     }
 
+    function uri(uint coinId) override virtual public view returns (string memory) {
+        uint nounId = _base.coinToNoun(coinId);
+        return _data.tokenURI(nounId);
+    }
+
     function difficulty() external view returns (uint) {
         return _difficulty;
+    }
+
+    function coinToNoun(uint coinId) external view returns (uint nounId) {
+        return _base.coinToNoun(coinId);
     }
 
     function addressOf(uint coinId) external view returns (Coin) {
@@ -61,7 +74,7 @@ contract NounBank is Nounish, Bank {
         return _coins[coinId];
     }
 
-    function mint(address to, uint coinId, uint amount) external onlyAdmin {
+    function mintCoin(address to, uint coinId, uint amount) external onlyAdmin {
         _mint(to, coinId, amount, new bytes(0));
     }
 
@@ -93,11 +106,7 @@ contract NounBank is Nounish, Bank {
         return amount * avgSupply / tokenSupply;
     }
 
-    constructor(
-        NounData data_, 
-        Nounish base_,
-        string memory baseURI_
-    ) Bank(baseURI_) {
+    constructor(NounData data_, NounBase base_) Bank('') {
         _data = data_;
         _base = base_;
     }

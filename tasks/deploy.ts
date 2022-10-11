@@ -3,13 +3,11 @@ import { task } from 'hardhat/config'
 task('deploy', 'Deploys contracts', async (_, { ethers }) => {
   const [origin] = await ethers.getSigners()
 
-  const BASE_URI = 'https://bankofnouns.com/_/api/tokens/{id}.json'
-
   const Found = await ethers.getContractFactory('Found')
   const found = await Found.deploy()
 
   const NounMove = await ethers.getContractFactory('NounMove')
-  const game = await NounMove.deploy(found.address, BASE_URI)
+  const game = await NounMove.deploy(found.address)
 
   const NounBank = await ethers.getContractFactory('NounBank')
   const bank = NounBank.attach(await game.bank())

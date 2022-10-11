@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 
 import "../money/Coin.sol";
 
-interface Nounish {
+interface NounBase {
     function coinToNoun(uint coinId) external view returns (uint nounId);
 }
 

@@ -13,9 +13,9 @@ struct Card {
     uint power;
 }
 
-contract NounCard is Nounish, ERC721 {
+contract NounCard is NounBase, ERC721 {
     NounBank private _bank;
-    Nounish private _base;
+    NounBase private _base;
 
     uint private _cardCount;
     
@@ -63,7 +63,7 @@ contract NounCard is Nounish, ERC721 {
         emit CardForged(card.id, card.coinId, card.amount);
     }
 
-    constructor(NounBank bank_, Nounish base_) 
+    constructor(NounBank bank_, NounBase base_) 
     ERC721("NOUN CARD", "NOUN CARD") {
         _bank = bank_;
         _base = base_;

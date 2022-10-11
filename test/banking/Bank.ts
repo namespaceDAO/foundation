@@ -11,12 +11,10 @@ describe('Bank', () => {
   let bob: SignerWithAddress
   let bank: Contract
 
-  const BASE_URI = 'https://bankofnouns.com/_/api/tokens/{id}.json'
-
   it('Create coin bank', async () => {
     [origin, alice, bob] = await ethers.getSigners()
     const Bank = await ethers.getContractFactory('MockBank')
-    bank = await Bank.deploy(BASE_URI)
+    bank = await Bank.deploy('')
 
     const supply = await bank.totalSupply()
     const supply1 = await bank.totalSupplyOf(1)
