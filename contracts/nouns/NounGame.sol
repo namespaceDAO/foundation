@@ -68,6 +68,17 @@ contract NounGame is Pausable, Ownable {
         );
     }
 
+    function release(address payee, uint amount) external whenNotPaused {
+        uint shares = _shares[payee];
+        require(shares > 0 && _totalShares > 0, "No payee");
+
+        uint balance = _cash.balanceOf(address(this));
+        uint maximum = balance * shares / _totalShares;
+
+        require(amount <= maximum, "Release too large");
+        _cash.transferFrom(address(this), payee, amount);
+    }
+
     function _requirePlayableCard(Card memory card) internal view {
         require(
             _allowedCoins == 0 || _coins[card.coinId], 
