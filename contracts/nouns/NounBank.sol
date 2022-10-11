@@ -427,6 +427,8 @@ contract NounBank is NounBase, ERC721 {
         uint coinId, 
         uint amount
     ) external {
+        require(coinId < _data.currentDay(), "Coin is not claimable yet");
+
         uint nounId = _requireFoundNoun(coinId);
         address owner = _verifyClaim(nounId, coinId, amount);
 

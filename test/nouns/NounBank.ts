@@ -143,4 +143,16 @@ describe('NounBank', () => {
 
     await game.connect(alice).burn(alice.address, stakeId)
   })
+
+  it('Claims coin stake', async () => {
+    const day = await data.currentDay()
+
+    const value = parseEther(`${Math.random()}`)
+    await game.connect(alice).vote(alice.address, alice.address, day, value)
+
+    const time = Math.floor(new Date().getTime() / 1000) + 3600 * 24
+    await ethers.provider.send('evm_mine', [time])
+
+    await game.connect(alice).claim(alice.address, day, value)
+  })
 })
