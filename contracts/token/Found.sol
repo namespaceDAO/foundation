@@ -16,12 +16,6 @@ contract Found is Token {
         _mintFound(to, msg.value * 10);
     }
 
-    function _mintFound(address to, uint amount) internal {
-        require(amount > 0, "Mint more than 0");
-        _mint(to, amount);
-        emit Mint(to, amount);
-    }
-
     function foundValue(uint found) public view returns (uint) {
         return found * address(this).balance / totalSupply();
     }
@@ -35,6 +29,12 @@ contract Found is Token {
         require(success, "Burn failed");
 
         emit Burn(from, to, amount, value);
+    }
+
+    function _mintFound(address to, uint amount) internal {
+        require(amount > 0, "Mint more than 0");
+        _mint(to, amount);
+        emit Mint(to, amount);
     }
 
     constructor() ERC20("FOUND", "FOUND") {}
