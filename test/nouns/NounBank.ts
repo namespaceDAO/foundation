@@ -126,4 +126,21 @@ describe('NounBank', () => {
     expect(stake.endedAt).to.equal(0)
     expect(stake.startedAt).to.greaterThanOrEqual(startedAt)
   })
+
+  it('Ends stake', async () => {
+    const value = parseEther(`${Math.random()}`)
+    const startedAt = Math.floor(new Date().getTime() / 1000)
+    const expiresAt = startedAt + 3600 * 25
+
+    await game.connect(alice).stake({
+      to: alice.address,
+      nounId: duck.id,
+      amount: value,
+      expiresAt
+    })
+
+    const stakeId = await game.stakeCount()
+
+    await game.connect(alice).burn(alice.address, stakeId)
+  })
 })

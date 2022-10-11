@@ -376,7 +376,7 @@ contract NounBank is NounBase, ERC721 {
         uint endedAt
     );
 
-    function burn(address payee, uint stakeId) internal {
+    function burn(address payee, uint stakeId) external {
         Stake memory s = _requireStake(stakeId);
         uint payout = _burnStake(s);
 
