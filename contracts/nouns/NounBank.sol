@@ -326,29 +326,18 @@ contract NounBank is NounBase, ERC721 {
         uint startedAt
     );
 
-    function stake(address minter, NoteParams memory params) external {
-        Note memory note = _createNote(params);
-
-        _mint(minter, note.id);
-
-        emit Stake(
-            note.id, 
-            note.nounId,
-            note.amount,
-            note.expiresAt,
-            note.startedAt
-        );
+    struct StakeParams {
+        address to;
+        uint nounId;
+        uint amount;
+        uint expiresAt;
     }
 
-    function _createNote(NoteParams memory params) internal returns (Note memory) {
+    function stake(StakeParams memory params) external {
+        require(params.amount > 0, "Stake more than 0");
         require(
-            params.amount > 0, 
-            "Note more than 0"
-        );
-
-        require(
-            params.expiresAt > block.timestamp  + 1 days, 
-            "Must expire further in the future"
+            params.expiresAt >= block.timestamp + 1 days, 
+            "Stake at least 1 day in the future"
         );
 
         Note storage note = _notes[++_noteCount];
@@ -364,7 +353,15 @@ contract NounBank is NounBase, ERC721 {
         _shares[note.id] = shares;
         _totalShares += shares;
 
-        return note;
+        _mint(params.to, note.id);
+
+        emit Stake(
+            note.id, 
+            note.nounId,
+            note.amount,
+            note.expiresAt,
+            note.startedAt
+        );
     }
                                                                                                                      
      /*$$$$$$  /$$   /$$ /$$$$$$$  /$$   /$$                                                                                  

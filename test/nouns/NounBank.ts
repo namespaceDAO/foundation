@@ -11,6 +11,7 @@ describe('NounBank', () => {
   let data: Contract
   let game: Contract
   let bank: Contract
+  let duck: any
 
   beforeEach(async () => {
     [alice, bob] = await ethers.getSigners()
@@ -32,6 +33,19 @@ describe('NounBank', () => {
     await found.connect(alice).mint(alice.address, { value })
     await found.connect(bob).approve(game.address, value)
     await found.connect(bob).mint(alice.address, { value })
+
+    await data.submitNoun({
+      name: 'Rubber Ducky',
+      creator: alice.address,
+      traits: [],
+      shapes: [
+        BigNumber.from('0x0000fffffafafaff'),
+        BigNumber.from('0x32236e5dff00ffff'),
+        BigNumber.from('0x50500f0fffff00ff')
+      ]
+    })
+
+    duck = await data.getNoun(1)
   })
 
   it('Creates game', async () => {
@@ -50,60 +64,55 @@ describe('NounBank', () => {
         BigNumber.from('0x50500f0fffff00ff')
       ]
     })
+    const count = await data.nounCount()
+    const noun = await data.getNoun(count)
 
     const day = await data.currentDay()
 
     const value = parseEther(`${Math.random()}`)
-    await game.connect(alice).vote(alice.address, alice.address, 1, value)
 
-    const balance1 = await bank.balanceOf(alice.address, 1)
+    await game.connect(alice).vote(
+      alice.address, alice.address, noun.id, value
+    )
+
+    const balance1 = await bank.balanceOf(alice.address, day)
     const noun1 = await game.coinToNoun(day)
 
     expect(value.mul(10)).to.equal(balance1)
-    expect(noun1).to.equal(1)
+    expect(noun1).to.equal(count)
   })
 
   it('Votes on noun', async () => {
-    await data.submitNoun({
-      name: 'Rubber Ducky',
-      creator: alice.address,
-      traits: [],
-      shapes: [
-        BigNumber.from('0x0000fffffafafaff'),
-        BigNumber.from('0x32236e5dff00ffff'),
-        BigNumber.from('0x50500f0fffff00ff')
-      ]
-    })
-
     const day = await data.currentDay()
 
     const value = parseEther(`${Math.random()}`)
-    await game.connect(alice).vote(alice.address, alice.address, 1, value)
+    await game.connect(alice).vote(alice.address, alice.address, day, value)
 
-    const balance1 = await bank.balanceOf(alice.address, 1)
+    const balance1 = await bank.balanceOf(alice.address, day)
     const noun1 = await game.coinToNoun(day)
 
     expect(value.mul(10)).to.equal(balance1)
-    expect(noun1).to.equal(1)
+    expect(noun1).to.equal(day)
   })
 
   it('Mints noun', async () => {
-    await data.submitNoun({
-      name: 'Rubber Ducky',
-      creator: alice.address,
-      traits: [],
-      shapes: [
-        BigNumber.from('0x0000fffffafafaff'),
-        BigNumber.from('0x32236e5dff00ffff'),
-        BigNumber.from('0x50500f0fffff00ff')
-      ]
-    })
-
     const value = parseEther(`${Math.random()}`)
     await game.connect(alice).mint(alice.address, alice.address, 1, value)
 
     const balance1 = await bank.balanceOf(alice.address, 1)
 
     expect(value).to.equal(balance1)
+  })
+
+  it('Stakes on noun', async () => {
+    const value = parseEther(`${Math.random()}`)
+    const expiresAt = Math.floor(new Date().getTime() / 1000) + 3600 * 25
+
+    await game.connect(alice).stake({
+      to: alice.address,
+      nounId: duck.id,
+      amount: value,
+      expiresAt
+    })
   })
 })

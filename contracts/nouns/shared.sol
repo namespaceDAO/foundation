@@ -7,25 +7,12 @@ interface NounBase {
     function coinToNoun(uint coinId) external view returns (uint nounId);
 }
 
-struct NounParams {
-    string name;
-    address creator;
-    uint64[] shapes;
-    string[] traits;
-}
-
 struct Noun {
     uint id;
     string name;
     address creator;
     uint64[] shapes;
     string[] traits;
-}
-
-struct NoteParams {
-    uint nounId;
-    uint amount; 
-    uint expiresAt;
 }
 
 struct Note {

@@ -46,6 +46,13 @@ contract NounData is ERC721 {
         return (block.timestamp - _start) / 1 days + 1;
     }
 
+    struct NounParams {
+        string name;
+        address creator;
+        uint64[] shapes;
+        string[] traits;
+    }
+
     function submitNoun(NounParams memory params) external {
         require(
             params.shapes.length <= 0xffff,
