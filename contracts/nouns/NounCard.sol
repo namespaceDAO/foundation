@@ -2,7 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "../nouns/NounBank.sol";
+import "../nouns/NounMint.sol";
 import "../nouns/shared.sol";
 
 struct Card {
@@ -14,7 +14,7 @@ struct Card {
 }
 
 contract NounCard is NounBase, ERC721 {
-    NounBank private _bank;
+    NounMint private _bank;
     NounBase private _base;
 
     uint private _cardCount;
@@ -63,7 +63,7 @@ contract NounCard is NounBase, ERC721 {
         emit CardForged(card.id, card.coinId, card.amount);
     }
 
-    constructor(NounBank bank_, NounBase base_) 
+    constructor(NounMint bank_, NounBase base_) 
     ERC721("NOUN CARD", "NOUN CARD") {
         _bank = bank_;
         _base = base_;

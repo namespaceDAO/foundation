@@ -4,7 +4,7 @@ import { BigNumber, Contract } from 'ethers'
 import { parseEther } from 'ethers/lib/utils'
 import { ethers } from 'hardhat'
 
-describe('NounMove', () => {
+describe('NounBank', () => {
   let alice: SignerWithAddress
   let bob: SignerWithAddress
   let found: Contract
@@ -21,11 +21,11 @@ describe('NounMove', () => {
     const NounData = await ethers.getContractFactory('NounData')
     data = await NounData.deploy()
 
-    const NounMove = await ethers.getContractFactory('NounMove')
-    game = await NounMove.deploy(found.address, data.address)
-
     const NounBank = await ethers.getContractFactory('NounBank')
-    bank = NounBank.attach(await game.bank())
+    game = await NounBank.deploy(found.address, data.address)
+
+    const NounMint = await ethers.getContractFactory('NounMint')
+    bank = NounMint.attach(await game.bank())
 
     const value = parseEther('100')
     await found.connect(alice).approve(game.address, value)
