@@ -1,64 +1,71 @@
 # Bank of Nouns
 
-Updated on Sep 30 2022
-
-## Nouns
-
-Nouns are pixel art. Anyone can create a Noun, you just need a name and an image. For example this rubber ducky.
+One crypto currency every day forever. Every Noun coin is represented by a piece of art stored 100% on chain. Anyone can create a Noun for example this rubber ducky:
 
 ![Noun example](assets/ducky.png)
 
-Nouns are stored 100% on chain in the `NounData` contract.
+## Minting Noun Coins
 
-    struct Noun {
-        uint id;
-        string name;
-        address creator;
-        uint64[] shapes;
-        string[] traits;
-    }
+New Nouns become Noun coins when collectors vote for art. The art with the most votes wins and everyone who voted gets a 10x early mint bonus.
 
-## Game of Nouns
+After the first day the price of each coin is proportional to the supply of every other coin. The more demand, the more expensive the coin.
 
-Bank of Nouns creates one ERC20 every day. The coin for each day is determined by voting for a Noun you like. The Noun with the most votes becomes the Noun coin for the day. 
+If there are two Noun coins:
 
-- Every early minters receive a 10x early minting bonus of the new coin. 
-- After the first day the mint price of the coin is determined by the supply relative to every other coin. The more demand the higher the price. 
-- The treasury mains an average mint price of 1 Noun coin = 1 FOUND.
-- Early minting 10x bonus is 10 Noun coins = 1 FOUND.
+|        | Supply      | Mint Price   
+| ------ | ----------- | ------------- 
+| Coin A | 1000        | `1000 / FOUND`  
+| Coin B | 1000        | `1000 / FOUND`
+| *Next* | -           | `10000 / FOUND`
 
-## Adventure
+Or two coins with different supplies:
 
-Adventure is a contract for distributing FOUND among multiple parties. 
-- FOUND is distributed by staking FOUND. 
-- Shares are determined by the mint activity and stake duration. 
-- Ending your stake returns the prinicipal plus proceeds.
+|        | Supply      | Mint Price   
+| ------ | ----------- | ------------- 
+| Coin A | 1000        | `2000 / FOUND`  
+| Coin B | 3000        | ` 667 / FOUND`
+| *Next* | -           | `10000 / FOUND`
 
-## Governance
+Or if there are five coins:
 
-Governance contains a tax on mint fees to create a community treasury. The treasury serves as a de facto mechanism for funding public goods. Currently the tax is 0% as there is no government.
+|        | Supply      | Mint Price   
+| ------ | ----------- | ------------- 
+| Coin A | 1000        | `5000 / FOUND`  
+| Coin B | 3000        | `1667 / FOUND`
+| Coin C | 5000        | `1000 / FOUND`  
+| Coin D | 7000        | ` 714 / FOUND` 
+| Coin F | 9000        | ` 555 / FOUND`
+| *Next* | -           | `10000 / FOUND`
 
-## Future: Noun Cards
+## Earning Mint Proceeds
 
-Create Noun cards by forging Noun coins. The power of the Noun card is determined by how many Noun coins were forged to create it. Players vote who can withdraw money from the treasury. Each treasurer has a number of shares that determines their claim of proceeds. 
+Mint proceeds are distributed to savy capitalists who stake FOUND. Each day there are shares for sale in the Bank of Nouns. The price of the shares is proportional to how many coins were minted on the previous day. The more FOUND the bank earned, the more expensive the shares are. Capped at `10 shares / FOUND`
 
-## Future: Forged Coins
+|        | Last week avg | Yesterday   | Base Share Price
+| ------ | ------------- | ----------- | ------------- 
+| Coin A | 1000          |  1000       | `1 share / FOUND`  
+| Coin B | 1000          |  2000       | `0.5 shares / FOUND`
+| Coin C | 1000          |   500       | `2 shares / FOUND`
+| Coin D | 1000          |    10       | `10 shares / FOUND`
 
-Create forged Noun coins by combining multiple Noun coins together. For example, combine a rubber ducky and a paper hat to create a new Noun coin that reflects the combined value of the originals. 
+Additonally each stake has an expiration date. The expiration date creates a longer pays better bonus with an 10% APY on the share rate. Stakes capped at 10 years.
 
-# Development
-```
-yarn install
+| Stake duration  | bonus | without bonus        | with bonus
+| --------------- | ----- | -------------------- | ------------- 
+|          1 year |   10% | `1 share / FOUND`    | `1.1 shares / FOUND`
+|          2 year |   21% | `0.5 shares / FOUND` | `0.605 shares / FOUND`
+|         5 years |   61% | `2 shares / FOUND`   | `3.22 shares / FOUND`
+|        10 years |  161% | `10 shares / FOUND`  | `16 shares / FOUND`
 
-// run all tests
-npx hardhat test
+You have 2 weeks to unstake following the expiration date or a late fee of 1.69% / day will begin. Early unstaking acrews the same penalty but in the other direction.
 
-// test one file
-npx hardhat test --grep Found
+| Days late       | penalty | without penalty      | with penalty
+| --------------- | ------- | -------------------- | ------------- 
+|           1 day |   1.69% | `100 shares`         | `98.31 shares`
+|          7 days |  11.24% | `100 shares`         | `88.75 shares`
+|         30 days |  59.97% | `100 shares`         | `59.97 shares`
+|         60 days |    161% | `100 shares`         | `35.96 shares`
 
-// run the simulation
-npx hardhat simulate
+Stakes over 60 days late are considered fully expired and do not recieve mint proceeds. Anyone can burn these to reduce the number of outstanding shares and increase their own payouts. 
 
-// compile contracts
-npx hardhat compile
-```
+You are paid your principal plus earnings when you unstake. Your proceeds are the current bank's balance of FOUND times your stake's shares times the total number of outstanding shares. Each stake is tradable as an NFT.
