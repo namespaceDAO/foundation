@@ -6,24 +6,23 @@ import "../money/Bank.sol";
 import "../money/Coin.sol";
 import "./NounData.sol";
 import "./shared.sol";
-                                                                                                                          
- /*$$$$$$   /$$$$$$  /$$   /$$ /$$   /$$                                                                                  
-| $$__  $$ /$$__  $$| $$$ | $$| $$  /$$/                                                                                  
-| $$  \ $$| $$  \ $$| $$$$| $$| $$ /$$/                                                                                   
-| $$$$$$$ | $$$$$$$$| $$ $$ $$| $$$$$/                                                                                    
-| $$__  $$| $$__  $$| $$  $$$$| $$  $$                                                                                    
-| $$  \ $$| $$  | $$| $$\  $$$| $$\  $$                                                                                   
-| $$$$$$$/| $$  | $$| $$ \  $$| $$ \  $$                                                                                  
-|_______/ |__/  |__/|__/  \__/|__/  \_*/                                                                                  
-                                                   
+
+ /*$      /$$ /$$$$$$ /$$   /$$ /$$$$$$$$
+| $$$    /$$$|_  $$_/| $$$ | $$|__  $$__/
+| $$$$  /$$$$  | $$  | $$$$| $$   | $$   
+| $$ $$/$$ $$  | $$  | $$ $$ $$   | $$   
+| $$  $$$| $$  | $$  | $$  $$$$   | $$   
+| $$\  $ | $$  | $$  | $$\  $$$   | $$   
+| $$ \/  | $$ /$$$$$$| $$ \  $$   | $$   
+|__/     |__/|______/|__/  \__/   |_*/   
+                                              
 contract NounMint is NounBase, Bank {
     using Strings for uint;
     
     NounData private _data;
-    NounBase private _base;
+    NounBase private _base;   
 
-    uint private _difficulty = 10;    
-
+    uint private _difficulty = 10; 
     mapping(uint => Coin) private _coins;
 
     modifier onlyAdmin() {
@@ -38,6 +37,37 @@ contract NounMint is NounBase, Bank {
     function base() external view returns (NounBase) { 
         return _base; 
     }
+
+    function difficulty() external view returns (uint) {
+        return _difficulty;
+    }
+
+    function convertCoin(uint coinId, uint amount) public view returns (uint) {
+        uint totalSupply = totalSupply();
+        if (totalSupply == 0) return amount;
+
+        uint avgSupply = totalSupply / _data.currentDay();
+        uint tokenSupply = totalSupplyOf(coinId);
+
+        if (tokenSupply > avgSupply * _difficulty) {
+            return amount / _difficulty;
+        }
+
+        if (avgSupply > tokenSupply * _difficulty) {
+            return amount * _difficulty;
+        }
+
+        return amount * avgSupply / tokenSupply;
+    }
+    
+      /*$$$$$   /$$$$$$  /$$$$$$ /$$   /$$  /$$$$$$ 
+     /$$__  $$ /$$__  $$|_  $$_/| $$$ | $$ /$$__  $$
+    | $$  \__/| $$  \ $$  | $$  | $$$$| $$| $$  \__/
+    | $$      | $$  | $$  | $$  | $$ $$ $$|  $$$$$$ 
+    | $$      | $$  | $$  | $$  | $$  $$$$ \____  $$
+    | $$    $$| $$  | $$  | $$  | $$\  $$$ /$$  \ $$
+    |  $$$$$$/|  $$$$$$/ /$$$$$$| $$ \  $$|  $$$$$$/
+     \______/  \______/ |______/|__/  \__/ \_____*/ 
 
     function nameOf(uint coinId) override public view returns (string memory) {
         uint nounId = _base.coinToNoun(coinId);
@@ -57,14 +87,6 @@ contract NounMint is NounBase, Bank {
         return _data.tokenURI(nounId);
     }
 
-    function difficulty() external view returns (uint) {
-        return _difficulty;
-    }
-
-    function coinToNoun(uint coinId) external view returns (uint nounId) {
-        return _base.coinToNoun(coinId);
-    }
-
     function addressOf(uint coinId) external view returns (Coin) {
         require(
             address(_coins[coinId]) != address(0), 
@@ -72,6 +94,10 @@ contract NounMint is NounBase, Bank {
         );
 
         return _coins[coinId];
+    }
+
+    function coinToNoun(uint coinId) external view returns (uint nounId) {
+        return _base.coinToNoun(coinId);
     }
 
     function mintCoin(address to, uint coinId, uint amount) external onlyAdmin {
@@ -86,24 +112,6 @@ contract NounMint is NounBase, Bank {
 
         _coins[coinId] = new Coin(Bank(this), coinId);
         return _coins[coinId];
-    }
-
-    function convertCoin(uint coinId, uint amount) public view returns (uint) {
-        uint totalSupply = totalSupply();
-        if (totalSupply == 0) return amount;
-
-        uint avgSupply = totalSupply / _data.currentDay();
-        uint tokenSupply = totalSupplyOf(coinId);
-
-        if (tokenSupply > avgSupply * _difficulty) {
-            return amount / _difficulty;
-        }
-
-        if (avgSupply > tokenSupply * _difficulty) {
-            return amount * _difficulty;
-        }
-
-        return amount * avgSupply / tokenSupply;
     }
 
     constructor(NounData data_, NounBase base_) Bank('') {

@@ -24,14 +24,6 @@ contract NounData is ERC721 {
     uint private _start;
     uint private _nounCount;
     mapping(uint => Noun) private _nouns;
-    
-    event NounSubmitted(
-        uint id,
-        string name,
-        address creator,
-        uint64[] shapes,
-        string[] traits
-    );
 
     function getNoun(uint nounId) public view returns (Noun memory) {
         require(nounId <= _nounCount, "Noun not found");
@@ -45,6 +37,23 @@ contract NounData is ERC721 {
     function currentDay() external view returns (uint) {
         return (block.timestamp - _start) / 1 days + 1;
     }
+
+      /*$$$$$$  /$$$$$$$  /$$$$$$$$  /$$$$$$  /$$$$$$$$ /$$$$$$$$
+     /$$__  $$| $$__  $$| $$_____/ /$$__  $$|__  $$__/| $$_____/
+    | $$  \__/| $$  \ $$| $$      | $$  \ $$   | $$   | $$      
+    | $$      | $$$$$$$/| $$$$$   | $$$$$$$$   | $$   | $$$$$   
+    | $$      | $$__  $$| $$__/   | $$__  $$   | $$   | $$__/   
+    | $$    $$| $$  \ $$| $$      | $$  | $$   | $$   | $$      
+    |  $$$$$$/| $$  | $$| $$$$$$$$| $$  | $$   | $$   | $$$$$$$$
+     \______/ |__/  |__/|________/|__/  |__/   |__/   |_______*/
+
+    event NounSubmitted(
+        uint id,
+        string name,
+        address creator,
+        uint64[] shapes,
+        string[] traits
+    );
 
     struct NounParams {
         string name;
@@ -76,56 +85,64 @@ contract NounData is ERC721 {
             noun.shapes,
             noun.traits
         );
+    }  
+
+    constructor() ERC721("ORIGINAL NOUN", "ORIGINAL NOUN") {
+        uint time = block.timestamp;
+        uint mountainous = 7 hours;
+        _start = time - mountainous;
     }
+
+    /*$$$$$$$ /$$$$$$  /$$$$$$$  /$$      /$$ /$$       /$$$$$$$$  /$$$$$$   /$$$$$$ 
+    | $$_____//$$__  $$| $$__  $$| $$$    /$$$| $$      | $$_____/ /$$__  $$ /$$__  $$
+    | $$     | $$  \ $$| $$  \ $$| $$$$  /$$$$| $$      | $$      | $$  \__/| $$  \__/
+    | $$$$$  | $$  | $$| $$$$$$$/| $$ $$/$$ $$| $$      | $$$$$   |  $$$$$$ |  $$$$$$ 
+    | $$__/  | $$  | $$| $$__  $$| $$  $$$| $$| $$      | $$__/    \____  $$ \____  $$
+    | $$     | $$  | $$| $$  \ $$| $$\  $ | $$| $$      | $$       /$$  \ $$ /$$  \ $$
+    | $$     |  $$$$$$/| $$  | $$| $$ \/  | $$| $$$$$$$$| $$$$$$$$|  $$$$$$/|  $$$$$$/
+    |__/      \______/ |__/  |__/|__/     |__/|________/|________/ \______/  \_____*/ 
 
     function tokenURI(uint nounId) public view virtual override returns (string memory) {
         Noun memory noun = getNoun(nounId); 
-        return string(_nounURI(noun));
+        return string(_encodeURI(noun));
     }
 
     function tokenData(uint nounId) external view returns (string memory) {
         Noun memory noun = getNoun(nounId); 
-        return string(_nounJSON(noun));
+        return string(_encodeJSON(noun));
     }
 
     function tokenImage(uint nounId) external view returns (string memory) {
         Noun memory noun = getNoun(nounId); 
-        return string(_nounImage(noun));
+        return string(_encodeImage(noun));
     }
 
     function tokenSVG(uint nounId) external view returns (string memory) {
         Noun memory noun = getNoun(nounId); 
-        return string(_nounSVG(noun.shapes));
+        return string(_encodeSVG(noun.shapes));
     }
 
-    function _nounURI(Noun memory noun) internal pure returns (bytes memory) {
+    function _encodeURI(Noun memory noun) internal pure returns (bytes memory) {
         return abi.encodePacked(
             'data:application/json;base64,',
-            Base64.encode(_nounJSON(noun))
+            Base64.encode(_encodeJSON(noun))
         );
     }
 
-    function _nounJSON(Noun memory noun) internal pure returns (bytes memory) {
+    function _encodeJSON(Noun memory noun) internal pure returns (bytes memory) {
         return abi.encodePacked(
             '{',
                 '"id":', noun.id.toString(), ',',
                 '"name":"', noun.name, '",',
                 '"description":"', noun.name, ' is a Noun coin.",',
-                '"traits":[', string(_nounTraits(noun)), '],',
-                '"shapes":[', string(_nounShapes(noun)), '],',
-                '"image":"', string(_nounImage(noun)), '"',
+                '"traits":[', string(_encodeTraits(noun)), '],',
+                '"shapes":[', string(_encodeShapes(noun)), '],',
+                '"image":"', string(_encodeImage(noun)), '"',
             '}'
         );
     }
 
-    function _nounImage(Noun memory noun) internal pure returns (bytes memory) {
-        return abi.encodePacked(
-            'data:image/svg+xml;base64,', 
-            Base64.encode(_nounSVG(noun.shapes))
-        );
-    }
-
-    function _nounTraits(Noun memory noun) internal pure returns (bytes memory) {
+    function _encodeTraits(Noun memory noun) internal pure returns (bytes memory) {
         bytes memory list;
         for (uint i = 0; i < noun.traits.length; i += 1) {
             list = abi.encodePacked(
@@ -137,7 +154,23 @@ contract NounData is ERC721 {
         return list;
     }
 
-    function _nounShapes(Noun memory noun) internal pure returns (bytes memory) {
+      /*$$$$$  /$$   /$$  /$$$$$$  /$$$$$$$  /$$$$$$$$  /$$$$$$ 
+     /$$__  $$| $$  | $$ /$$__  $$| $$__  $$| $$_____/ /$$__  $$
+    | $$  \__/| $$  | $$| $$  \ $$| $$  \ $$| $$      | $$  \__/
+    |  $$$$$$ | $$$$$$$$| $$$$$$$$| $$$$$$$/| $$$$$   |  $$$$$$ 
+     \____  $$| $$__  $$| $$__  $$| $$____/ | $$__/    \____  $$
+     /$$  \ $$| $$  | $$| $$  | $$| $$      | $$       /$$  \ $$
+    |  $$$$$$/| $$  | $$| $$  | $$| $$      | $$$$$$$$|  $$$$$$/
+     \______/ |__/  |__/|__/  |__/|__/      |________/ \_____*/ 
+
+    function _encodeImage(Noun memory noun) internal pure returns (bytes memory) {
+        return abi.encodePacked(
+            'data:image/svg+xml;base64,', 
+            Base64.encode(_encodeSVG(noun.shapes))
+        );
+    }
+
+    function _encodeShapes(Noun memory noun) internal pure returns (bytes memory) {
         bytes memory list;
         for (uint i = 0; i < noun.shapes.length; i += 1) {
             list = abi.encodePacked(
@@ -149,11 +182,11 @@ contract NounData is ERC721 {
         return list;
     }
 
-    function _nounSVG(uint64[] memory shapes) internal pure returns (bytes memory) {
+    function _encodeSVG(uint64[] memory shapes) internal pure returns (bytes memory) {
         bytes memory image;
        
         for (uint i = 0; i < shapes.length; i += 1) {
-            image = abi.encodePacked(image, _nounSVGShape(shapes[i]));
+            image = abi.encodePacked(image, _encodeSVGShape(shapes[i]));
         }
        
         return abi.encodePacked(
@@ -168,7 +201,7 @@ contract NounData is ERC721 {
         );
     }
 
-    function _nounSVGShape(uint64 part) internal pure returns (bytes memory) {
+    function _encodeSVGShape(uint64 part) internal pure returns (bytes memory) {
         uint8 x = uint8(part >> 56);
         uint8 y = uint8(part >> 48);
         uint8 w = uint8(part >> 40);
@@ -192,11 +225,5 @@ contract NounData is ERC721 {
                 ')"',
             '/>'
         );
-    }
-
-    constructor() ERC721("ORIGINAL NOUN", "ORIGINAL NOUN") {
-        uint time = block.timestamp;
-        uint mountainous = 7 hours;
-        _start = time - mountainous;
     }
 }
