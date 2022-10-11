@@ -92,8 +92,8 @@ describe('NounBank', () => {
 
     await bank.connect(alice).stake({
       to: alice.address,
-      nounId: duck.id,
-      amount: value,
+      noun: duck.id,
+      found: value,
       expiresAt
     })
 
@@ -101,8 +101,8 @@ describe('NounBank', () => {
     const stake = await bank.getStake(count)
 
     expect(stake.id).to.equal(count)
-    expect(stake.nounId).to.equal(duck.id)
-    expect(stake.amount).to.equal(value)
+    expect(stake.noun).to.equal(duck.id)
+    expect(stake.found).to.equal(value)
     expect(stake.expiresAt).to.equal(expiresAt)
     expect(stake.endedAt).to.equal(0)
     expect(stake.startedAt).to.greaterThanOrEqual(startedAt)
@@ -119,8 +119,8 @@ describe('NounBank', () => {
 
     await bank.connect(alice).stake({
       to: alice.address,
-      nounId: duck.id,
-      amount: value,
+      noun: duck.id,
+      found: value,
       expiresAt
     })
 

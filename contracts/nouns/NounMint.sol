@@ -5,7 +5,6 @@ import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
 import "../money/Bank.sol";
 import "../money/Coin.sol";
 import "./NounData.sol";
-import "./shared.sol";
 
  /*$      /$$ /$$$$$$ /$$   /$$ /$$$$$$$$
 | $$$    /$$$|_  $$_/| $$$ | $$|__  $$__/
@@ -15,7 +14,11 @@ import "./shared.sol";
 | $$\  $ | $$  | $$  | $$\  $$$   | $$   
 | $$ \/  | $$ /$$$$$$| $$ \  $$   | $$   
 |__/     |__/|______/|__/  \__/   |_*/   
-                                              
+                
+interface NounBase {
+    function coinToNoun(uint coinId) external view returns (uint nounId);
+}
+
 contract NounMint is NounBase, Bank {
     using Strings for uint;
     

@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./NounMint.sol";
 import "./NounData.sol";
-import "./shared.sol";
 
  /*$$$$$$   /$$$$$$  /$$   /$$ /$$   /$$        /$$$$$$  /$$$$$$$$       /$$   /$$  /$$$$$$  /$$   /$$ /$$   /$$  /$$$$$$ 
 | $$__  $$ /$$__  $$| $$$ | $$| $$  /$$/       /$$__  $$| $$_____/      | $$$ | $$ /$$__  $$| $$  | $$| $$$ | $$ /$$__  $$
@@ -16,7 +15,16 @@ import "./shared.sol";
 | $$  \ $$| $$  | $$| $$\  $$$| $$\  $$       | $$  | $$| $$            | $$\  $$$| $$  | $$| $$  | $$| $$\  $$$ /$$  \ $$
 | $$$$$$$/| $$  | $$| $$ \  $$| $$ \  $$      |  $$$$$$/| $$            | $$ \  $$|  $$$$$$/|  $$$$$$/| $$ \  $$|  $$$$$$/
 |_______/ |__/  |__/|__/  \__/|__/  \__/       \______/ |__/            |__/  \__/ \______/  \______/ |__/  \__/ \_____*/ 
-                                                                                                                          
+
+struct Stake {
+    uint id;
+    uint noun;
+    uint found;
+    uint expiresAt;
+    uint startedAt;
+    uint endedAt;
+}
+
 contract NounBank is NounBase, ERC721 {
     IERC20 private _cash;
     NounData private _data;
@@ -157,14 +165,14 @@ contract NounBank is NounBase, ERC721 {
     }
 
     function _stakeJSON(Stake memory token) internal view returns (bytes memory) {
-        Noun memory noun = _data.getNoun(token.nounId); 
+        Noun memory noun = _data.getNoun(token.noun); 
         return abi.encodePacked(
             '{',
                 '"id":', token.id.toString(), ',',
                 '"name":"FOUND ', noun.name, '",',
                 '"description":"', noun.name, ' is FOUND.",',
-                '"noun":[', _data.tokenData(token.nounId), '],',
-                '"image":"', _data.tokenImage(token.nounId), '"',
+                '"noun":[', _data.tokenData(token.noun), '],',
+                '"image":"', _data.tokenImage(token.noun), '"',
             '}'
         );
     }
@@ -225,7 +233,7 @@ contract NounBank is NounBase, ERC721 {
     function _calculatePenalty(Stake memory token, uint timestamp) internal pure returns (uint) {
         if (timestamp > token.expiresAt + 2 weeks) {
             uint late = (timestamp - token.expiresAt - 2 weeks) / 1 days;
-            return late * token.amount / 14;
+            return late * token.found / 14;
         }
 
         return 0;
@@ -321,7 +329,7 @@ contract NounBank is NounBase, ERC721 {
         uint payout = _burnStake(s);
 
         _cash.transferFrom(address(this), payee, payout);
-        emit Burned(s.id, s.nounId, s.amount, s.endedAt);
+        emit Burned(s.id, s.noun, s.found, s.endedAt);
     }
 
     function _burnStake(Stake memory token) internal returns (uint payout) {
@@ -424,13 +432,13 @@ contract NounBank is NounBase, ERC721 {
 
     struct StakeParams {
         address to;
-        uint nounId;
-        uint amount;
+        uint noun;
+        uint found;
         uint expiresAt;
     }
 
     function stake(StakeParams memory params) external {
-        require(params.amount > 0, "Stake more than 0");
+        require(params.found > 0, "Stake more than 0");
         require(
             params.expiresAt >= block.timestamp + 1 days, 
             "Stake at least 1 day in the future"
@@ -438,13 +446,13 @@ contract NounBank is NounBase, ERC721 {
 
         Stake storage token = _stakes[++_stakeCount];
         token.id = _stakeCount;
-        token.nounId = params.nounId;
-        token.amount = params.amount;
+        token.noun = params.noun;
+        token.found = params.found;
         token.expiresAt = params.expiresAt;
         token.startedAt = block.timestamp;
 
         uint day = _data.currentDay();
-        uint shares = calculateShares(day, params.amount);
+        uint shares = calculateShares(day, params.found);
     
         _shares[token.id] = shares;
         _totalShares += shares;
@@ -453,8 +461,8 @@ contract NounBank is NounBase, ERC721 {
 
         emit Staked(
             token.id, 
-            token.nounId,
-            token.amount,
+            token.noun,
+            token.found,
             token.expiresAt,
             token.startedAt
         );

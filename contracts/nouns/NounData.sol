@@ -4,7 +4,6 @@ pragma solidity ^0.8.10;
 import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
-import "./shared.sol";
                                                                            
  /*$   /$$  /$$$$$$  /$$   /$$ /$$   /$$  /$$$$$$                                                                         
 | $$$ | $$ /$$__  $$| $$  | $$| $$$ | $$ /$$__  $$                                                                        
@@ -14,6 +13,14 @@ import "./shared.sol";
 | $$\  $$$| $$  | $$| $$  | $$| $$\  $$$ /$$  \ $$                                                                        
 | $$ \  $$|  $$$$$$/|  $$$$$$/| $$ \  $$|  $$$$$$/                                                                        
 |__/  \__/ \______/  \______/ |__/  \__/ \_____*/                                                                         
+
+struct Noun {
+    uint id;
+    string name;
+    address creator;
+    uint64[] shapes;
+    string[] traits;
+}
 
 contract NounData is ERC721 {
     using Strings for uint;
