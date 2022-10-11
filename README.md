@@ -10,7 +10,7 @@ Nouns are pixel art stored 100% on chain. Anyone can create a Noun you just need
 
 Creating a Noun mints an NFT to the creator. The holder of the original Noun can claim up to 10% of the supply of that coin. Burning original Nouns is a bull signal.
 
-## Minting Coins
+## Mint Coins
 
 Every day collectors vote for art. The Noun with the most votes becomes the day's coin. Everyone who voted early gets a 10x early minting bonus and recieves the new coin.
 
@@ -24,7 +24,7 @@ After the first day the price of each coin is proportional to the supply of ever
 | Coin D | 7000        | ` 714 / FOUND` 
 | Coin E | 9000        | ` 555 / FOUND`
 
-## Buying Shares
+## Stake and Share
 
 Mint proceeds can be claimed by the community using a secondary token called FOUND. FOUND can be minted for 1 ETH each. An origin address holds a 10% claim on FOUND.
 
@@ -58,3 +58,7 @@ Stakes that remain open more than 2 weeks after the expiration date receive late
 Stakes over 60 days late are considered fully expired and do not recieve mint proceeds. Anyone can burn these stakes to reduce the number of outstanding shares and increase their (any everyone's) own payouts. 
 
 You are paid your principal plus earnings when you unstake. Your proceeds are the current bank's balance of FOUND times your stake's shares times the total number of outstanding shares. Each stake is tradable as an NFT.
+
+## Future: Governance
+
+At a later date a governance mechanism could be enabled. Owners of Noun coins would vote on the tax rate (30% maximum) and destination of the proceeds. 
