@@ -130,26 +130,47 @@ describe('NounBank', () => {
   })
 
   it('Shares correctly', async () => {
-    const value = parseEther(`${Math.random()}`)
+    const value1 = parseEther(`${Math.random()}`)
+    const value2 = parseEther(`${Math.random()}`)
     const startedAt = Math.floor(new Date().getTime() / 1000)
     const expiresAt = startedAt + 3600 * 25
 
-    await found.connect(alice).transfer(bank.address, parseEther('10'))
+    const balance = parseEther('10')
+    await found.connect(alice).transfer(bank.address, balance)
     await bank.connect(alice).stake({
       to: alice.address,
       noun: duck.id,
-      found: value,
+      found: value1,
       expiresAt
     })
 
-    const count = await bank.stakeCount()
-    const stake = await bank.getStake(count)
-    const shares = await bank.getShares(count)
-    const total = await bank.totalShares()
+    const shares1 = await bank.getShares(1)
+    const total1 = await bank.totalShares()
+    const [earnings1, penalty1] = await bank.calculatePayout(1, expiresAt)
 
-    const payout = await bank.calculatePayout(count, expiresAt)
+    expect(shares1).to.equal(value1)
+    expect(total1).to.equal(value1)
+    expect(earnings1).to.equal(balance)
+    expect(penalty1).to.equal(0)
 
-    console.log({ count, stake, shares, total, payout })
+    await bank.connect(alice).stake({
+      to: alice.address,
+      noun: duck.id,
+      found: value2,
+      expiresAt
+    })
+
+    const late2 = 3600 * 24 * 21
+    const shares2 = await bank.getShares(2)
+    const total2 = await bank.totalShares()
+    const [earnings2, penalty2] = await bank.calculatePayout(2, expiresAt + late2)
+
+    expect(shares2).to.equal(value2)
+    expect(total2).to.equal(total1.add(shares2))
+    expect(earnings2).to.equal(balance.mul(shares2).div(total2))
+    expect(penalty2).to.greaterThan(0) // TODO
+
+    console.log({ shares2, total2, earnings2, penalty2 })
   })
 
   it('Claims coin stake', async () => {
