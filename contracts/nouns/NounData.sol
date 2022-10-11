@@ -43,13 +43,12 @@ contract NounData is ERC721 {
     }
 
     function currentDay() external view returns (uint) {
-        // uint _mountainous = 7 hours;
         return (block.timestamp - _start) / 1 days + 1;
     }
 
     function submitNoun(NounParams memory params) external {
         require(
-            params.shapes.length < 256 * 256,
+            params.shapes.length <= 0xffff,
             "Noun too large"
         );
 
@@ -189,6 +188,8 @@ contract NounData is ERC721 {
     }
 
     constructor() ERC721("ORIGINAL NOUN", "ORIGINAL NOUN") {
-        _start = block.timestamp;
+        uint time = block.timestamp;
+        uint mountainous = 7 hours;
+        _start = time - mountainous;
     }
 }
