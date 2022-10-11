@@ -6,6 +6,12 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./NounCard.sol";
 
+struct Play {
+    uint cardId;
+    address payee;
+    address payer;
+}
+
 contract NounGame is Pausable, Ownable {
     IERC20 private _cash;
     NounCard private _card;
@@ -13,9 +19,9 @@ contract NounGame is Pausable, Ownable {
     uint private _totalShares;
     uint private _allowedCoins;
 
-    mapping(uint => bool) private _coins;
     mapping(address => uint) private _shares;
-    mapping(uint => address) private _stakes;
+    mapping(uint => bool) private _coins;
+    mapping(uint => Play) private _plays;
 
     function pause() external onlyOwner {
         _pause();
@@ -37,8 +43,29 @@ contract NounGame is Pausable, Ownable {
         );
 
         Card memory card = _card.getCard(cardId);
+
         _requirePlayableCard(card);
-        _updatePlay(payee, card);
+        _updatePlay(msg.sender, payee, card);
+    
+        _card.transferFrom(msg.sender, address(this), cardId);
+    }
+
+    function take(uint cardId) external whenNotPaused {
+        Play storage play = _plays[cardId];
+        Card memory card = _card.getCard(cardId);
+
+        require(
+            play.payer == msg.sender, 
+            "Caller is not a player"
+        );
+
+        _updatePlay(msg.sender, address(0), card);
+
+        _card.transferFrom(
+            address(this),
+            play.payer,
+            cardId
+        );
     }
 
     function _requirePlayableCard(Card memory card) internal view {
@@ -48,16 +75,21 @@ contract NounGame is Pausable, Ownable {
         );
     }
 
-    function _updatePlay(address payee, Card memory card) internal {
-        address prev = _stakes[card.id];
+    function _updatePlay(address payer, address payee, Card memory card) internal {
+        Play storage play = _plays[card.id];
 
-        if (prev != address(0)) {
-            _shares[prev] -= card.power;
+        if (play.payer != address(0)) {
+            _shares[play.payee] -= card.power;
         } else {
             _totalShares += card.power;
         }
 
-        _stakes[card.id] = payee;
-        _shares[payee] += card.power;
+        if (payee != address(0)) {
+            _shares[payee] += card.power;
+        }
+
+        play.cardId = card.id;
+        play.payer = payer;
+        play.payee = payee;
     }
 }
