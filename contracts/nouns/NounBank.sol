@@ -26,6 +26,8 @@ struct Stake {
 }
 
 contract NounBank is NounBase, ERC721 {
+    using Strings for uint;
+
     IERC20 private _cash;
     NounData private _data;
     NounMint private _bank;
@@ -61,120 +63,6 @@ contract NounBank is NounBase, ERC721 {
     
     function cashOnCoin(uint nounId) external view returns (uint amount) {
         return _cashOnCoin[nounId];
-    }                 
-
-     /*$      /$$ /$$$$$$ /$$   /$$ /$$$$$$$$                                                                                 
-    | $$$    /$$$|_  $$_/| $$$ | $$|__  $$__/                                                                                 
-    | $$$$  /$$$$  | $$  | $$$$| $$   | $$                                                                                    
-    | $$ $$/$$ $$  | $$  | $$ $$ $$   | $$                                                                                    
-    | $$  $$$| $$  | $$  | $$  $$$$   | $$                                                                                    
-    | $$\  $ | $$  | $$  | $$\  $$$   | $$                                                                                    
-    | $$ \/  | $$ /$$$$$$| $$ \  $$   | $$                                                                                    
-    |__/     |__/|______/|__/  \__/   |_*/                                                                                    
-                                                                                
-    event Minted(
-        address payer,
-        address minter,
-        uint coinId,
-        uint nounId,
-        uint found,
-        uint coins
-    );
-
-    function mint(
-        address payer, 
-        address minter, 
-        uint coinId, 
-        uint found
-    ) external {
-        uint nounId = _collectMint(coinId, found);
-        uint minted = _bank.convertCoin(coinId, found);
-
-        _cash.transferFrom(payer, address(this), found);
-        _bank.mintCoin(minter, coinId, minted);
-
-        emit Minted(
-            payer, 
-            minter, 
-            coinId, 
-            nounId,
-            found, 
-            minted
-        );
-    }
-
-    function _collectMint(uint coinId, uint amount) internal returns (uint) {
-        uint nounId = _requireFoundNoun(coinId);
-        
-        require(amount > 0, "Must mint some Nouns");
-        _cashOnNoun[nounId] += amount;
-
-        return _coinToNoun[coinId];
-    }
-
-    function _requireFoundNoun(uint coinId) internal view returns (uint nounId) {
-        require(
-            coinId > 0 && coinId <= _data.currentDay(), 
-            "Coin has not been minted"
-        );
-
-        return _coinToNoun[coinId];
-    }                                       
-    
-     /*$$$$$$$ /$$$$$$  /$$   /$$ /$$$$$$$$ /$$   /$$
-    |__  $$__//$$__  $$| $$  /$$/| $$_____/| $$$ | $$
-       | $$  | $$  \ $$| $$ /$$/ | $$      | $$$$| $$
-       | $$  | $$  | $$| $$$$$/  | $$$$$   | $$ $$ $$
-       | $$  | $$  | $$| $$  $$  | $$__/   | $$  $$$$
-       | $$  | $$  | $$| $$\  $$ | $$      | $$\  $$$
-       | $$  |  $$$$$$/| $$ \  $$| $$$$$$$$| $$ \  $$
-       |__/   \______/ |__/  \__/|________/|__/  \_*/
-                                                            
-    using Strings for uint;
-
-    uint private _stakeCount;
-
-    mapping(uint => Stake) private _stakes;
-
-    function stakeCount() external view returns (uint) {
-        return _stakeCount;
-    }
-
-    function getStake(uint stakeId) external view returns (Stake memory) {
-        return _requireStake(stakeId);
-    }
-
-    function _requireStake(uint stakeId) internal view returns (Stake memory) {
-        require(stakeId <= _stakeCount, "Stake not found");
-        return _stakes[stakeId];
-    }
-
-    function tokenURI(uint stakeId) public view virtual override returns (string memory) {
-        return string(_stakeURI(_requireStake(stakeId)));
-    }
-
-    function tokenData(uint stakeId) external view returns (string memory) {
-        return string(_stakeJSON(_requireStake(stakeId)));
-    }
-    
-    function _stakeURI(Stake memory token) internal view returns (bytes memory) {
-        return abi.encodePacked(
-            'data:application/json;base64,',
-            Base64.encode(_stakeJSON(token))
-        );
-    }
-
-    function _stakeJSON(Stake memory token) internal view returns (bytes memory) {
-        Noun memory noun = _data.getNoun(token.noun); 
-        return abi.encodePacked(
-            '{',
-                '"id":', token.id.toString(), ',',
-                '"name":"FOUND ', noun.name, '",',
-                '"description":"', noun.name, ' is FOUND.",',
-                '"noun":[', _data.tokenData(token.noun), '],',
-                '"image":"', _data.tokenImage(token.noun), '"',
-            '}'
-        );
     }
 
       /*$$$$$  /$$   /$$  /$$$$$$  /$$$$$$$  /$$$$$$$$
@@ -186,10 +74,20 @@ contract NounBank is NounBase, ERC721 {
     |  $$$$$$/| $$  | $$| $$  | $$| $$  | $$| $$$$$$$$
      \______/ |__/  |__/|__/  |__/|__/  |__/|_______*/
                                                                 
+    uint private _stakeCount;
     uint private _totalShares;
-
-    mapping(uint => uint) private _shares;
     
+    mapping(uint => uint) private _shares;
+    mapping(uint => Stake) private _stakes;
+
+    function stakeCount() external view returns (uint) {
+        return _stakeCount;
+    }
+
+    function getStake(uint stakeId) external view returns (Stake memory) {
+        return _requireStake(stakeId);
+    }
+
     function getShares(uint stakeId) external view returns (uint) {
         return _shares[stakeId];
     }
@@ -224,6 +122,7 @@ contract NounBank is NounBase, ERC721 {
         return amount * amount / last;
     }
 
+
     function _calculateEarnings(uint stakeId) internal view returns (uint) {
         uint balance = _cash.balanceOf(address(this));
         uint earnings = balance * _shares[stakeId] / _totalShares;
@@ -237,6 +136,48 @@ contract NounBank is NounBase, ERC721 {
         }
 
         return 0;
+    }
+    
+    function _requireStake(uint stakeId) internal view returns (Stake memory) {
+        require(stakeId <= _stakeCount, "Stake not found");
+        return _stakes[stakeId];
+    }
+
+     /*$$$$$$$ /$$$$$$  /$$   /$$ /$$$$$$$$ /$$   /$$
+    |__  $$__//$$__  $$| $$  /$$/| $$_____/| $$$ | $$
+       | $$  | $$  \ $$| $$ /$$/ | $$      | $$$$| $$
+       | $$  | $$  | $$| $$$$$/  | $$$$$   | $$ $$ $$
+       | $$  | $$  | $$| $$  $$  | $$__/   | $$  $$$$
+       | $$  | $$  | $$| $$\  $$ | $$      | $$\  $$$
+       | $$  |  $$$$$$/| $$ \  $$| $$$$$$$$| $$ \  $$
+       |__/   \______/ |__/  \__/|________/|__/  \_*/
+
+    function tokenURI(uint stakeId) public view virtual override returns (string memory) {
+        return string(_stakeURI(_requireStake(stakeId)));
+    }
+
+    function tokenData(uint stakeId) external view returns (string memory) {
+        return string(_stakeJSON(_requireStake(stakeId)));
+    }
+    
+    function _stakeURI(Stake memory token) internal view returns (bytes memory) {
+        return abi.encodePacked(
+            'data:application/json;base64,',
+            Base64.encode(_stakeJSON(token))
+        );
+    }
+
+    function _stakeJSON(Stake memory token) internal view returns (bytes memory) {
+        Noun memory noun = _data.getNoun(token.noun); 
+        return abi.encodePacked(
+            '{',
+                '"id":', token.id.toString(), ',',
+                '"name":"FOUND ', noun.name, '",',
+                '"description":"', noun.name, ' is FOUND.",',
+                '"noun":[', _data.tokenData(token.noun), '],',
+                '"image":"', _data.tokenImage(token.noun), '"',
+            '}'
+        );
     }
                                                                                                                               
      /*$    /$$  /$$$$$$  /$$$$$$$$ /$$$$$$$$                                                                                 
@@ -468,6 +409,64 @@ contract NounBank is NounBase, ERC721 {
         );
     }
 
+     /*$      /$$ /$$$$$$ /$$   /$$ /$$$$$$$$                                                                                 
+    | $$$    /$$$|_  $$_/| $$$ | $$|__  $$__/                                                                                 
+    | $$$$  /$$$$  | $$  | $$$$| $$   | $$                                                                                    
+    | $$ $$/$$ $$  | $$  | $$ $$ $$   | $$                                                                                    
+    | $$  $$$| $$  | $$  | $$  $$$$   | $$                                                                                    
+    | $$\  $ | $$  | $$  | $$\  $$$   | $$                                                                                    
+    | $$ \/  | $$ /$$$$$$| $$ \  $$   | $$                                                                                    
+    |__/     |__/|______/|__/  \__/   |_*/                                                                                    
+                                                                                
+    event Minted(
+        address payer,
+        address minter,
+        uint coinId,
+        uint nounId,
+        uint found,
+        uint coins
+    );
+
+    function mint(
+        address payer, 
+        address minter, 
+        uint coinId, 
+        uint found
+    ) external {
+        uint nounId = _collectMint(coinId, found);
+        uint minted = _bank.convertCoin(coinId, found);
+
+        _cash.transferFrom(payer, address(this), found);
+        _bank.mintCoin(minter, coinId, minted);
+
+        emit Minted(
+            payer, 
+            minter, 
+            coinId, 
+            nounId,
+            found, 
+            minted
+        );
+    }
+
+    function _collectMint(uint coinId, uint amount) internal returns (uint) {
+        uint nounId = _requireFoundNoun(coinId);
+        
+        require(amount > 0, "Must mint some Nouns");
+        _cashOnNoun[nounId] += amount;
+
+        return _coinToNoun[coinId];
+    }
+
+    function _requireFoundNoun(uint coinId) internal view returns (uint nounId) {
+        require(
+            coinId > 0 && coinId <= _data.currentDay(), 
+            "Coin has not been minted"
+        );
+
+        return _coinToNoun[coinId];
+    }
+
      /*$$$$$$$ /$$$$$$  /$$   /$$ /$$   /$$ /$$$$$$$ 
     | $$_____//$$__  $$| $$  | $$| $$$ | $$| $$__  $$
     | $$     | $$  \ $$| $$  | $$| $$$$| $$| $$  \ $$
@@ -476,11 +475,7 @@ contract NounBank is NounBase, ERC721 {
     | $$     | $$  | $$| $$  | $$| $$\  $$$| $$  | $$
     | $$     |  $$$$$$/|  $$$$$$/| $$ \  $$| $$$$$$$/
     |__/      \______/  \______/ |__/  \__/|______*/ 
-                                                 
-    function fund() external {
-        // TODO: fund the game if it exists
-    }
-
+                            
     constructor(IERC20 cash_, NounData data_) 
     ERC721("FOUND NOUN", "FOUND NOUN") {
         _data = data_;
