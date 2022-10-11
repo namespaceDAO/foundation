@@ -58,7 +58,65 @@ contract NounBank is NounBase, ERC721 {
     
     function cashOnCoin(uint nounId) external view returns (uint amount) {
         return _cashOnCoin[nounId];
+    }                 
+
+     /*$      /$$ /$$$$$$ /$$   /$$ /$$$$$$$$                                                                                 
+    | $$$    /$$$|_  $$_/| $$$ | $$|__  $$__/                                                                                 
+    | $$$$  /$$$$  | $$  | $$$$| $$   | $$                                                                                    
+    | $$ $$/$$ $$  | $$  | $$ $$ $$   | $$                                                                                    
+    | $$  $$$| $$  | $$  | $$  $$$$   | $$                                                                                    
+    | $$\  $ | $$  | $$  | $$\  $$$   | $$                                                                                    
+    | $$ \/  | $$ /$$$$$$| $$ \  $$   | $$                                                                                    
+    |__/     |__/|______/|__/  \__/   |_*/                                                                                    
+                                                                                
+    event Minted(
+        address payer,
+        address minter,
+        uint coinId,
+        uint nounId,
+        uint found,
+        uint coins
+    );
+
+    function mint(
+        address payer, 
+        address minter, 
+        uint coinId, 
+        uint found
+    ) external {
+        uint nounId = _collectMint(coinId, found);
+        uint minted = _bank.convertCoin(coinId, found);
+
+        _cash.transferFrom(payer, address(this), found);
+        _bank.mintCoin(minter, coinId, minted);
+
+        emit Minted(
+            payer, 
+            minter, 
+            coinId, 
+            nounId,
+            found, 
+            minted
+        );
     }
+
+    function _collectMint(uint coinId, uint amount) internal returns (uint) {
+        uint nounId = _requireFoundNoun(coinId);
+        
+        require(amount > 0, "Must mint some Nouns");
+        _cashOnNoun[nounId] += amount;
+
+        return _coinToNoun[coinId];
+    }
+
+    function _requireFoundNoun(uint coinId) internal view returns (uint nounId) {
+        require(
+            coinId > 0 && coinId <= _data.currentDay(), 
+            "Coin has not been minted"
+        );
+
+        return _coinToNoun[coinId];
+    }                                       
     
      /*$$$$$$$ /$$$$$$  /$$   /$$ /$$$$$$$$ /$$   /$$
     |__  $$__//$$__  $$| $$  /$$/| $$_____/| $$$ | $$
@@ -245,120 +303,7 @@ contract NounBank is NounBase, ERC721 {
         );
         
         return coinId;
-    }                              
-
-     /*$      /$$ /$$$$$$ /$$   /$$ /$$$$$$$$                                                                                 
-    | $$$    /$$$|_  $$_/| $$$ | $$|__  $$__/                                                                                 
-    | $$$$  /$$$$  | $$  | $$$$| $$   | $$                                                                                    
-    | $$ $$/$$ $$  | $$  | $$ $$ $$   | $$                                                                                    
-    | $$  $$$| $$  | $$  | $$  $$$$   | $$                                                                                    
-    | $$\  $ | $$  | $$  | $$\  $$$   | $$                                                                                    
-    | $$ \/  | $$ /$$$$$$| $$ \  $$   | $$                                                                                    
-    |__/     |__/|______/|__/  \__/   |_*/                                                                                    
-                                                                                
-    event Minted(
-        address payer,
-        address minter,
-        uint coinId,
-        uint nounId,
-        uint found,
-        uint coins
-    );
-
-    function mint(
-        address payer, 
-        address minter, 
-        uint coinId, 
-        uint found
-    ) external {
-        uint nounId = _collectMint(coinId, found);
-        uint minted = _bank.convertCoin(coinId, found);
-
-        _cash.transferFrom(payer, address(this), found);
-        _bank.mintCoin(minter, coinId, minted);
-
-        emit Minted(
-            payer, 
-            minter, 
-            coinId, 
-            nounId,
-            found, 
-            minted
-        );
-    }
-
-    function _collectMint(uint coinId, uint amount) internal returns (uint) {
-        uint nounId = _requireFoundNoun(coinId);
-        
-        require(amount > 0, "Must mint some Nouns");
-        _cashOnNoun[nounId] += amount;
-
-        return _coinToNoun[coinId];
-    }
-
-    function _requireFoundNoun(uint coinId) internal view returns (uint nounId) {
-        require(
-            coinId > 0 && coinId <= _data.currentDay(), 
-            "Coin has not been minted"
-        );
-
-        return _coinToNoun[coinId];
-    }                                       
-
-      /*$$$$$  /$$$$$$$$ /$$$$$$  /$$   /$$ /$$$$$$$$                                                                         
-     /$$__  $$|__  $$__//$$__  $$| $$  /$$/| $$_____/                                                                         
-    | $$  \__/   | $$  | $$  \ $$| $$ /$$/ | $$                                                                               
-    |  $$$$$$    | $$  | $$$$$$$$| $$$$$/  | $$$$$                                                                            
-     \____  $$   | $$  | $$__  $$| $$  $$  | $$__/                                                                            
-     /$$  \ $$   | $$  | $$  | $$| $$\  $$ | $$                                                                               
-    |  $$$$$$/   | $$  | $$  | $$| $$ \  $$| $$$$$$$$                                                                         
-     \______/    |__/  |__/  |__/|__/  \__/|_______*/                                                                                     
-
-    event Staked(
-        uint id,
-        uint idea,
-        uint amount,
-        uint expiresAt,
-        uint startedAt
-    );
-
-    struct StakeParams {
-        address to;
-        uint nounId;
-        uint amount;
-        uint expiresAt;
-    }
-
-    function stake(StakeParams memory params) external {
-        require(params.amount > 0, "Stake more than 0");
-        require(
-            params.expiresAt >= block.timestamp + 1 days, 
-            "Stake at least 1 day in the future"
-        );
-
-        Stake storage token = _stakes[++_stakeCount];
-        token.id = _stakeCount;
-        token.nounId = params.nounId;
-        token.amount = params.amount;
-        token.expiresAt = params.expiresAt;
-        token.startedAt = block.timestamp;
-
-        uint day = _data.currentDay();
-        uint shares = calculateShares(day, params.amount);
-    
-        _shares[token.id] = shares;
-        _totalShares += shares;
-
-        _mint(params.to, token.id);
-
-        emit Staked(
-            token.id, 
-            token.nounId,
-            token.amount,
-            token.expiresAt,
-            token.startedAt
-        );
-    }
+    }             
                                                                                                                      
      /*$$$$$$  /$$   /$$ /$$$$$$$  /$$   /$$                                                                                  
     | $$__  $$| $$  | $$| $$__  $$| $$$ | $$                                                                                  
@@ -465,17 +410,70 @@ contract NounBank is NounBase, ERC721 {
         return owner;
     }
 
-        /*$       /$$       /$$   
-      /$$$$$$   /$$$$$$   /$$$$$$ 
-     /$$__  $$ /$$__  $$ /$$__  $$
-    | $$  \__/| $$  \__/| $$  \__/
-    |  $$$$$$ |  $$$$$$ |  $$$$$$ 
-     \____  $$ \____  $$ \____  $$
-     /$$  \ $$ /$$  \ $$ /$$  \ $$
-    |  $$$$$$/|  $$$$$$/|  $$$$$$/
-     \_  $$_/  \_  $$_/  \_  $$_/ 
-       \__/      \__/      \_*/   
+      /*$$$$$  /$$$$$$$$ /$$$$$$  /$$   /$$ /$$$$$$$$                                                                         
+     /$$__  $$|__  $$__//$$__  $$| $$  /$$/| $$_____/                                                                         
+    | $$  \__/   | $$  | $$  \ $$| $$ /$$/ | $$                                                                               
+    |  $$$$$$    | $$  | $$$$$$$$| $$$$$/  | $$$$$                                                                            
+     \____  $$   | $$  | $$__  $$| $$  $$  | $$__/                                                                            
+     /$$  \ $$   | $$  | $$  | $$| $$\  $$ | $$                                                                               
+    |  $$$$$$/   | $$  | $$  | $$| $$ \  $$| $$$$$$$$                                                                         
+     \______/    |__/  |__/  |__/|__/  \__/|_______*/                                                                                     
 
+    event Staked(
+        uint id,
+        uint idea,
+        uint amount,
+        uint expiresAt,
+        uint startedAt
+    );
+
+    struct StakeParams {
+        address to;
+        uint nounId;
+        uint amount;
+        uint expiresAt;
+    }
+
+    function stake(StakeParams memory params) external {
+        require(params.amount > 0, "Stake more than 0");
+        require(
+            params.expiresAt >= block.timestamp + 1 days, 
+            "Stake at least 1 day in the future"
+        );
+
+        Stake storage token = _stakes[++_stakeCount];
+        token.id = _stakeCount;
+        token.nounId = params.nounId;
+        token.amount = params.amount;
+        token.expiresAt = params.expiresAt;
+        token.startedAt = block.timestamp;
+
+        uint day = _data.currentDay();
+        uint shares = calculateShares(day, params.amount);
+    
+        _shares[token.id] = shares;
+        _totalShares += shares;
+
+        _mint(params.to, token.id);
+
+        emit Staked(
+            token.id, 
+            token.nounId,
+            token.amount,
+            token.expiresAt,
+            token.startedAt
+        );
+    }
+
+     /*$$$$$$$ /$$$$$$  /$$   /$$ /$$   /$$ /$$$$$$$ 
+    | $$_____//$$__  $$| $$  | $$| $$$ | $$| $$__  $$
+    | $$     | $$  \ $$| $$  | $$| $$$$| $$| $$  \ $$
+    | $$$$$  | $$  | $$| $$  | $$| $$ $$ $$| $$  | $$
+    | $$__/  | $$  | $$| $$  | $$| $$  $$$$| $$  | $$
+    | $$     | $$  | $$| $$  | $$| $$\  $$$| $$  | $$
+    | $$     |  $$$$$$/|  $$$$$$/| $$ \  $$| $$$$$$$/
+    |__/      \______/  \______/ |__/  \__/|______*/ 
+                                                 
     function fund() external {
         // TODO: fund the game if it exists
     }
