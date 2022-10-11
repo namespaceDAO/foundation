@@ -122,7 +122,6 @@ contract NounBank is NounBase, ERC721 {
         return amount * amount / last;
     }
 
-
     function _calculateEarnings(uint stakeId) internal view returns (uint) {
         uint balance = _cash.balanceOf(address(this));
         uint earnings = balance * _shares[stakeId] / _totalShares;
@@ -137,7 +136,7 @@ contract NounBank is NounBase, ERC721 {
 
         return 0;
     }
-    
+
     function _requireStake(uint stakeId) internal view returns (Stake memory) {
         require(stakeId <= _stakeCount, "Stake not found");
         return _stakes[stakeId];

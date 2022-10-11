@@ -129,6 +129,29 @@ describe('NounBank', () => {
     await bank.connect(alice).burn(alice.address, stakeId)
   })
 
+  it('Shares correctly', async () => {
+    const value = parseEther(`${Math.random()}`)
+    const startedAt = Math.floor(new Date().getTime() / 1000)
+    const expiresAt = startedAt + 3600 * 25
+
+    await found.connect(alice).transfer(bank.address, parseEther('10'))
+    await bank.connect(alice).stake({
+      to: alice.address,
+      noun: duck.id,
+      found: value,
+      expiresAt
+    })
+
+    const count = await bank.stakeCount()
+    const stake = await bank.getStake(count)
+    const shares = await bank.getShares(count)
+    const total = await bank.totalShares()
+
+    const payout = await bank.calculatePayout(count, expiresAt)
+
+    console.log({ count, stake, shares, total, payout })
+  })
+
   it('Claims coin stake', async () => {
     const day = await data.currentDay()
 
