@@ -21,7 +21,6 @@ contract NounBank is NounBase, ERC721 {
     IERC20 private _cash;
     NounData private _data;
     NounMint private _bank;
-    address private _game;
 
     function cash() external view returns (IERC20) {
         return _cash;
@@ -33,10 +32,6 @@ contract NounBank is NounBase, ERC721 {
 
     function bank() external view returns (NounMint) { 
         return _bank; 
-    }
-
-    function game() external view returns (address) { 
-        return _game; 
     }
 
     mapping(uint => uint) private _nounToCoin;
