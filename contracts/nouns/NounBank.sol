@@ -71,49 +71,47 @@ contract NounBank is NounBase, ERC721 {
                                                             
     using Strings for uint;
 
-    uint private _noteCount;
+    uint private _stakeCount;
 
-    mapping(uint => Note) private _notes;
+    mapping(uint => Stake) private _stakes;
 
-    function noteCount() external view returns (uint) {
-        return _noteCount;
+    function stakeCount() external view returns (uint) {
+        return _stakeCount;
     }
 
-    function getNote(uint noteId) external view returns (Note memory) {
-        return _requireNote(noteId);
+    function getStake(uint stakeId) external view returns (Stake memory) {
+        return _requireStake(stakeId);
     }
 
-    function _requireNote(uint noteId) internal view returns (Note memory) {
-        require(noteId <= _noteCount, "Note not found");
-        return _notes[noteId];
+    function _requireStake(uint stakeId) internal view returns (Stake memory) {
+        require(stakeId <= _stakeCount, "Stake not found");
+        return _stakes[stakeId];
     }
 
-    function tokenURI(uint noteId) public view virtual override returns (string memory) {
-        Note memory note = _requireNote(noteId);
-        return string(_noteURI(note));
+    function tokenURI(uint stakeId) public view virtual override returns (string memory) {
+        return string(_stakeURI(_requireStake(stakeId)));
     }
 
-    function tokenData(uint noteId) external view returns (string memory) {
-        Note memory note = _requireNote(noteId);
-        return string(_noteJSON(note));
+    function tokenData(uint stakeId) external view returns (string memory) {
+        return string(_stakeJSON(_requireStake(stakeId)));
     }
     
-    function _noteURI(Note memory note) internal view returns (bytes memory) {
+    function _stakeURI(Stake memory token) internal view returns (bytes memory) {
         return abi.encodePacked(
             'data:application/json;base64,',
-            Base64.encode(_noteJSON(note))
+            Base64.encode(_stakeJSON(token))
         );
     }
 
-    function _noteJSON(Note memory note) internal view returns (bytes memory) {
-        Noun memory noun = _data.getNoun(note.nounId); 
+    function _stakeJSON(Stake memory token) internal view returns (bytes memory) {
+        Noun memory noun = _data.getNoun(token.nounId); 
         return abi.encodePacked(
             '{',
-                '"id":', note.id.toString(), ',',
+                '"id":', token.id.toString(), ',',
                 '"name":"FOUND ', noun.name, '",',
                 '"description":"', noun.name, ' is FOUND.",',
-                '"noun":[', _data.tokenData(note.nounId), '],',
-                '"image":"', _data.tokenImage(note.nounId), '"',
+                '"noun":[', _data.tokenData(token.nounId), '],',
+                '"image":"', _data.tokenImage(token.nounId), '"',
             '}'
         );
     }
@@ -131,19 +129,17 @@ contract NounBank is NounBase, ERC721 {
 
     mapping(uint => uint) private _shares;
     
-    function getShares(uint noteId) external view returns (uint) {
-        return _shares[noteId];
+    function getShares(uint stakeId) external view returns (uint) {
+        return _shares[stakeId];
     }
 
     function totalShares() external view returns (uint) {
         return _totalShares;
     }
 
-    function calculatePayout(uint noteId, uint timestamp) external view returns (uint, uint) {
-        Note memory note = _requireNote(noteId);
-        
-        uint earnings = _calculateEarnings(noteId);
-        uint penalty = _calculatePenalty(note, timestamp);
+    function calculatePayout(uint stakeId, uint timestamp) external view returns (uint, uint) {
+        uint earnings = _calculateEarnings(stakeId);
+        uint penalty = _calculatePenalty(_requireStake(stakeId), timestamp);
 
         return (earnings, penalty);
     }
@@ -167,16 +163,16 @@ contract NounBank is NounBase, ERC721 {
         return amount * amount / last;
     }
 
-    function _calculateEarnings(uint noteId) internal view returns (uint) {
+    function _calculateEarnings(uint stakeId) internal view returns (uint) {
         uint balance = _cash.balanceOf(address(this));
-        uint earnings = balance * _shares[noteId] / _totalShares;
+        uint earnings = balance * _shares[stakeId] / _totalShares;
         return earnings;
     }
 
-    function _calculatePenalty(Note memory note, uint timestamp) internal pure returns (uint) {
-        if (timestamp > note.expiresAt + 2 weeks) {
-            uint late = (timestamp - note.expiresAt - 2 weeks) / 1 days;
-            return late * note.amount / 14;
+    function _calculatePenalty(Stake memory token, uint timestamp) internal pure returns (uint) {
+        if (timestamp > token.expiresAt + 2 weeks) {
+            uint late = (timestamp - token.expiresAt - 2 weeks) / 1 days;
+            return late * token.amount / 14;
         }
 
         return 0;
@@ -191,7 +187,7 @@ contract NounBank is NounBase, ERC721 {
        \  $/   |  $$$$$$/   | $$   | $$$$$$$$                                                                                 
         \_/     \______/    |__/   |_______*/                                                                                 
                                                                                                                           
-    event Vote(
+    event Voted(
         address payer,
         address minter,
         uint coinId,
@@ -212,7 +208,7 @@ contract NounBank is NounBase, ERC721 {
         _cash.transferFrom(payer, address(this), found);
         _bank.mintCoin(minter, coinId, minted);
 
-        emit Vote(
+        emit Voted(
             payer,
             minter, 
             coinId,
@@ -260,7 +256,7 @@ contract NounBank is NounBase, ERC721 {
     | $$ \/  | $$ /$$$$$$| $$ \  $$   | $$                                                                                    
     |__/     |__/|______/|__/  \__/   |_*/                                                                                    
                                                                                 
-    event Mint(
+    event Minted(
         address payer,
         address minter,
         uint coinId,
@@ -281,7 +277,7 @@ contract NounBank is NounBase, ERC721 {
         _cash.transferFrom(payer, address(this), found);
         _bank.mintCoin(minter, coinId, minted);
 
-        emit Mint(
+        emit Minted(
             payer, 
             minter, 
             coinId, 
@@ -318,7 +314,7 @@ contract NounBank is NounBase, ERC721 {
     |  $$$$$$/   | $$  | $$  | $$| $$ \  $$| $$$$$$$$                                                                         
      \______/    |__/  |__/  |__/|__/  \__/|_______*/                                                                                     
 
-    event Stake(
+    event Staked(
         uint id,
         uint idea,
         uint amount,
@@ -340,27 +336,27 @@ contract NounBank is NounBase, ERC721 {
             "Stake at least 1 day in the future"
         );
 
-        Note storage note = _notes[++_noteCount];
-        note.id = _noteCount;
-        note.nounId = params.nounId;
-        note.amount = params.amount;
-        note.expiresAt = params.expiresAt;
-        note.startedAt = block.timestamp;
+        Stake storage token = _stakes[++_stakeCount];
+        token.id = _stakeCount;
+        token.nounId = params.nounId;
+        token.amount = params.amount;
+        token.expiresAt = params.expiresAt;
+        token.startedAt = block.timestamp;
 
         uint day = _data.currentDay();
         uint shares = calculateShares(day, params.amount);
     
-        _shares[note.id] = shares;
+        _shares[token.id] = shares;
         _totalShares += shares;
 
-        _mint(params.to, note.id);
+        _mint(params.to, token.id);
 
-        emit Stake(
-            note.id, 
-            note.nounId,
-            note.amount,
-            note.expiresAt,
-            note.startedAt
+        emit Staked(
+            token.id, 
+            token.nounId,
+            token.amount,
+            token.expiresAt,
+            token.startedAt
         );
     }
                                                                                                                      
@@ -373,33 +369,32 @@ contract NounBank is NounBase, ERC721 {
     | $$$$$$$/|  $$$$$$/| $$  | $$| $$ \  $$                                                                                  
     |_______/  \______/ |__/  |__/|__/  \_*/         
                                                
-    event Burn(
+    event Burned(
         uint id,
         uint idea,
         uint amount,
         uint endedAt
     );
 
-    function burn(address payee, uint noteId) internal {
-        Note memory note = _requireNote(noteId);
-        uint payout = _burnNote(note);
+    function burn(address payee, uint stakeId) internal {
+        Stake memory s = _requireStake(stakeId);
+        uint payout = _burnStake(s);
 
         _cash.transferFrom(address(this), payee, payout);
-
-        emit Burn(note.id, note.nounId, note.amount, note.endedAt);
+        emit Burned(s.id, s.nounId, s.amount, s.endedAt);
     }
 
-    function _burnNote(Note memory note) internal returns (uint payout) {
-        address owner = ownerOf(note.id);
+    function _burnStake(Stake memory token) internal returns (uint payout) {
+        address owner = ownerOf(token.id);
         require(owner == msg.sender, "You are not the owner");
 
-        require(note.endedAt == 0, "Note already ended");
-        note.endedAt = block.timestamp;
+        require(token.endedAt == 0, "Stake already ended");
+        token.endedAt = block.timestamp;
 
-        _burn(note.id);
+        _burn(token.id);
 
-        uint earnings = _calculateEarnings(note.id);
-        uint penalty = _calculatePenalty(note, block.timestamp);
+        uint earnings = _calculateEarnings(token.id);
+        uint penalty = _calculatePenalty(token, block.timestamp);
 
         return earnings - penalty;
     }                
@@ -413,7 +408,7 @@ contract NounBank is NounBase, ERC721 {
     |  $$$$$$/| $$$$$$$$| $$  | $$ /$$$$$$| $$ \/  | $$                                                                       
      \______/ |________/|__/  |__/|______/|__/     |_*/                                                                       
                                                            
-    event Claim(
+    event Claimed(
         address creator,
         address minter,
         uint coinId,
@@ -438,7 +433,7 @@ contract NounBank is NounBase, ERC721 {
         _claims[coinId] += amount;
         _bank.mintCoin(minter, coinId, amount);
         
-        emit Claim(
+        emit Claimed(
             owner,
             minter,
             coinId, 

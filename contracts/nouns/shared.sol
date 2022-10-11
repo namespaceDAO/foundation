@@ -15,7 +15,7 @@ struct Noun {
     string[] traits;
 }
 
-struct Note {
+struct Stake {
     uint id;
     uint nounId;
     uint amount;

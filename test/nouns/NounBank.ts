@@ -106,7 +106,8 @@ describe('NounBank', () => {
 
   it('Stakes on noun', async () => {
     const value = parseEther(`${Math.random()}`)
-    const expiresAt = Math.floor(new Date().getTime() / 1000) + 3600 * 25
+    const startedAt = Math.floor(new Date().getTime() / 1000)
+    const expiresAt = startedAt + 3600 * 25
 
     await game.connect(alice).stake({
       to: alice.address,
@@ -114,5 +115,15 @@ describe('NounBank', () => {
       amount: value,
       expiresAt
     })
+
+    const count = await game.stakeCount()
+    const stake = await game.getStake(count)
+
+    expect(stake.id).to.equal(count)
+    expect(stake.nounId).to.equal(duck.id)
+    expect(stake.amount).to.equal(value)
+    expect(stake.expiresAt).to.equal(expiresAt)
+    expect(stake.endedAt).to.equal(0)
+    expect(stake.startedAt).to.greaterThanOrEqual(startedAt)
   })
 })
