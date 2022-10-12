@@ -453,7 +453,7 @@ contract NounBank is NounBase, ERC721 {
         emit Burned(token.id, token.noun, token.found, token.endedAt);
     }
 
-    function _burnStake(Stake memory token) internal returns (uint earnings, uint taxes) {
+    function _burnStake(Stake memory token) internal returns (uint, uint) {
         address owner = ownerOf(token.id);
         require(owner == msg.sender, "You are not the owner");
 

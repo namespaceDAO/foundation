@@ -25,8 +25,8 @@ staking on city 2 should stake on world A and up the tree
 */
 
 interface Descriptor {
-    function tokenURI(uint nounId) external virtual view returns (string memory);
-    function dataURI(uint nounId) external virtual view returns (string memory);
+    function tokenURI(uint nounId) external view returns (string memory);
+    function dataURI(uint nounId) external view returns (string memory);
 }
 
 struct WorldParams {
@@ -49,11 +49,11 @@ contract NounGame {
     mapping(uint => World) private _worlds;
     mapping(uint => uint) private _shares;
 
-    function getShares(uint worldId) external returns (uint) {
+    function getShares(uint worldId) external view returns (uint) {
         return _shares[worldId];
     }
 
-    function totalShares() external returns (uint) {
+    function totalShares() external view returns (uint) {
         return _totalShares;
     }
 
@@ -66,6 +66,7 @@ contract NounGame {
 
     function playCard(uint worldId, uint cardId) external {
         Card memory card = _card.getCard(cardId);
+        _shares[worldId] += card.power;
         // TODO: transfer card to this address
 
     }

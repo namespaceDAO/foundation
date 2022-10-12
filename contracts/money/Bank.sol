@@ -88,7 +88,7 @@ abstract contract Bank is ERC1155 {
     ) external {
         require(
             amounts.length == coins.length, 
-            "Mismatch between amounts and coins lengths"
+            "ERC1155: Mismatch between amounts and coins lengths"
         );
 
         for (uint i = 0; i < amounts.length; i += 1) {
@@ -104,7 +104,7 @@ abstract contract Bank is ERC1155 {
     ) internal virtual {
         uint currentAllowance = _allowances[owner][spender][coinId];
         if (currentAllowance != type(uint).max) {
-            require(currentAllowance >= amount, "Ledger: insufficient allowance");
+            require(currentAllowance >= amount, "ERC1155: insufficient allowance");
             _approve(owner, spender, coinId, currentAllowance - amount);
         }
     }
@@ -115,8 +115,8 @@ abstract contract Bank is ERC1155 {
         uint coinId,
         uint amount
     ) internal {
-        require(owner != address(0), "Cannot approve from the zero address");
-        require(spender != address(0), "Cannot approve to the zero address");
+        require(owner != address(0), "ERC1155: Cannot approve from the zero address");
+        require(spender != address(0), "ERC1155: Cannot approve to the zero address");
         _allowances[owner][spender][coinId] = amount;
         emit Approval(owner, spender, coinId, amount);
     }

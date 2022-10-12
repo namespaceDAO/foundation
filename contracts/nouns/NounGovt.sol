@@ -17,20 +17,22 @@ contract NounGovt is Ownable {
 
     mapping(address => bool) private _govts;
 
+    event SetTax(uint tax);
     event AddGovernment(address addr);
     event RemoveGovernment(address addr);
 
-    function tax() public view returns (uint) { 
+    function tax() external view returns (uint) { 
         return _tax; 
-    }
-
-    function setTax(uint tax_) external onlyOwner {
-        require(tax_ <= 3000, "Too many apples");
-        _tax = tax_;
     }
 
     function isGovernment(address addr) external view returns (bool) { 
         return _govts[addr]; 
+    }
+
+    function setTax(uint tax_) external onlyOwner {
+        require(tax_ <= 5000, "Too much water");
+        _tax = tax_;
+        emit SetTax(tax_);
     }
 
     function addGovernment(address addr) external onlyOwner {
