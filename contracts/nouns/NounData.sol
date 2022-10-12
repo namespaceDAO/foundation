@@ -37,11 +37,7 @@ contract NounData is ERC721 {
     }
 
     function getNoun(uint nounId) public view returns (Noun memory) {
-        require(
-            nounId <= _nounCount, 
-            "Noun not found"
-        );
-
+        require(nounId <= _nounCount, "Noun not found");
         return _nouns[nounId];
     }
 
@@ -70,11 +66,7 @@ contract NounData is ERC721 {
     }
 
     function submitNoun(NounParams memory params) external returns (uint) {
-        require(
-            params.shapes.length <= 0xffff,
-            "Noun too large"
-        );
-
+        require(params.shapes.length <= 0xffff, "Noun too large");
         Noun storage noun = _nouns[++_nounCount];
 
         noun.id = _nounCount;
@@ -96,7 +88,7 @@ contract NounData is ERC721 {
         return noun.id;
     }  
 
-    /*$$$$$$$ /$$$$$$  /$$$$$$$  /$$      /$$ /$$       /$$$$$$$$  /$$$$$$   /$$$$$$ 
+     /*$$$$$$$ /$$$$$$  /$$$$$$$  /$$      /$$ /$$       /$$$$$$$$  /$$$$$$   /$$$$$$ 
     | $$_____//$$__  $$| $$__  $$| $$$    /$$$| $$      | $$_____/ /$$__  $$ /$$__  $$
     | $$     | $$  \ $$| $$  \ $$| $$$$  /$$$$| $$      | $$      | $$  \__/| $$  \__/
     | $$$$$  | $$  | $$| $$$$$$$/| $$ $$/$$ $$| $$      | $$$$$   |  $$$$$$ |  $$$$$$ 
@@ -132,6 +124,22 @@ contract NounData is ERC721 {
         );
     }
 
+    function _encodeImage(Noun memory noun) internal pure returns (bytes memory) {
+        return abi.encodePacked(
+            'data:image/svg+xml;base64,', 
+            Base64.encode(_encodeSVG(noun.shapes))
+        );
+    }
+
+      /*$$$$$  /$$   /$$  /$$$$$$  /$$$$$$$  /$$$$$$$$  /$$$$$$ 
+     /$$__  $$| $$  | $$ /$$__  $$| $$__  $$| $$_____/ /$$__  $$
+    | $$  \__/| $$  | $$| $$  \ $$| $$  \ $$| $$      | $$  \__/
+    |  $$$$$$ | $$$$$$$$| $$$$$$$$| $$$$$$$/| $$$$$   |  $$$$$$ 
+     \____  $$| $$__  $$| $$__  $$| $$____/ | $$__/    \____  $$
+     /$$  \ $$| $$  | $$| $$  | $$| $$      | $$       /$$  \ $$
+    |  $$$$$$/| $$  | $$| $$  | $$| $$      | $$$$$$$$|  $$$$$$/
+     \______/ |__/  |__/|__/  |__/|__/      |________/ \_____*/ 
+
     function _encodeJSON(Noun memory noun) internal pure returns (bytes memory) {
         return abi.encodePacked(
             '{',
@@ -159,22 +167,6 @@ contract NounData is ERC721 {
         return list;
     }
 
-      /*$$$$$  /$$   /$$  /$$$$$$  /$$$$$$$  /$$$$$$$$  /$$$$$$ 
-     /$$__  $$| $$  | $$ /$$__  $$| $$__  $$| $$_____/ /$$__  $$
-    | $$  \__/| $$  | $$| $$  \ $$| $$  \ $$| $$      | $$  \__/
-    |  $$$$$$ | $$$$$$$$| $$$$$$$$| $$$$$$$/| $$$$$   |  $$$$$$ 
-     \____  $$| $$__  $$| $$__  $$| $$____/ | $$__/    \____  $$
-     /$$  \ $$| $$  | $$| $$  | $$| $$      | $$       /$$  \ $$
-    |  $$$$$$/| $$  | $$| $$  | $$| $$      | $$$$$$$$|  $$$$$$/
-     \______/ |__/  |__/|__/  |__/|__/      |________/ \_____*/ 
-
-    function _encodeImage(Noun memory noun) internal pure returns (bytes memory) {
-        return abi.encodePacked(
-            'data:image/svg+xml;base64,', 
-            Base64.encode(_encodeSVG(noun.shapes))
-        );
-    }
-
     function _encodeShapes(Noun memory noun) internal pure returns (bytes memory) {
         bytes memory list;
 
@@ -185,7 +177,7 @@ contract NounData is ERC721 {
                 i == noun.shapes.length - 1 ? '' : ','
             );
         }
-        
+
         return list;
     }
 
