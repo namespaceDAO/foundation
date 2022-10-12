@@ -280,24 +280,17 @@ contract NounBank is NounBase, ERC721 {
     }
 
     function _collectMint(uint coinId, uint amount) internal returns (uint) {
-        require(
-            amount > 0, 
-            "Must mint some Nouns"
-        );
+        require(amount > 0, "Must mint some Nouns");
         
         uint nounId = _requireFoundNoun(coinId);
-
         _cashOnNoun[nounId] += amount;
 
         return _coinToNoun[coinId];
     }
 
     function _requireFoundNoun(uint coinId) internal view returns (uint nounId) {
-        require(
-            coinId > 0 && coinId <= _currentDay(), 
-            "Coin has not been minted"
-        );
-
+        bool found = coinId > 0 && coinId <= _currentDay();
+        require(found, "Coin has not been minted");
         return _coinToNoun[coinId];
     }          
                         
@@ -329,10 +322,7 @@ contract NounBank is NounBase, ERC721 {
         uint coinId, 
         uint amount
     ) external {
-        require(
-            coinId < _currentDay(), 
-            "Coin is not claimable yet"
-        );
+        require(coinId < _currentDay(), "Coin is not claimable yet");
 
         uint nounId = _requireFoundNoun(coinId);
         address owner = _verifyClaim(nounId, coinId, amount);
@@ -355,19 +345,13 @@ contract NounBank is NounBase, ERC721 {
         uint amount
     ) internal view returns (address) {
         address owner = _data.ownerOf(nounId);
-
-        require(
-            msg.sender == owner, 
-            "Caller is not the Noun owner"
-        );
+        require(owner == msg.sender, "Caller is not the owner");
 
         uint claimed = _claims[coinId];
         uint minted = _bank.totalSupplyOf(coinId) - claimed;
 
-        require(
-            minted / 10 >= amount + claimed, 
-            "Claim too large"
-        );
+        bool claimable = minted / 10 >= amount + claimed;
+        require(claimable, "Claim too large");
 
         return owner;
     }
@@ -404,11 +388,7 @@ contract NounBank is NounBase, ERC721 {
     }
 
     function stake(StakeParams memory params) external {
-        require(
-            params.found > 0, 
-            "Stake more than 0"
-        );
-
+        require(params.found > 0, "Stake more than 0");
         require(
             params.expiresAt >= block.timestamp + 1 days, 
             "Stake at least 1 day in the future"
@@ -451,11 +431,7 @@ contract NounBank is NounBase, ERC721 {
     }
 
     function _requireStake(uint stakeId) internal view returns (Stake memory) {
-        require(
-            stakeId <= _stakeCount, 
-            "Stake not found"
-        );
-
+        require(stakeId <= _stakeCount, "Stake not found");
         return _stakes[stakeId];
     }
 
@@ -474,15 +450,8 @@ contract NounBank is NounBase, ERC721 {
         address owner = ownerOf(stakeId);
         Stake memory token = _requireStake(stakeId);
 
-        require(
-            owner == msg.sender, 
-            "You are not the owner"
-        );
-
-        require(
-            token.burnedAt == 0, 
-            "Token already burned"
-        );
+        require(owner == msg.sender, "Caller is not the owner");
+        require(token.burnedAt == 0, "Token already burned");
 
         uint shares;
         uint penalty; 
@@ -496,7 +465,7 @@ contract NounBank is NounBase, ERC721 {
 
         token.burnedAt = block.timestamp;
         _totalShares -= shares;
-
+        
         _burn(token.id);
 
         if (revenue > 0) {
