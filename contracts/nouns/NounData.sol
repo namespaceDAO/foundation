@@ -29,7 +29,7 @@ contract NounData is ERC721 {
     using Strings for address;
 
     uint private _nounCount;
-    
+
     mapping(uint => Noun) private _nouns;
 
     function nounCount() external view returns (uint) {
@@ -91,8 +91,6 @@ contract NounData is ERC721 {
 
         return noun.id;
     }  
-
-    constructor() ERC721("ORIGINAL NOUN", "ORIGINAL NOUN") {}
 
     /*$$$$$$$ /$$$$$$  /$$$$$$$  /$$      /$$ /$$       /$$$$$$$$  /$$$$$$   /$$$$$$ 
     | $$_____//$$__  $$| $$__  $$| $$$    /$$$| $$      | $$_____/ /$$__  $$ /$$__  $$
@@ -227,4 +225,6 @@ contract NounData is ERC721 {
             '/>'
         );
     }
+    
+    constructor() ERC721("ORIGINAL NOUN", "ORIGINAL NOUN") {}
 }
