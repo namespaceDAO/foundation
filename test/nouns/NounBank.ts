@@ -105,7 +105,7 @@ describe('NounBank', () => {
     expect(stake.noun).to.equal(duck.id)
     expect(stake.found).to.equal(value)
     expect(stake.expiresAt).to.equal(expiresAt)
-    expect(stake.endedAt).to.equal(0)
+    expect(stake.burnedAt).to.equal(0)
     expect(stake.startedAt).to.greaterThanOrEqual(startedAt)
   })
 
@@ -147,13 +147,12 @@ describe('NounBank', () => {
       expiresAt
     })
 
-    const shares1 = await bank.getShares(1)
     const total1 = await bank.totalShares()
-    const [earnings1, penalty1] = await bank.calculatePayout(1, expiresAt)
+    const [shares1, penalty1, revenue1] = await bank.calculatePayout(1, expiresAt)
 
     expect(shares1).to.equal(value1)
     expect(total1).to.equal(value1)
-    expect(earnings1).to.equal(balance)
+    expect(revenue1).to.equal(balance)
     expect(penalty1).to.equal(0)
 
     await bank.connect(alice).stake({
@@ -165,14 +164,12 @@ describe('NounBank', () => {
     })
 
     const late2 = 3600 * 24 * 21
-    const shares2 = await bank.getShares(2)
     const total2 = await bank.totalShares()
-    const [earnings2, penalty2] = await bank.calculatePayout(2, expiresAt + late2)
+    const [shares2, penalty2, revenue2] = await bank.calculatePayout(2, expiresAt + late2)
 
-    expect(shares2).to.equal(value2)
     expect(total2).to.equal(total1.add(shares2))
-    expect(earnings2).to.equal(balance.mul(shares2).div(total2))
-    expect(penalty2).to.greaterThan(0) // TODO
+    expect(shares2).to.equal(value2)
+    expect(revenue2).to.greaterThan(0) // TODO
   })
 
   it('Claims coin stake', async () => {

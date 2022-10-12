@@ -42,7 +42,7 @@ export const createRandomActor = (
     }
 
     const endStakeAttempt = async ({ time, stakes, props, endStake }: Step): Promise<void> => {
-      const mine = stakes.filter(s => s.account === signer.address && s.endedAt == null)
+      const mine = stakes.filter(s => s.account === signer.address && s.burnedAt == null)
 
       const ready = mine.reduce<Stake[]>((acc, cur) => {
         const prop = props[cur.prop - 1]

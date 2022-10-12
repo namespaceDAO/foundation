@@ -37,12 +37,12 @@ export const createActions = (
     await govt.connect(actor.signer).endStake(stake.id)
     const { interest, penalty } = await govt.getStake(stake.id)
 
-    const endedAt = Math.floor(new Date().getTime() / 1000)
+    const burnedAt = Math.floor(new Date().getTime() / 1000)
 
-    accounts[actor.signer.address].stakes[stake.id].endedAt = endedAt
+    accounts[actor.signer.address].stakes[stake.id].burnedAt = burnedAt
     accounts[actor.signer.address].stakes[stake.id].interest = interest
     accounts[actor.signer.address].stakes[stake.id].penalty = penalty
-    stakes[stake.id - 1].endedAt = endedAt
+    stakes[stake.id - 1].burnedAt = burnedAt
     stakes[stake.id - 1].interest = interest
     stakes[stake.id - 1].penalty = penalty
   }

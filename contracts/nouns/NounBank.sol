@@ -25,7 +25,7 @@ struct Stake {
     uint found;
     uint expiresAt;
     uint startedAt;
-    uint endedAt;
+    uint burnedAt;
     address govt;
 }
 
@@ -383,6 +383,10 @@ contract NounBank is NounBase, ERC721 {
         address govt;
     }
 
+    function getStake(uint stakeId) external view returns (Stake memory) {
+        return _requireStake(stakeId);
+    }
+
     function stake(StakeParams memory params) external {
         require(params.found > 0, "Stake more than 0");
         require(
@@ -422,10 +426,6 @@ contract NounBank is NounBase, ERC721 {
         );
     }
 
-    function getStake(uint stakeId) external view returns (Stake memory) {
-        return _requireStake(stakeId);
-    }
-
     function _requireStake(uint stakeId) internal view returns (Stake memory) {
         require(stakeId <= _stakeCount, "Stake not found");
         return _stakes[stakeId];
@@ -435,53 +435,66 @@ contract NounBank is NounBase, ERC721 {
         uint id,
         uint idea,
         uint amount,
-        uint endedAt
+        uint burnedAt
     );
 
+    function currentBalance() public view returns (uint) {
+        return _cash.balanceOf(address(this));
+    }
+
     function burn(address payee, uint stakeId) external {
+        address owner = ownerOf(stakeId);
+        require(owner == msg.sender, "You are not the owner");
+
         Stake memory token = _requireStake(stakeId);
 
-        uint earnings; uint taxes;
-        (earnings, taxes) = _burnStake(token);
+        require(token.burnedAt == 0, "Token already burned");
+        token.burnedAt = block.timestamp;
 
-        _cash.transferFrom(address(this), payee, earnings);
+        uint shares;
+        uint penalty; 
+        uint revenue;
+        uint taxes;
+
+        (shares, penalty, revenue, taxes) = calculatePayout(
+            stakeId, 
+            block.timestamp
+        );
+
+        _totalShares -= shares;
+        _burn(token.id);
+
+        if (revenue > 0) {
+            _cash.transferFrom(address(this), payee, revenue);
+        }
 
         if (taxes > 0 && _govt.isGovernment(token.govt)) {
             _cash.transferFrom(address(this), token.govt, taxes);
         }
 
-        emit Burned(token.id, token.noun, token.found, token.endedAt);
+        emit Burned(token.id, token.noun, token.found, token.burnedAt);
     }
 
-    function _burnStake(Stake memory token) internal returns (uint, uint) {
-        address owner = ownerOf(token.id);
-        require(owner == msg.sender, "You are not the owner");
+    function calculatePayout(
+        uint stakeId, 
+        uint timestamp
+    ) public view returns (
+        uint shares, 
+        uint penalty, 
+        uint revenue,
+        uint taxes
+    ) {
+        Stake memory token = _requireStake(stakeId);
 
-        require(token.endedAt == 0, "Stake already ended");
-        token.endedAt = block.timestamp;
+        uint shares_ = _shares[stakeId];
+        
+        uint penalty_ = _calculatePenalty(token, timestamp);
+        uint portion_ = currentBalance() * shares_ / _totalShares;
 
-        _burn(token.id);
+        uint revenue_ = portion_ - penalty_; 
+        uint taxes_ = revenue_ * token.tax / 10000;
 
-        uint balance = _calculateBalance(token.id);
-        uint penalty = _calculatePenalty(token, block.timestamp);
-
-        uint proceeds = balance - penalty;
-        uint taxes = proceeds * token.tax / 10000;
-        uint earnings = proceeds - taxes;
-
-        return (earnings, taxes);
-    }          
-
-    function calculatePayout(uint stakeId, uint timestamp) external view returns (uint, uint) {
-        uint penalty = _calculatePenalty(_requireStake(stakeId), timestamp);
-        uint earnings = _calculateBalance(stakeId);
-        return (earnings, penalty);
-    }
-
-    function _calculateBalance(uint stakeId) internal view returns (uint) {
-        uint balance = _cash.balanceOf(address(this));
-        uint earnings = balance * _shares[stakeId] / _totalShares;
-        return earnings;
+        return (shares_, penalty_, revenue_, taxes_);
     }
 
     function _calculatePenalty(Stake memory token, uint timestamp) internal pure returns (uint) {
