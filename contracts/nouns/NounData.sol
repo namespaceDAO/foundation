@@ -28,7 +28,6 @@ contract NounData is ERC721 {
     using Strings for uint64;
     using Strings for address;
 
-    uint private _start;
     uint private _nounCount;
     mapping(uint => Noun) private _nouns;
 
@@ -39,10 +38,6 @@ contract NounData is ERC721 {
 
     function nounCount() public view returns (uint) {
         return _nounCount;
-    }
-
-    function currentDay() external view returns (uint) {
-        return (block.timestamp - _start) / 1 days + 1;
     }
 
       /*$$$$$$  /$$$$$$$  /$$$$$$$$  /$$$$$$  /$$$$$$$$ /$$$$$$$$
@@ -94,11 +89,7 @@ contract NounData is ERC721 {
         );
     }  
 
-    constructor() ERC721("ORIGINAL NOUN", "ORIGINAL NOUN") {
-        uint time = block.timestamp;
-        uint mountainous = 7 hours;
-        _start = time - mountainous;
-    }
+    constructor() ERC721("ORIGINAL NOUN", "ORIGINAL NOUN") {}
 
     /*$$$$$$$ /$$$$$$  /$$$$$$$  /$$      /$$ /$$       /$$$$$$$$  /$$$$$$   /$$$$$$ 
     | $$_____//$$__  $$| $$__  $$| $$$    /$$$| $$      | $$_____/ /$$__  $$ /$$__  $$

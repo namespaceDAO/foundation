@@ -37,6 +37,7 @@ contract NounBank is NounBase, ERC721 {
     NounMint private _bank;
     NounGovt private _govt;
 
+    uint private _start;
     uint private _stakeCount;
     uint private _totalShares;
 
@@ -72,6 +73,14 @@ contract NounBank is NounBase, ERC721 {
         return _totalShares;
     }
 
+    function currentDay() external view returns (uint) {
+        return _currentDay();
+    }
+
+    function _currentDay() internal view returns (uint) {
+        return (block.timestamp - _start) / 1 days + 1;
+    }
+
     function nounToCoin(uint nounId) external view returns (uint coinId) {
         return _nounToCoin[nounId];
     }
@@ -93,6 +102,9 @@ contract NounBank is NounBase, ERC721 {
         _data = data_;
         _cash = cash_;
 
+        uint time = block.timestamp;
+        uint mountainous = 7 hours;
+        _start = time - mountainous;
         NounBase _base = NounBase(address(this));
 
         _bank = new NounMint(data_, _base);
@@ -100,23 +112,14 @@ contract NounBank is NounBase, ERC721 {
         _cash.approve(address(this), type(uint).max);
     }   
 
-      /*$$$$$  /$$   /$$  /$$$$$$  /$$$$$$$  /$$$$$$$$
-     /$$__  $$| $$  | $$ /$$__  $$| $$__  $$| $$_____/
-    | $$  \__/| $$  | $$| $$  \ $$| $$  \ $$| $$      
-    |  $$$$$$ | $$$$$$$$| $$$$$$$$| $$$$$$$/| $$$$$   
-     \____  $$| $$__  $$| $$__  $$| $$__  $$| $$__/   
-     /$$  \ $$| $$  | $$| $$  | $$| $$  \ $$| $$      
-    |  $$$$$$/| $$  | $$| $$  | $$| $$  | $$| $$$$$$$$
-     \______/ |__/  |__/|__/  |__/|__/  |__/|_______*/
-                                                  
-     /*$$$$$$$ /$$$$$$  /$$   /$$ /$$$$$$$$ /$$   /$$
-    |__  $$__//$$__  $$| $$  /$$/| $$_____/| $$$ | $$
-       | $$  | $$  \ $$| $$ /$$/ | $$      | $$$$| $$
-       | $$  | $$  | $$| $$$$$/  | $$$$$   | $$ $$ $$
-       | $$  | $$  | $$| $$  $$  | $$__/   | $$  $$$$
-       | $$  | $$  | $$| $$\  $$ | $$      | $$\  $$$
-       | $$  |  $$$$$$/| $$ \  $$| $$$$$$$$| $$ \  $$
-       |__/   \______/ |__/  \__/|________/|__/  \_*/
+      /*$$$$$  /$$$$$$$  /$$$$$$$$  /$$$$$$  /$$$$$$$$ /$$$$$$$$  /$$$$$$                      
+     /$$__  $$| $$__  $$| $$_____/ /$$__  $$|__  $$__/| $$_____/ /$$__  $$                     
+    | $$  \__/| $$  \ $$| $$      | $$  \ $$   | $$   | $$      | $$  \__/                     
+    | $$      | $$$$$$$/| $$$$$   | $$$$$$$$   | $$   | $$$$$   |  $$$$$$                      
+    | $$      | $$__  $$| $$__/   | $$__  $$   | $$   | $$__/    \____  $$                     
+    | $$    $$| $$  \ $$| $$      | $$  | $$   | $$   | $$       /$$  \ $$                     
+    |  $$$$$$/| $$  | $$| $$$$$$$$| $$  | $$   | $$   | $$$$$$$$|  $$$$$$/                     
+     \______/ |__/  |__/|________/|__/  |__/   |__/   |________/ \_____*/
 
     function getShares(uint stakeId) external view returns (uint) {
         return _shares[stakeId];
@@ -168,15 +171,15 @@ contract NounBank is NounBase, ERC721 {
             '}'
         );
     }        
-                                                                                                                              
-     /*$    /$$  /$$$$$$  /$$$$$$$$ /$$$$$$$$                                                                                 
-    | $$   | $$ /$$__  $$|__  $$__/| $$_____/                                                                                 
-    | $$   | $$| $$  \ $$   | $$   | $$                                                                                       
-    |  $$ / $$/| $$  | $$   | $$   | $$$$$                                                                                    
-     \  $$ $$/ | $$  | $$   | $$   | $$__/                                                                                    
-      \  $$$/  | $$  | $$   | $$   | $$                                                                                       
-       \  $/   |  $$$$$$/   | $$   | $$$$$$$$                                                                                 
-        \_/     \______/    |__/   |_______*/                                                                                 
+                                                                                   
+     /*$      /$$ /$$$$$$ /$$   /$$ /$$$$$$$$ /$$$$$$  /$$$$$$$  /$$       /$$$$$$$$           
+    | $$$    /$$$|_  $$_/| $$$ | $$|__  $$__//$$__  $$| $$__  $$| $$      | $$_____/           
+    | $$$$  /$$$$  | $$  | $$$$| $$   | $$  | $$  \ $$| $$  \ $$| $$      | $$                 
+    | $$ $$/$$ $$  | $$  | $$ $$ $$   | $$  | $$$$$$$$| $$$$$$$ | $$      | $$$$$              
+    | $$  $$$| $$  | $$  | $$  $$$$   | $$  | $$__  $$| $$__  $$| $$      | $$__/              
+    | $$\  $ | $$  | $$  | $$\  $$$   | $$  | $$  | $$| $$  \ $$| $$      | $$                 
+    | $$ \/  | $$ /$$$$$$| $$ \  $$   | $$  | $$  | $$| $$$$$$$/| $$$$$$$$| $$$$$$$$           
+    |__/     |__/|______/|__/  \__/   |__/  |__/  |__/|_______/ |________/|_______*/                                                             
                                                                                                                           
     event Voted(
         address payer,
@@ -227,7 +230,7 @@ contract NounBank is NounBase, ERC721 {
     function _requireFreshNoun(uint nounId) internal view returns (uint) {
         require(nounId <= _data.nounCount(), "Noun not found");
         
-        uint coinId = _data.currentDay();
+        uint coinId = _currentDay();
         uint existing = _nounToCoin[nounId];
         
         require(
@@ -236,17 +239,8 @@ contract NounBank is NounBase, ERC721 {
         );
         
         return coinId;
-    }   
-
-     /*$      /$$ /$$$$$$ /$$   /$$ /$$$$$$$$                                                                                 
-    | $$$    /$$$|_  $$_/| $$$ | $$|__  $$__/                                                                                 
-    | $$$$  /$$$$  | $$  | $$$$| $$   | $$                                                                                    
-    | $$ $$/$$ $$  | $$  | $$ $$ $$   | $$                                                                                    
-    | $$  $$$| $$  | $$  | $$  $$$$   | $$                                                                                    
-    | $$\  $ | $$  | $$  | $$\  $$$   | $$                                                                                    
-    | $$ \/  | $$ /$$$$$$| $$ \  $$   | $$                                                                                    
-    |__/     |__/|______/|__/  \__/   |_*/                                                                                    
-                                                                                
+    }                   
+                                                                             
     event Minted(
         address payer,
         address minter,
@@ -289,22 +283,88 @@ contract NounBank is NounBase, ERC721 {
 
     function _requireFoundNoun(uint coinId) internal view returns (uint nounId) {
         require(
-            coinId > 0 && coinId <= _data.currentDay(), 
+            coinId > 0 && coinId <= _currentDay(), 
             "Coin has not been minted"
         );
 
         return _coinToNoun[coinId];
     }          
-   
-      /*$$$$$  /$$$$$$$$ /$$$$$$  /$$   /$$ /$$$$$$$$                                                                         
-     /$$__  $$|__  $$__//$$__  $$| $$  /$$/| $$_____/                                                                         
-    | $$  \__/   | $$  | $$  \ $$| $$ /$$/ | $$                                                                               
-    |  $$$$$$    | $$  | $$$$$$$$| $$$$$/  | $$$$$                                                                            
-     \____  $$   | $$  | $$__  $$| $$  $$  | $$__/                                                                            
-     /$$  \ $$   | $$  | $$  | $$| $$\  $$ | $$                                                                               
-    |  $$$$$$/   | $$  | $$  | $$| $$ \  $$| $$$$$$$$                                                                         
-     \______/    |__/  |__/  |__/|__/  \__/|_______*/                                                                                     
+                        
+      /*$$$$$  /$$        /$$$$$$  /$$$$$$ /$$      /$$  /$$$$$$  /$$$$$$$  /$$       /$$$$$$$$
+     /$$__  $$| $$       /$$__  $$|_  $$_/| $$$    /$$$ /$$__  $$| $$__  $$| $$      | $$_____/
+    | $$  \__/| $$      | $$  \ $$  | $$  | $$$$  /$$$$| $$  \ $$| $$  \ $$| $$      | $$      
+    | $$      | $$      | $$$$$$$$  | $$  | $$ $$/$$ $$| $$$$$$$$| $$$$$$$ | $$      | $$$$$   
+    | $$      | $$      | $$__  $$  | $$  | $$  $$$| $$| $$__  $$| $$__  $$| $$      | $$__/   
+    | $$    $$| $$      | $$  | $$  | $$  | $$\  $ | $$| $$  | $$| $$  \ $$| $$      | $$      
+    |  $$$$$$/| $$$$$$$$| $$  | $$ /$$$$$$| $$ \/  | $$| $$  | $$| $$$$$$$/| $$$$$$$$| $$$$$$$$
+     \______/ |________/|__/  |__/|______/|__/     |__/|__/  |__/|_______/ |________/|_______*/
+                                                      
+    event Claimed(
+        address creator,
+        address minter,
+        uint coinId,
+        uint nounId,
+        uint coins
+    );
 
+    mapping(uint => uint) private _claims;
+
+    function getClaims(uint coinId) external view returns (uint) {
+        return _claims[coinId];
+    }
+
+    function claim(
+        address minter, 
+        uint coinId, 
+        uint amount
+    ) external {
+        require(coinId < _currentDay(), "Coin is not claimable yet");
+
+        uint nounId = _requireFoundNoun(coinId);
+        address owner = _verifyClaim(nounId, coinId, amount);
+
+        _claims[coinId] += amount;
+        _bank.mintCoin(minter, coinId, amount);
+        
+        emit Claimed(
+            owner,
+            minter,
+            coinId, 
+            nounId,
+            amount
+        );
+    }
+
+    function _verifyClaim(
+        uint nounId, 
+        uint coinId, 
+        uint amount
+    ) internal view returns (address) {
+        address owner = _data.ownerOf(nounId);
+
+        require(
+            msg.sender == owner, 
+            "Caller is not the Noun owner"
+        );
+
+        uint claimed = _claims[coinId];
+        uint minted = _bank.totalSupplyOf(coinId) - claimed;
+
+        bool claimable = minted / 10 >= amount + claimed;
+        require(claimable, "Claim too large");
+
+        return owner;
+    }
+    
+     /*$$$$$$  /$$$$$$$$ /$$    /$$ /$$$$$$$$ /$$   /$$ /$$   /$$ /$$$$$$$$
+    | $$__  $$| $$_____/| $$   | $$| $$_____/| $$$ | $$| $$  | $$| $$_____/
+    | $$  \ $$| $$      | $$   | $$| $$      | $$$$| $$| $$  | $$| $$      
+    | $$$$$$$/| $$$$$   |  $$ / $$/| $$$$$   | $$ $$ $$| $$  | $$| $$$$$   
+    | $$__  $$| $$__/    \  $$ $$/ | $$__/   | $$  $$$$| $$  | $$| $$__/   
+    | $$  \ $$| $$        \  $$$/  | $$      | $$\  $$$| $$  | $$| $$      
+    | $$  | $$| $$$$$$$$   \  $/   | $$$$$$$$| $$ \  $$|  $$$$$$/| $$$$$$$$
+    |__/  |__/|________/    \_/    |________/|__/  \__/ \______/ |_______*/
+   
     event Staked(
         uint id,
         uint tax,
@@ -343,7 +403,7 @@ contract NounBank is NounBase, ERC721 {
             token.govt = params.govt;
         }
 
-        uint day = _data.currentDay();
+        uint day = _currentDay();
         uint shares = calculateShares(day, params.found);
 
         _shares[token.id] = shares;
@@ -370,16 +430,7 @@ contract NounBank is NounBase, ERC721 {
         require(stakeId <= _stakeCount, "Stake not found");
         return _stakes[stakeId];
     }
-                                                                                                                  
-     /*$$$$$$  /$$   /$$ /$$$$$$$  /$$   /$$                                                                                  
-    | $$__  $$| $$  | $$| $$__  $$| $$$ | $$                                                                                  
-    | $$  \ $$| $$  | $$| $$  \ $$| $$$$| $$                                                                                  
-    | $$$$$$$ | $$  | $$| $$$$$$$/| $$ $$ $$                                                                                  
-    | $$__  $$| $$  | $$| $$__  $$| $$  $$$$                                                                                  
-    | $$  \ $$| $$  | $$| $$  \ $$| $$\  $$$                                                                                  
-    | $$$$$$$/|  $$$$$$/| $$  | $$| $$ \  $$                                                                                  
-    |_______/  \______/ |__/  |__/|__/  \_*/         
-                                               
+
     event Burned(
         uint id,
         uint idea,
@@ -440,71 +491,5 @@ contract NounBank is NounBase, ERC721 {
         }
 
         return 0;
-    }
-                                                                                                                          
-      /*$$$$$  /$$        /$$$$$$  /$$$$$$ /$$      /$$                                                                       
-     /$$__  $$| $$       /$$__  $$|_  $$_/| $$$    /$$$                                                                       
-    | $$  \__/| $$      | $$  \ $$  | $$  | $$$$  /$$$$                                                                       
-    | $$      | $$      | $$$$$$$$  | $$  | $$ $$/$$ $$                                                                       
-    | $$      | $$      | $$__  $$  | $$  | $$  $$$| $$                                                                       
-    | $$    $$| $$      | $$  | $$  | $$  | $$\  $ | $$                                                                       
-    |  $$$$$$/| $$$$$$$$| $$  | $$ /$$$$$$| $$ \/  | $$                                                                       
-     \______/ |________/|__/  |__/|______/|__/     |_*/                                                                       
-                                                           
-    event Claimed(
-        address creator,
-        address minter,
-        uint coinId,
-        uint nounId,
-        uint coins
-    );
-
-    mapping(uint => uint) private _claims;
-
-    function getClaims(uint coinId) external view returns (uint) {
-        return _claims[coinId];
-    }
-
-    function claim(
-        address minter, 
-        uint coinId, 
-        uint amount
-    ) external {
-        require(coinId < _data.currentDay(), "Coin is not claimable yet");
-
-        uint nounId = _requireFoundNoun(coinId);
-        address owner = _verifyClaim(nounId, coinId, amount);
-
-        _claims[coinId] += amount;
-        _bank.mintCoin(minter, coinId, amount);
-        
-        emit Claimed(
-            owner,
-            minter,
-            coinId, 
-            nounId,
-            amount
-        );
-    }
-
-    function _verifyClaim(
-        uint nounId, 
-        uint coinId, 
-        uint amount
-    ) internal view returns (address) {
-        address owner = _data.ownerOf(nounId);
-
-        require(
-            msg.sender == owner, 
-            "Caller is not the Noun owner"
-        );
-
-        uint claimed = _claims[coinId];
-        uint minted = _bank.totalSupplyOf(coinId) - claimed;
-
-        bool claimable = minted / 10 >= amount + claimed;
-        require(claimable, "Claim too large");
-
-        return owner;
-    }                
+    }       
 }

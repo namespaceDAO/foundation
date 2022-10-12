@@ -51,7 +51,7 @@ describe('NounBank', () => {
   })
 
   it('Creates bank', async () => {
-    const day = await data.currentDay()
+    const day = await bank.currentDay()
     const c = await bank.cash()
     const d = await bank.data()
     const b = await bank.bank()
@@ -72,7 +72,7 @@ describe('NounBank', () => {
 
   // TODO: fully test this function with failure cases
   it('Votes on noun', async () => {
-    const day = await data.currentDay()
+    const day = await bank.currentDay()
 
     const value = parseEther(`${Math.random()}`)
     await bank.connect(alice).vote(alice.address, alice.address, day, value)
@@ -176,7 +176,7 @@ describe('NounBank', () => {
   })
 
   it('Claims coin stake', async () => {
-    const day = await data.currentDay()
+    const day = await bank.currentDay()
 
     const value = parseEther(`${Math.random()}`)
     await bank.connect(alice).vote(alice.address, alice.address, day, value)

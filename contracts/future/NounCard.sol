@@ -12,7 +12,7 @@ struct Card {
     uint power;
 }
 
-contract NounCard is NounBase, ERC721 {
+contract NounCard is ERC721 {
     NounMint private _bank;
     NounBase private _base;
 

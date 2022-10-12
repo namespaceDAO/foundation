@@ -3,14 +3,22 @@ pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+  /*$$$$$   /$$$$$$  /$$    /$$ /$$$$$$$$ /$$$$$$$  /$$   /$$ /$$      /$$ /$$$$$$$$ /$$   /$$ /$$$$$$$$ /$$$$$$ 
+ /$$__  $$ /$$__  $$| $$   | $$| $$_____/| $$__  $$| $$$ | $$| $$$    /$$$| $$_____/| $$$ | $$|__  $$__//$$__  $$
+| $$  \__/| $$  \ $$| $$   | $$| $$      | $$  \ $$| $$$$| $$| $$$$  /$$$$| $$      | $$$$| $$   | $$  | $$  \__/
+| $$ /$$$$| $$  | $$|  $$ / $$/| $$$$$   | $$$$$$$/| $$ $$ $$| $$ $$/$$ $$| $$$$$   | $$ $$ $$   | $$  |  $$$$$$ 
+| $$|_  $$| $$  | $$ \  $$ $$/ | $$__/   | $$__  $$| $$  $$$$| $$  $$$| $$| $$__/   | $$  $$$$   | $$   \____  $$
+| $$  \ $$| $$  | $$  \  $$$/  | $$      | $$  \ $$| $$\  $$$| $$\  $ | $$| $$      | $$\  $$$   | $$   /$$  \ $$
+|  $$$$$$/|  $$$$$$/   \  $/   | $$$$$$$$| $$  | $$| $$ \  $$| $$ \/  | $$| $$$$$$$$| $$ \  $$   | $$  |  $$$$$$/
+ \______/  \______/     \_/    |________/|__/  |__/|__/  \__/|__/     |__/|________/|__/  \__/   |__/   \_____*/ 
+
 contract NounGovt is Ownable {
     uint private _tax;
 
     mapping(address => bool) private _govts;
 
-    /*
-        TODO: events
-    */
+    event AddGovernment(address addr);
+    event RemoveGovernment(address addr);
 
     function tax() public view returns (uint) { 
         return _tax; 
@@ -27,9 +35,11 @@ contract NounGovt is Ownable {
 
     function addGovernment(address addr) external onlyOwner {
         _govts[addr] = true;
+        emit AddGovernment(addr);
     }
 
     function removeGovernment(address addr) external onlyOwner {
         _govts[addr] = false;
+        emit RemoveGovernment(addr);
     }
 }

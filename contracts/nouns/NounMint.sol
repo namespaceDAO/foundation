@@ -16,10 +16,11 @@ import "./NounData.sol";
 |__/     |__/|______/|__/  \__/   |_*/   
                 
 interface NounBase {
+    function currentDay() external view returns (uint day);
     function coinToNoun(uint coinId) external view returns (uint nounId);
 }
 
-contract NounMint is NounBase, Bank {
+contract NounMint is Bank {
     using Strings for uint;
     
     NounData private _data;
@@ -49,7 +50,7 @@ contract NounMint is NounBase, Bank {
         uint totalSupply = totalSupply();
         if (totalSupply == 0) return amount;
 
-        uint avgSupply = totalSupply / _data.currentDay();
+        uint avgSupply = totalSupply / _base.currentDay();
         uint tokenSupply = totalSupplyOf(coinId);
 
         if (tokenSupply > avgSupply * _difficulty) {
@@ -108,7 +109,7 @@ contract NounMint is NounBase, Bank {
     }
 
     function deployCoin(uint coinId) external returns (Coin) {
-        require(coinId <= _data.currentDay(), "Coin has not been found");
+        require(coinId <= _base.currentDay(), "Coin has not been found");
 
         bool deployed = address(_coins[coinId]) != address(0);
         require(!deployed, "Coin has already been deployed");
