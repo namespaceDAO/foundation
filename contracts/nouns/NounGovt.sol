@@ -30,7 +30,7 @@ contract NounGovt is Ownable {
     }
 
     function setTax(uint tax_) external onlyOwner {
-        require(tax_ <= 5000, "Too much water");
+        require(tax_ < 5000, "Too damn high");
         _tax = tax_;
         emit SetTax(tax_);
     }
