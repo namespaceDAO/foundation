@@ -64,7 +64,7 @@ contract NounData is ERC721 {
         string[] traits;
     }
 
-    function submitNoun(NounParams memory params) external {
+    function submitNoun(NounParams memory params) external returns (uint) {
         require(
             params.shapes.length <= 0xffff,
             "Noun too large"
@@ -87,6 +87,8 @@ contract NounData is ERC721 {
             noun.shapes,
             noun.traits
         );
+
+        return noun.id;
     }  
 
     constructor() ERC721("ORIGINAL NOUN", "ORIGINAL NOUN") {}
