@@ -29,15 +29,16 @@ contract NounData is ERC721 {
     using Strings for address;
 
     uint private _nounCount;
+    
     mapping(uint => Noun) private _nouns;
+
+    function nounCount() external view returns (uint) {
+        return _nounCount;
+    }
 
     function getNoun(uint nounId) public view returns (Noun memory) {
         require(nounId <= _nounCount, "Noun not found");
         return _nouns[nounId];
-    }
-
-    function nounCount() public view returns (uint) {
-        return _nounCount;
     }
 
       /*$$$$$$  /$$$$$$$  /$$$$$$$$  /$$$$$$  /$$$$$$$$ /$$$$$$$$
