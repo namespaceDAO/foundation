@@ -7,15 +7,15 @@ import "../money/Bank.sol";
 import "../money/Coin.sol";
 import "./NounData.sol";
 
-  /*$$$$$  /$$$$$$ /$$$$$$$$ /$$$$$$ /$$$$$$$$ /$$$$$$$$ /$$   /$$  /$$$$$$ 
- /$$__  $$|_  $$_/|__  $$__/|_  $$_/|_____ $$ | $$_____/| $$$ | $$ /$$__  $$
-| $$  \__/  | $$     | $$     | $$       /$$/ | $$      | $$$$| $$| $$  \__/
-| $$        | $$     | $$     | $$      /$$/  | $$$$$   | $$ $$ $$|  $$$$$$ 
-| $$        | $$     | $$     | $$     /$$/   | $$__/   | $$  $$$$ \____  $$
-| $$    $$  | $$     | $$     | $$    /$$/    | $$      | $$\  $$$ /$$  \ $$
-|  $$$$$$/ /$$$$$$   | $$    /$$$$$$ /$$$$$$$$| $$$$$$$$| $$ \  $$|  $$$$$$/
- \______/ |______/   |__/   |______/|________/|________/|__/  \__/ \_____*/ 
-                                                                            
+ /*$$$$$$  /$$$$$$$$  /$$$$$$  /$$$$$$$  /$$       /$$$$$$$$
+| $$__  $$| $$_____/ /$$__  $$| $$__  $$| $$      | $$_____/
+| $$  \ $$| $$      | $$  \ $$| $$  \ $$| $$      | $$      
+| $$$$$$$/| $$$$$   | $$  | $$| $$$$$$$/| $$      | $$$$$   
+| $$____/ | $$__/   | $$  | $$| $$____/ | $$      | $$__/   
+| $$      | $$      | $$  | $$| $$      | $$      | $$      
+| $$      | $$$$$$$$|  $$$$$$/| $$      | $$$$$$$$| $$$$$$$$
+|__/      |________/ \______/ |__/      |________/|_______*/
+                                                                             
 interface NounBase {
     function currentDay() external view returns (uint day);
     function coinToNoun(uint coinId) external view returns (uint nounId);
@@ -55,14 +55,14 @@ contract NounGovt is Ownable {
     }
 }
 
- /*$      /$$ /$$$$$$ /$$   /$$ /$$$$$$$$
-| $$$    /$$$|_  $$_/| $$$ | $$|__  $$__/
-| $$$$  /$$$$  | $$  | $$$$| $$   | $$   
-| $$ $$/$$ $$  | $$  | $$ $$ $$   | $$   
-| $$  $$$| $$  | $$  | $$  $$$$   | $$   
-| $$\  $ | $$  | $$  | $$\  $$$   | $$   
-| $$ \/  | $$ /$$$$$$| $$ \  $$   | $$   
-|__/     |__/|______/|__/  \__/   |_*/   
+  /*$$$$$$  /$$$$$$$  /$$$$$$$$  /$$$$$$  /$$$$$$$$ /$$$$$$$$
+ /$$__  $$| $$__  $$| $$_____/ /$$__  $$|__  $$__/| $$_____/
+| $$  \__/| $$  \ $$| $$      | $$  \ $$   | $$   | $$      
+| $$      | $$$$$$$/| $$$$$   | $$$$$$$$   | $$   | $$$$$   
+| $$      | $$__  $$| $$__/   | $$__  $$   | $$   | $$__/   
+| $$    $$| $$  \ $$| $$      | $$  | $$   | $$   | $$      
+|  $$$$$$/| $$  | $$| $$$$$$$$| $$  | $$   | $$   | $$$$$$$$
+ \______/ |__/  |__/|________/|__/  |__/   |__/   |_______*/
 
 contract NounMint is Bank {
     using Strings for uint;
@@ -111,18 +111,23 @@ contract NounMint is Bank {
 
         return amount * avgSupply / tokenSupply;
     }
-    
-      /*$$$$$   /$$$$$$  /$$$$$$ /$$   /$$  /$$$$$$ 
-     /$$__  $$ /$$__  $$|_  $$_/| $$$ | $$ /$$__  $$
-    | $$  \__/| $$  \ $$  | $$  | $$$$| $$| $$  \__/
-    | $$      | $$  | $$  | $$  | $$ $$ $$|  $$$$$$ 
-    | $$      | $$  | $$  | $$  | $$  $$$$ \____  $$
-    | $$    $$| $$  | $$  | $$  | $$\  $$$ /$$  \ $$
-    |  $$$$$$/|  $$$$$$/ /$$$$$$| $$ \  $$|  $$$$$$/
-     \______/  \______/ |______/|__/  \__/ \_____*/ 
 
-    function coinToNoun(uint coinId) external view returns (uint nounId) {
-        return _base.coinToNoun(coinId);
+     /*$      /$$  /$$$$$$  /$$   /$$ /$$$$$$$$ /$$     /$$
+    | $$$    /$$$ /$$__  $$| $$$ | $$| $$_____/|  $$   /$$/
+    | $$$$  /$$$$| $$  \ $$| $$$$| $$| $$       \  $$ /$$/ 
+    | $$ $$/$$ $$| $$  | $$| $$ $$ $$| $$$$$     \  $$$$/  
+    | $$  $$$| $$| $$  | $$| $$  $$$$| $$__/      \  $$/   
+    | $$\  $ | $$| $$  | $$| $$\  $$$| $$          | $$    
+    | $$ \/  | $$|  $$$$$$/| $$ \  $$| $$$$$$$$    | $$    
+    |__/     |__/ \______/ |__/  \__/|________/    |_*/                      
+
+    function addressOf(uint coinId) external view returns (Coin) {
+        require(
+            address(_coins[coinId]) != address(0), 
+            "Coin has not been deployed"
+        );
+
+        return _coins[coinId];
     }
 
     function nameOf(uint coinId) override public view returns (string memory) {
@@ -141,15 +146,6 @@ contract NounMint is Bank {
     function uri(uint coinId) override virtual public view returns (string memory) {
         uint nounId = _base.coinToNoun(coinId);
         return _data.tokenURI(nounId);
-    }
-
-    function addressOf(uint coinId) external view returns (Coin) {
-        require(
-            address(_coins[coinId]) != address(0), 
-            "Coin has not been deployed"
-        );
-
-        return _coins[coinId];
     }
 
     function deployCoin(uint coinId) external returns (Coin) {
