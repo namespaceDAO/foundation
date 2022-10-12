@@ -91,6 +91,7 @@ describe('NounBank', () => {
     const expiresAt = startedAt + 3600 * 25
 
     await bank.connect(alice).stake({
+      govt: ethers.constants.AddressZero,
       to: alice.address,
       noun: duck.id,
       found: value,
@@ -118,6 +119,7 @@ describe('NounBank', () => {
     const expiresAt = startedAt + 3600 * 25
 
     await bank.connect(alice).stake({
+      govt: ethers.constants.AddressZero,
       to: alice.address,
       noun: duck.id,
       found: value,
@@ -138,6 +140,7 @@ describe('NounBank', () => {
     const balance = parseEther('10')
     await found.connect(alice).transfer(bank.address, balance)
     await bank.connect(alice).stake({
+      govt: ethers.constants.AddressZero,
       to: alice.address,
       noun: duck.id,
       found: value1,
@@ -154,6 +157,7 @@ describe('NounBank', () => {
     expect(penalty1).to.equal(0)
 
     await bank.connect(alice).stake({
+      govt: ethers.constants.AddressZero,
       to: alice.address,
       noun: duck.id,
       found: value2,

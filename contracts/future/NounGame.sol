@@ -1,106 +1,72 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./NounCard.sol";
+import "./NounFund.sol";
 
-struct Play {
-    uint cardId;
-    address payee;
-    address payer;
+/*
+
+contract A has cards staked on it, 
+if has stake has 1% of coin supply address can withdraw funds.
+
+if withdrawing address is a game, you should be able 
+to stake on that game and the game above
+
+for example
+
+          NAMESPACE
+          /        \ 
+        WORLD A    WORLD B
+      /       \
+   CITY 1    CITY 2
+
+staking on city 2 should stake on world A and up the tree
+
+*/
+
+interface Descriptor {
+    function tokenURI(uint nounId) external virtual view returns (string memory);
+    function dataURI(uint nounId) external virtual view returns (string memory);
 }
 
-contract NounGame is Pausable, Ownable {
-    IERC20 private _cash;
+struct WorldParams {
+    uint home;
+    string name;
+    string description;
+}
+
+struct World {
+    uint id;
+    string name;
+    string description;
+}
+
+contract NounGame {
     NounCard private _card;
-
+    uint private _worldCount;
     uint private _totalShares;
-    uint private _allowedCoins;
 
-    mapping(address => uint) private _shares;
-    mapping(uint => bool) private _coins;
-    mapping(uint => Play) private _plays;
+    mapping(uint => World) private _worlds;
+    mapping(uint => uint) private _shares;
 
-    function pause() external onlyOwner {
-        _pause();
+    function getShares(uint worldId) external returns (uint) {
+        return _shares[worldId];
     }
 
-    function unpause() external onlyOwner {
-        _unpause();
-    }
-    
-    function claim(address payee, uint amount) external {
-        // TODO: claim according to the number of shares
-        _cash.transferFrom(address(this), payee, amount);
+    function totalShares() external returns (uint) {
+        return _totalShares;
     }
 
-    function move(address payee, uint cardId) external whenNotPaused {
-        require(
-            msg.sender == _card.ownerOf(cardId), 
-            "Caller is not the correct player"
-        );
+    function createWorld(WorldParams memory params) external {
+        World storage world = _worlds[++_worldCount];
+        world.id = _worldCount;
+        world.name = params.name;
+        world.description = params.description;
+    }
 
+    function playCard(uint worldId, uint cardId) external {
         Card memory card = _card.getCard(cardId);
+        // TODO: transfer card to this address
 
-        _requirePlayableCard(card);
-        _updatePlay(msg.sender, payee, card);
-    
-        _card.transferFrom(msg.sender, address(this), cardId);
-    }
-
-    function take(uint cardId) external whenNotPaused {
-        Play storage play = _plays[cardId];
-        Card memory card = _card.getCard(cardId);
-
-        require(
-            play.payer == msg.sender, 
-            "Caller is not a player"
-        );
-
-        _updatePlay(msg.sender, address(0), card);
-
-        _card.transferFrom(
-            address(this),
-            play.payer,
-            cardId
-        );
-    }
-
-    function release(address payee, uint amount) external whenNotPaused {
-        uint shares = _shares[payee];
-        require(shares > 0 && _totalShares > 0, "No payee");
-
-        uint balance = _cash.balanceOf(address(this));
-        uint maximum = balance * shares / _totalShares;
-
-        require(amount <= maximum, "Release too large");
-        _cash.transferFrom(address(this), payee, amount);
-    }
-
-    function _requirePlayableCard(Card memory card) internal view {
-        require(
-            _allowedCoins == 0 || _coins[card.coinId], 
-            "Card is not approved"
-        );
-    }
-
-    function _updatePlay(address payer, address payee, Card memory card) internal {
-        Play storage play = _plays[card.id];
-
-        if (play.payer != address(0)) {
-            _shares[play.payee] -= card.power;
-        } else {
-            _totalShares += card.power;
-        }
-
-        if (payee != address(0)) {
-            _shares[payee] += card.power;
-        }
-
-        play.cardId = card.id;
-        play.payer = payer;
-        play.payee = payee;
     }
 }

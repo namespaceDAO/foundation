@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./NounMint.sol";
 import "./NounData.sol";
+import "./NounGovt.sol";
 
  /*$$$$$$   /$$$$$$  /$$   /$$ /$$   /$$        /$$$$$$  /$$$$$$$$       /$$   /$$  /$$$$$$  /$$   /$$ /$$   /$$  /$$$$$$ 
 | $$__  $$ /$$__  $$| $$$ | $$| $$  /$$/       /$$__  $$| $$_____/      | $$$ | $$ /$$__  $$| $$  | $$| $$$ | $$ /$$__  $$
@@ -19,21 +20,23 @@ import "./NounData.sol";
 
 struct Stake {
     uint id;
+    uint tax;
     uint noun;
     uint found;
     uint expiresAt;
     uint startedAt;
     uint endedAt;
+    address govt;
 }
 
-contract NounBank is NounBase, Ownable, ERC721 {
+contract NounBank is NounBase, ERC721 {
     using Strings for uint;
 
     IERC20 private _cash;
     NounData private _data;
     NounMint private _bank;
+    NounGovt private _govt;
 
-    uint private _tax;
     uint private _stakeCount;
     uint private _totalShares;
 
@@ -57,13 +60,8 @@ contract NounBank is NounBase, Ownable, ERC721 {
         return _bank; 
     }
 
-    function tax() external view returns (uint) { 
-        return _tax; 
-    }
-
-    function setTax(uint tax_) external onlyOwner {
-        require(tax_ <= 5000, "Too many apples");
-        _tax = tax_;
+    function govt() external view returns (NounGovt) {
+        return _govt;
     }
 
     function stakeCount() external view returns (uint) {
@@ -98,6 +96,7 @@ contract NounBank is NounBase, Ownable, ERC721 {
         NounBase _base = NounBase(address(this));
 
         _bank = new NounMint(data_, _base);
+        _govt = new NounGovt();
         _cash.approve(address(this), type(uint).max);
     }   
 
@@ -110,6 +109,15 @@ contract NounBank is NounBase, Ownable, ERC721 {
     |  $$$$$$/| $$  | $$| $$  | $$| $$  | $$| $$$$$$$$
      \______/ |__/  |__/|__/  |__/|__/  |__/|_______*/
                                                   
+     /*$$$$$$$ /$$$$$$  /$$   /$$ /$$$$$$$$ /$$   /$$
+    |__  $$__//$$__  $$| $$  /$$/| $$_____/| $$$ | $$
+       | $$  | $$  \ $$| $$ /$$/ | $$      | $$$$| $$
+       | $$  | $$  | $$| $$$$$/  | $$$$$   | $$ $$ $$
+       | $$  | $$  | $$| $$  $$  | $$__/   | $$  $$$$
+       | $$  | $$  | $$| $$\  $$ | $$      | $$\  $$$
+       | $$  |  $$$$$$/| $$ \  $$| $$$$$$$$| $$ \  $$
+       |__/   \______/ |__/  \__/|________/|__/  \_*/
+
     function getShares(uint stakeId) external view returns (uint) {
         return _shares[stakeId];
     }
@@ -132,38 +140,7 @@ contract NounBank is NounBase, Ownable, ERC721 {
 
         return amount * amount / last;
     }
-
-    function calculatePayout(uint stakeId, uint timestamp) external view returns (uint, uint) {
-        uint penalty = _calculatePenalty(_requireStake(stakeId), timestamp);
-        uint earnings = _calculateEarnings(stakeId);
-        return (earnings, penalty);
-    }
-
-    function _calculateEarnings(uint stakeId) internal view returns (uint) {
-        uint balance = _cash.balanceOf(address(this));
-        uint revenue = balance * (10000 - _tax) / 10000;
-        uint earnings = revenue * _shares[stakeId] / _totalShares;
-        return earnings;
-    }
-
-    function _calculatePenalty(Stake memory token, uint timestamp) internal pure returns (uint) {
-        if (timestamp > token.expiresAt + 2 weeks) {
-            uint late = (timestamp - token.expiresAt - 2 weeks) / 1 days;
-            return late * token.found / 14;
-        }
-
-        return 0;
-    }
-
-     /*$$$$$$$ /$$$$$$  /$$   /$$ /$$$$$$$$ /$$   /$$
-    |__  $$__//$$__  $$| $$  /$$/| $$_____/| $$$ | $$
-       | $$  | $$  \ $$| $$ /$$/ | $$      | $$$$| $$
-       | $$  | $$  | $$| $$$$$/  | $$$$$   | $$ $$ $$
-       | $$  | $$  | $$| $$  $$  | $$__/   | $$  $$$$
-       | $$  | $$  | $$| $$\  $$ | $$      | $$\  $$$
-       | $$  |  $$$$$$/| $$ \  $$| $$$$$$$$| $$ \  $$
-       |__/   \______/ |__/  \__/|________/|__/  \_*/
-
+    
     function tokenURI(uint stakeId) public view virtual override returns (string memory) {
         return string(_stakeURI(_requireStake(stakeId)));
     }
@@ -330,10 +307,12 @@ contract NounBank is NounBase, Ownable, ERC721 {
 
     event Staked(
         uint id,
-        uint idea,
-        uint amount,
+        uint tax,
+        uint noun,
+        uint found,
         uint expiresAt,
-        uint startedAt
+        uint startedAt,
+        address govt
     );
 
     struct StakeParams {
@@ -341,6 +320,7 @@ contract NounBank is NounBase, Ownable, ERC721 {
         uint noun;
         uint found;
         uint expiresAt;
+        address govt;
     }
 
     function stake(StakeParams memory params) external {
@@ -352,14 +332,20 @@ contract NounBank is NounBase, Ownable, ERC721 {
 
         Stake storage token = _stakes[++_stakeCount];
         token.id = _stakeCount;
+        token.tax = _govt.tax();
         token.noun = params.noun;
         token.found = params.found;
         token.expiresAt = params.expiresAt;
         token.startedAt = block.timestamp;
 
+        if (token.tax > 0) {
+            require(_govt.isGovernment(params.govt), "Government is not active");
+            token.govt = params.govt;
+        }
+
         uint day = _data.currentDay();
         uint shares = calculateShares(day, params.found);
-    
+
         _shares[token.id] = shares;
         _totalShares += shares;
 
@@ -367,10 +353,12 @@ contract NounBank is NounBase, Ownable, ERC721 {
 
         emit Staked(
             token.id, 
+            token.tax,
             token.noun,
             token.found,
             token.expiresAt,
-            token.startedAt
+            token.startedAt,
+            token.govt
         );
     }
 
@@ -400,14 +388,21 @@ contract NounBank is NounBase, Ownable, ERC721 {
     );
 
     function burn(address payee, uint stakeId) external {
-        Stake memory s = _requireStake(stakeId);
-        uint payout = _burnStake(s);
+        Stake memory token = _requireStake(stakeId);
 
-        _cash.transferFrom(address(this), payee, payout);
-        emit Burned(s.id, s.noun, s.found, s.endedAt);
+        uint earnings; uint taxes;
+        (earnings, taxes) = _burnStake(token);
+
+        _cash.transferFrom(address(this), payee, earnings);
+
+        if (taxes > 0 && _govt.isGovernment(token.govt)) {
+            _cash.transferFrom(address(this), token.govt, taxes);
+        }
+
+        emit Burned(token.id, token.noun, token.found, token.endedAt);
     }
 
-    function _burnStake(Stake memory token) internal returns (uint payout) {
+    function _burnStake(Stake memory token) internal returns (uint earnings, uint taxes) {
         address owner = ownerOf(token.id);
         require(owner == msg.sender, "You are not the owner");
 
@@ -416,11 +411,36 @@ contract NounBank is NounBase, Ownable, ERC721 {
 
         _burn(token.id);
 
-        uint earnings = _calculateEarnings(token.id);
+        uint balance = _calculateBalance(token.id);
         uint penalty = _calculatePenalty(token, block.timestamp);
 
-        return earnings - penalty;
-    }                
+        uint proceeds = balance - penalty;
+        uint taxes = proceeds * token.tax / 10000;
+        uint earnings = proceeds - taxes;
+
+        return (earnings, taxes);
+    }          
+
+    function calculatePayout(uint stakeId, uint timestamp) external view returns (uint, uint) {
+        uint penalty = _calculatePenalty(_requireStake(stakeId), timestamp);
+        uint earnings = _calculateBalance(stakeId);
+        return (earnings, penalty);
+    }
+
+    function _calculateBalance(uint stakeId) internal view returns (uint) {
+        uint balance = _cash.balanceOf(address(this));
+        uint earnings = balance * _shares[stakeId] / _totalShares;
+        return earnings;
+    }
+
+    function _calculatePenalty(Stake memory token, uint timestamp) internal pure returns (uint) {
+        if (timestamp > token.expiresAt + 2 weeks) {
+            uint late = (timestamp - token.expiresAt - 2 weeks) / 1 days;
+            return late * token.found / 14;
+        }
+
+        return 0;
+    }
                                                                                                                           
       /*$$$$$  /$$        /$$$$$$  /$$$$$$ /$$      /$$                                                                       
      /$$__  $$| $$       /$$__  $$|_  $$_/| $$$    /$$$                                                                       
