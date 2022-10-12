@@ -39,12 +39,11 @@ contract NounBank is NounBase, ERC721 {
     uint private _stakeCount;
     uint private _totalShares;
 
+    mapping(uint => uint) private _shares;
     mapping(uint => uint) private _nounToCoin;
     mapping(uint => uint) private _coinToNoun;
     mapping(uint => uint) private _cashOnNoun;
     mapping(uint => uint) private _cashOnCoin;
-
-    mapping(uint => uint) private _shares;
     mapping(uint => Stake) private _stakes;
 
     function cash() external view returns (IERC20) {
@@ -63,20 +62,16 @@ contract NounBank is NounBase, ERC721 {
         return _govt;
     }
 
+    function currentDay() external view returns (uint) {
+        return _currentDay();
+    }
+
     function stakeCount() external view returns (uint) {
         return _stakeCount;
     }
 
     function totalShares() external view returns (uint) {
         return _totalShares;
-    }
-
-    function currentDay() external view returns (uint) {
-        return _currentDay();
-    }
-
-    function _currentDay() internal view returns (uint) {
-        return (block.timestamp - _start) / 1 days + 1;
     }
 
     function nounToCoin(uint nounId) external view returns (uint coinId) {
@@ -93,6 +88,10 @@ contract NounBank is NounBase, ERC721 {
     
     function cashOnCoin(uint nounId) external view returns (uint amount) {
         return _cashOnCoin[nounId];
+    }
+
+    function _currentDay() internal view returns (uint) {
+        return (block.timestamp - _start) / 1 days + 1;
     }
     
     constructor(IERC20 cash_, NounData data_) 
@@ -123,6 +122,14 @@ contract NounBank is NounBase, ERC721 {
         return _shares[stakeId];
     }
 
+    function tokenURI(uint stakeId) public view virtual override returns (string memory) {
+        return string(_stakeURI(_requireStake(stakeId)));
+    }
+
+    function tokenData(uint stakeId) external view returns (string memory) {
+        return string(_stakeJSON(_requireStake(stakeId)));
+    }
+    
     function calculateShares(uint day, uint amount) public view returns (uint) {
         uint last = _cashOnCoin[day - 1];
         uint ampl = 10;
@@ -142,14 +149,6 @@ contract NounBank is NounBase, ERC721 {
         return amount * amount / last;
     }
     
-    function tokenURI(uint stakeId) public view virtual override returns (string memory) {
-        return string(_stakeURI(_requireStake(stakeId)));
-    }
-
-    function tokenData(uint stakeId) external view returns (string memory) {
-        return string(_stakeJSON(_requireStake(stakeId)));
-    }
-    
     function _stakeURI(Stake memory token) internal view returns (bytes memory) {
         return abi.encodePacked(
             'data:application/json;base64,',
@@ -159,6 +158,7 @@ contract NounBank is NounBase, ERC721 {
 
     function _stakeJSON(Stake memory token) internal view returns (bytes memory) {
         Noun memory noun = _data.getNoun(token.noun); 
+      
         return abi.encodePacked(
             '{',
                 '"id":', token.id.toString(), ',',
@@ -232,7 +232,10 @@ contract NounBank is NounBase, ERC721 {
     }
 
     function _requireFreshNoun(uint nounId) internal view returns (uint) {
-        require(nounId <= _data.nounCount(), "Noun not found");
+        require(
+            nounId <= _data.nounCount(), 
+            "Noun not found"
+        );
         
         uint coinId = _currentDay();
         uint existing = _nounToCoin[nounId];
@@ -277,9 +280,13 @@ contract NounBank is NounBase, ERC721 {
     }
 
     function _collectMint(uint coinId, uint amount) internal returns (uint) {
-        uint nounId = _requireFoundNoun(coinId);
+        require(
+            amount > 0, 
+            "Must mint some Nouns"
+        );
         
-        require(amount > 0, "Must mint some Nouns");
+        uint nounId = _requireFoundNoun(coinId);
+
         _cashOnNoun[nounId] += amount;
 
         return _coinToNoun[coinId];
@@ -392,7 +399,11 @@ contract NounBank is NounBase, ERC721 {
     }
 
     function stake(StakeParams memory params) external {
-        require(params.found > 0, "Stake more than 0");
+        require(
+            params.found > 0, 
+            "Stake more than 0"
+        );
+
         require(
             params.expiresAt >= block.timestamp + 1 days, 
             "Stake at least 1 day in the future"
@@ -407,7 +418,11 @@ contract NounBank is NounBase, ERC721 {
         token.startedAt = block.timestamp;
 
         if (token.tax > 0) {
-            require(_govt.isGovernment(params.govt), "Government is not active");
+            require(
+                _govt.isGovernment(params.govt), 
+                "Government is not active"
+            );
+
             token.govt = params.govt;
         }
 
@@ -431,7 +446,11 @@ contract NounBank is NounBase, ERC721 {
     }
 
     function _requireStake(uint stakeId) internal view returns (Stake memory) {
-        require(stakeId <= _stakeCount, "Stake not found");
+        require(
+            stakeId <= _stakeCount, 
+            "Stake not found"
+        );
+        
         return _stakes[stakeId];
     }
 
@@ -448,12 +467,17 @@ contract NounBank is NounBase, ERC721 {
 
     function burn(address payee, uint stakeId) external {
         address owner = ownerOf(stakeId);
-        require(owner == msg.sender, "You are not the owner");
+        require(
+            owner == msg.sender, 
+            "You are not the owner"
+        );
 
         Stake memory token = _requireStake(stakeId);
 
-        require(token.burnedAt == 0, "Token already burned");
-        token.burnedAt = block.timestamp;
+        require(
+            token.burnedAt == 0, 
+            "Token already burned"
+        );
 
         uint shares;
         uint penalty; 
@@ -465,6 +489,7 @@ contract NounBank is NounBase, ERC721 {
             block.timestamp
         );
 
+        token.burnedAt = block.timestamp;
         _totalShares -= shares;
         _burn(token.id);
 
@@ -472,7 +497,7 @@ contract NounBank is NounBase, ERC721 {
             _cash.transferFrom(address(this), payee, revenue);
         }
 
-        if (taxes > 0 && _govt.isGovernment(token.govt)) {
+        if (taxes > 0) {
             _cash.transferFrom(address(this), token.govt, taxes);
         }
 

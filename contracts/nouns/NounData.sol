@@ -37,7 +37,11 @@ contract NounData is ERC721 {
     }
 
     function getNoun(uint nounId) public view returns (Noun memory) {
-        require(nounId <= _nounCount, "Noun not found");
+        require(
+            nounId <= _nounCount, 
+            "Noun not found"
+        );
+
         return _nouns[nounId];
     }
 
@@ -143,6 +147,7 @@ contract NounData is ERC721 {
 
     function _encodeTraits(Noun memory noun) internal pure returns (bytes memory) {
         bytes memory list;
+
         for (uint i = 0; i < noun.traits.length; i += 1) {
             list = abi.encodePacked(
                 list, 
@@ -150,6 +155,7 @@ contract NounData is ERC721 {
                 i == noun.traits.length - 1 ? '' : ','
             );
         }
+
         return list;
     }
 
@@ -171,6 +177,7 @@ contract NounData is ERC721 {
 
     function _encodeShapes(Noun memory noun) internal pure returns (bytes memory) {
         bytes memory list;
+
         for (uint i = 0; i < noun.shapes.length; i += 1) {
             list = abi.encodePacked(
                 list, 
@@ -178,6 +185,7 @@ contract NounData is ERC721 {
                 i == noun.shapes.length - 1 ? '' : ','
             );
         }
+        
         return list;
     }
 

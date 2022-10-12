@@ -73,11 +73,6 @@ contract NounMint is Bank {
     uint private _difficulty = 10; 
     mapping(uint => Coin) private _coins;
 
-    modifier onlyAdmin() {
-        require(msg.sender == address(_base), "Caller is not based");
-        _;
-    }
-
     function data() external view returns (NounData) { 
         return _data;
     }
@@ -88,6 +83,14 @@ contract NounMint is Bank {
 
     function difficulty() external view returns (uint) {
         return _difficulty;
+    }
+
+    modifier onlyAdmin() {
+        require(
+            msg.sender == address(_base), 
+            "Caller is not based"
+        );
+        _;
     }
 
     function mintCoin(address to, uint coinId, uint amount) external onlyAdmin {
@@ -149,12 +152,18 @@ contract NounMint is Bank {
     }
 
     function deployCoin(uint coinId) external returns (Coin) {
-        require(coinId <= _base.currentDay(), "Coin has not been found");
+        require(
+            coinId <= _base.currentDay(), 
+            "Coin has not been found"
+        );
 
-        bool deployed = address(_coins[coinId]) != address(0);
-        require(!deployed, "Coin has already been deployed");
+        require(
+            address(_coins[coinId]) == address(0),
+            "Coin has already been deployed"
+        );
 
         _coins[coinId] = new Coin(Bank(this), coinId);
+        
         return _coins[coinId];
     }
 
