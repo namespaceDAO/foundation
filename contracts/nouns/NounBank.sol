@@ -329,7 +329,10 @@ contract NounBank is NounBase, ERC721 {
         uint coinId, 
         uint amount
     ) external {
-        require(coinId < _currentDay(), "Coin is not claimable yet");
+        require(
+            coinId < _currentDay(), 
+            "Coin is not claimable yet"
+        );
 
         uint nounId = _requireFoundNoun(coinId);
         address owner = _verifyClaim(nounId, coinId, amount);
@@ -361,8 +364,10 @@ contract NounBank is NounBase, ERC721 {
         uint claimed = _claims[coinId];
         uint minted = _bank.totalSupplyOf(coinId) - claimed;
 
-        bool claimable = minted / 10 >= amount + claimed;
-        require(claimable, "Claim too large");
+        require(
+            minted / 10 >= amount + claimed, 
+            "Claim too large"
+        );
 
         return owner;
     }
@@ -450,7 +455,7 @@ contract NounBank is NounBase, ERC721 {
             stakeId <= _stakeCount, 
             "Stake not found"
         );
-        
+
         return _stakes[stakeId];
     }
 
@@ -467,12 +472,12 @@ contract NounBank is NounBase, ERC721 {
 
     function burn(address payee, uint stakeId) external {
         address owner = ownerOf(stakeId);
+        Stake memory token = _requireStake(stakeId);
+
         require(
             owner == msg.sender, 
             "You are not the owner"
         );
-
-        Stake memory token = _requireStake(stakeId);
 
         require(
             token.burnedAt == 0, 
@@ -491,6 +496,7 @@ contract NounBank is NounBase, ERC721 {
 
         token.burnedAt = block.timestamp;
         _totalShares -= shares;
+
         _burn(token.id);
 
         if (revenue > 0) {
