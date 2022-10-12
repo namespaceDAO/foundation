@@ -2,6 +2,7 @@
 pragma solidity ^0.8.10;
 
 import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./NounMint.sol";
@@ -25,13 +26,14 @@ struct Stake {
     uint endedAt;
 }
 
-contract NounBank is NounBase, ERC721 {
+contract NounBank is NounBase, Ownable, ERC721 {
     using Strings for uint;
 
     IERC20 private _cash;
     NounData private _data;
     NounMint private _bank;
 
+    uint private _tax;
     uint private _stakeCount;
     uint private _totalShares;
 
@@ -53,6 +55,15 @@ contract NounBank is NounBase, ERC721 {
 
     function bank() external view returns (NounMint) { 
         return _bank; 
+    }
+
+    function tax() external view returns (uint) { 
+        return _tax; 
+    }
+
+    function setTax(uint tax_) external onlyOwner {
+        require(tax_ <= 5000, "Too many apples");
+        _tax = tax_;
     }
 
     function stakeCount() external view returns (uint) {
@@ -130,7 +141,8 @@ contract NounBank is NounBase, ERC721 {
 
     function _calculateEarnings(uint stakeId) internal view returns (uint) {
         uint balance = _cash.balanceOf(address(this));
-        uint earnings = balance * _shares[stakeId] / _totalShares;
+        uint revenue = balance * (10000 - _tax) / 10000;
+        uint earnings = revenue * _shares[stakeId] / _totalShares;
         return earnings;
     }
 

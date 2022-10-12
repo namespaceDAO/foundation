@@ -169,8 +169,6 @@ describe('NounBank', () => {
     expect(total2).to.equal(total1.add(shares2))
     expect(earnings2).to.equal(balance.mul(shares2).div(total2))
     expect(penalty2).to.greaterThan(0) // TODO
-
-    console.log({ shares2, total2, earnings2, penalty2 })
   })
 
   it('Claims coin stake', async () => {
