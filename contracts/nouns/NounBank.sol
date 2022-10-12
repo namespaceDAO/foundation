@@ -164,8 +164,14 @@ contract NounBank is NounBase, ERC721 {
                 '"id":', token.id.toString(), ',',
                 '"name":"FOUND ', noun.name, '",',
                 '"description":"', noun.name, ' is FOUND.",',
-                '"noun":[', _data.tokenData(token.noun), '],',
                 '"image":"', _data.tokenImage(token.noun), '"',
+                '"tax":"', token.tax, '"',
+                '"noun":"', token.noun, '"',
+                '"found":"', token.found, '"',
+                '"expiresAt":"', token.expiresAt, '"',
+                '"startedAt":"', token.startedAt, '"',
+                '"burnedAt":"', token.burnedAt, '"',
+                '"govt":"', token.govt, '"',
             '}'
         );
     }        
