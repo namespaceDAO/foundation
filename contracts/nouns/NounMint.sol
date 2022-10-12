@@ -90,6 +90,10 @@ contract NounMint is Bank {
         return _difficulty;
     }
 
+    function mintCoin(address to, uint coinId, uint amount) external onlyAdmin {
+        _mint(to, coinId, amount, new bytes(0));
+    }
+
     function convertCoin(uint coinId, uint amount) public view returns (uint) {
         uint totalSupply = totalSupply();
         if (totalSupply == 0) return amount;
@@ -117,6 +121,10 @@ contract NounMint is Bank {
     |  $$$$$$/|  $$$$$$/ /$$$$$$| $$ \  $$|  $$$$$$/
      \______/  \______/ |______/|__/  \__/ \_____*/ 
 
+    function coinToNoun(uint coinId) external view returns (uint nounId) {
+        return _base.coinToNoun(coinId);
+    }
+
     function nameOf(uint coinId) override public view returns (string memory) {
         uint nounId = _base.coinToNoun(coinId);
         return _data.getNoun(nounId).name;
@@ -142,14 +150,6 @@ contract NounMint is Bank {
         );
 
         return _coins[coinId];
-    }
-
-    function coinToNoun(uint coinId) external view returns (uint nounId) {
-        return _base.coinToNoun(coinId);
-    }
-
-    function mintCoin(address to, uint coinId, uint amount) external onlyAdmin {
-        _mint(to, coinId, amount, new bytes(0));
     }
 
     function deployCoin(uint coinId) external returns (Coin) {
