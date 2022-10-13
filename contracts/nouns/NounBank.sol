@@ -209,7 +209,9 @@ contract NounBank is NounBase, NounToken {
     function _collectVote(uint nounId, uint amount) internal returns (uint) {
         uint coinId = _requireFreshNoun(nounId);
         uint minimum = _foundOnCoin[coinId] * 101 / 100;
-        
+
+        // extend auction?
+
         _foundOnNoun[nounId] += amount;
         
         if (_foundOnNoun[nounId] > minimum || minimum == 0) {
