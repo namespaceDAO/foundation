@@ -21,37 +21,31 @@ interface NounBase {
     function coinToNoun(uint coinId) external view returns (uint nounId);
 }
 
-contract NounGovt is Ownable {
-    uint private _tax;
+interface INounGovt {
+    function tax() external view returns (uint);
+    function isActive(address govt) external view returns (bool);
+}
 
-    mapping(address => bool) private _govts;
+contract NounGovt is INounGovt, Ownable {
+    INounGovt private _proxy;
 
-    event SetTax(uint tax);
-    event AddGovernment(address addr);
-    event RemoveGovernment(address addr);
+    event SetGovt(INounGovt addr);
+
+    function setGovt(INounGovt govt) external onlyOwner { 
+        _proxy = govt;
+        emit SetGovt(govt);
+    }
 
     function tax() external view returns (uint) { 
-        return _tax; 
+        return _isSet() ? _proxy.tax() : 0;
     }
 
-    function isGovernment(address addr) external view returns (bool) { 
-        return _govts[addr]; 
+    function isActive(address govt) external view returns (bool) { 
+        return _isSet() ? _proxy.isActive(govt) : false;
     }
 
-    function setTax(uint tax_) external onlyOwner {
-        require(tax_ < 5000, "Too damn high");
-        _tax = tax_;
-        emit SetTax(tax_);
-    }
-
-    function addGovernment(address addr) external onlyOwner {
-        _govts[addr] = true;
-        emit AddGovernment(addr);
-    }
-
-    function removeGovernment(address addr) external onlyOwner {
-        _govts[addr] = false;
-        emit RemoveGovernment(addr);
+    function _isSet() internal view returns (bool) {
+        return address(_proxy) != address(0);
     }
 }
 

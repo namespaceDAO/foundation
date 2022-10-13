@@ -3,6 +3,7 @@ pragma solidity ^0.8.10;
 
 import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "../token/Found.sol";
 import "./NounMint.sol";
 import "./NounData.sol";
@@ -394,10 +395,9 @@ contract NounBank is NounBase, NounToken {
 
         if (token.tax > 0) {
             require(
-                _govt.isGovernment(params.govt), 
+                _govt.isActive(params.govt), 
                 "Government is not active"
             );
-
             token.govt = params.govt;
         }
 

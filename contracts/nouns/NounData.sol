@@ -15,9 +15,9 @@ import "@openzeppelin/contracts/utils/Base64.sol";
 |__/  \__/ \______/  \______/ |__/  \__/ \_____*/                                                                         
 
 interface INounToken is IERC721 {
-    function tokenData(uint nounId) external view virtual returns (string memory);
-    function tokenImage(uint nounId) external view virtual returns (string memory);
-    function tokenSVG(uint nounId) external view virtual returns (string memory);
+    function tokenData(uint nounId) external view returns (string memory);
+    function tokenImage(uint nounId) external view returns (string memory);
+    function tokenSVG(uint nounId) external view returns (string memory);
 }
 
 struct Noun {
