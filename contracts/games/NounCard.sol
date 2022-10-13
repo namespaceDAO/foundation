@@ -71,6 +71,58 @@ contract NounCard is ERC721 {
         emit CardForged(card.id, card.coinId, card.amount);
     }
 
+    function ownerOfBatch(uint[] memory ids) external view returns (address[] memory) {
+        address[] memory owners = new address[](ids.length);
+
+        for (uint i = 0; i < ids.length; i += 1) {
+            owners[i] = ownerOf(ids[i]);
+        }
+
+        return owners;
+    }
+
+    function balanceOfBatch(address[] memory accounts) external view returns (uint[] memory) {
+        uint[] memory balances = new uint[](accounts.length);
+
+        for (uint i = 0; i < accounts.length; i += 1) {
+            balances[i] = balanceOf(accounts[i]);
+        }
+
+        return balances;
+    }
+
+    function approveBatch(address[] memory accounts, uint[] memory ids) external {
+        require(accounts.length == ids.length, "Accounts and ids length mismatc");
+
+        for (uint i = 0; i < accounts.length; i += 1) {
+            approve(accounts[i], ids[i]);
+        }
+    }
+
+    function transferBatch(
+        address[] memory to,
+        uint[] memory ids
+    ) external {
+        require(to.length == ids.length, "Accounts and ids length mismatc");
+
+        for (uint i = 0; i < to.length; i += 1) {
+            safeTransferFrom(msg.sender, to[i], ids[i]);
+        }
+    }
+
+    function transferBatchFrom(
+        address[] memory from,
+        address[] memory to,
+        uint[] memory ids
+    ) external {
+        require(to.length == to.length, "Accounts and ids length mismatc");
+        require(to.length == ids.length, "Accounts and ids length mismatc");
+
+        for (uint i = 0; i < to.length; i += 1) {
+            safeTransferFrom(from[i], to[i], ids[i]);
+        }
+    }
+
     constructor(NounMint bank_, NounBase base_) 
     ERC721("NOUN CARD", "NOUN CARD") {
         _bank = bank_;

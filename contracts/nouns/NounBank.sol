@@ -46,16 +46,16 @@ contract NounBank is NounBase, ERC721 {
     mapping(uint => uint) private _foundOnCoin;
     mapping(uint => Stake) private _stakes;
 
-    function found() external view returns (Found) {
-        return _found;
-    }
-
     function data() external view returns (NounData) {
         return _data;
     }
 
     function bank() external view returns (NounMint) { 
         return _bank; 
+    }
+
+    function found() external view returns (Found) {
+        return _found;
     }
 
     function govt() external view returns (NounGovt) {
