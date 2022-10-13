@@ -9,26 +9,26 @@ describe('NounMint', () => {
   let bob: SignerWithAddress
   let found: Contract
   let data: Contract
-  let game: Contract
+  let mint: Contract
   let bank: Contract
 
   beforeEach(async () => {
     [alice, bob] = await ethers.getSigners()
 
-    const Found = await ethers.getContractFactory('Found')
-    found = await Found.deploy()
-
     const NounData = await ethers.getContractFactory('NounData')
     data = await NounData.deploy()
 
     const NounBank = await ethers.getContractFactory('NounBank')
-    game = await NounBank.deploy(found.address, data.address)
+    bank = await NounBank.deploy(data.address)
 
     const NounMint = await ethers.getContractFactory('NounMint')
-    bank = NounMint.attach(await game.bank())
+    mint = NounMint.attach(await bank.bank())
+
+    const Found = await ethers.getContractFactory('Found')
+    found = await Found.attach(await bank.found())
 
     const value = parseEther('100')
-    await found.connect(alice).approve(game.address, value)
+    await found.connect(alice).approve(bank.address, value)
     await found.connect(alice).mint(alice.address, { value })
   })
 
@@ -45,10 +45,10 @@ describe('NounMint', () => {
     })
 
     const value = parseEther(`${Math.random()}`)
-    await game.connect(alice).vote(alice.address, alice.address, 1, value)
+    await bank.connect(alice).vote(alice.address, alice.address, 1, value)
 
-    await bank.deployCoin(1)
-    const a1 = await bank.addressOf(1)
+    await mint.deployCoin(1)
+    const a1 = await mint.addressOf(1)
 
     const Coin = await ethers.getContractFactory('Coin')
     const coin1 = Coin.attach(a1)

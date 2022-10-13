@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 abstract contract Token is Ownable, ERC20 {
     uint private _claim;
+    address private _bank;
     address private _origin;
 
     event Claim(address indexed to, uint found);
@@ -18,12 +19,16 @@ abstract contract Token is Ownable, ERC20 {
         _;
     }
 
-    function claimed() external view returns (uint) {
-        return _claim;
+    function bank() external view returns (address) {
+        return _bank;
     }
 
     function origin() external view returns (address) {
         return _origin;
+    }
+
+    function claimed() external view returns (uint) {
+        return _claim;
     }
 
     function setOrigin(address origin_) external onlyOwner {
@@ -37,7 +42,12 @@ abstract contract Token is Ownable, ERC20 {
 
         _claim += amount;
         _mint(to, amount);
+        _mint(_bank, amount);
 
         emit Claim(to, amount);
+    }
+
+    constructor(address bank_) {
+        _bank = bank_;
     }
 }

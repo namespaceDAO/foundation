@@ -2,9 +2,9 @@
 pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../nouns/NounData.sol";
 import "../nouns/NounMint.sol";
+import "../token/Found.sol";
 import "./NounCard.sol";
 
   /*$$$$$   /$$$$$$  /$$      /$$ /$$$$$$$$  /$$$$$$ 
@@ -24,7 +24,7 @@ struct State {
 }
 
 contract NounGame is ERC721 {
-    IERC20 private _cash;
+    Found private _found;
     NounBase private _base;
     NounData private _data;
     NounCard private _card;
@@ -61,7 +61,7 @@ contract NounGame is ERC721 {
         // TODO: increment counts
         // TODO: burn and transfer ETH if requested
 
-        _cash.transferFrom(
+        _found.transferFrom(
             address(this), 
             state.payee, 
             amount
@@ -108,7 +108,8 @@ contract NounGame is ERC721 {
         return _states[stateId];
     }
 
-    constructor() ERC721("DECLARATION OF STATE", "DECLARATION OF STATE") {
-
+    constructor(Found found_) 
+    ERC721("DECLARATION OF STATE", "DECLARATION OF STATE") {
+        _found = found_;
     }
 }

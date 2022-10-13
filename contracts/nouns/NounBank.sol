@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 
 import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../token/Found.sol";
 import "./NounMint.sol";
 import "./NounData.sol";
 
@@ -30,7 +30,7 @@ struct Stake {
 contract NounBank is NounBase, ERC721 {
     using Strings for uint;
 
-    IERC20 private _cash;
+    Found private _found;
     NounData private _data;
     NounMint private _bank;
     NounGovt private _govt;
@@ -42,12 +42,12 @@ contract NounBank is NounBase, ERC721 {
     mapping(uint => uint) private _shares;
     mapping(uint => uint) private _nounToCoin;
     mapping(uint => uint) private _coinToNoun;
-    mapping(uint => uint) private _cashOnNoun;
-    mapping(uint => uint) private _cashOnCoin;
+    mapping(uint => uint) private _foundOnNoun;
+    mapping(uint => uint) private _foundOnCoin;
     mapping(uint => Stake) private _stakes;
 
-    function cash() external view returns (IERC20) {
-        return _cash;
+    function found() external view returns (Found) {
+        return _found;
     }
 
     function data() external view returns (NounData) {
@@ -83,30 +83,31 @@ contract NounBank is NounBase, ERC721 {
     }
 
     function cashOnNoun(uint nounId) external view returns (uint amount) {
-        return _cashOnNoun[nounId];
+        return _foundOnNoun[nounId];
     }
     
     function cashOnCoin(uint nounId) external view returns (uint amount) {
-        return _cashOnCoin[nounId];
+        return _foundOnCoin[nounId];
     }
 
     function _currentCoin() internal view returns (uint) {
         return (block.timestamp - _start) / 1400 minutes + 1;
     }
     
-    constructor(IERC20 cash_, NounData data_) 
+    constructor(NounData data_) 
     ERC721("FOUND NOUN", "FOUND NOUN") {
         _data = data_;
-        _cash = cash_;
 
         uint mountainous = 7 hours;
-        uint time = block.timestamp;
-        _start = time - mountainous;
+        uint start = block.timestamp;
+        _start = start - mountainous;
+
+        _found = new Found(address(this));
         NounBase _base = NounBase(address(this));
 
         _govt = new NounGovt();
         _bank = new NounMint(data_, _base);
-        _cash.approve(address(this), type(uint).max);
+        _found.approve(address(this), type(uint).max);
     }   
 
       /*$$$$$  /$$$$$$$  /$$$$$$$$  /$$$$$$  /$$$$$$$$ /$$$$$$$$  /$$$$$$                      
@@ -131,7 +132,7 @@ contract NounBank is NounBase, ERC721 {
     }
     
     function calculateShares(uint coin, uint amount) public view returns (uint) {
-        uint last = _cashOnCoin[coin - 1];
+        uint last = _foundOnCoin[coin - 1];
         uint ampl = 10;
 
         if (last == 0) {
@@ -203,7 +204,7 @@ contract NounBank is NounBase, ERC721 {
         uint minted = found * _bank.difficulty();
         uint coinId = _collectVote(nounId, minted);
 
-        _cash.transferFrom(payer, address(this), found);
+        _found.transferFrom(payer, address(this), found);
         _bank.mintCoin(minter, coinId, minted);
 
         emit Voted(
@@ -218,14 +219,14 @@ contract NounBank is NounBase, ERC721 {
 
     function _collectVote(uint nounId, uint amount) internal returns (uint) {
         uint coinId = _requireFreshNoun(nounId);
-        uint minimum = _cashOnCoin[coinId] * 101 / 100;
+        uint minimum = _foundOnCoin[coinId] * 101 / 100;
         
-        _cashOnNoun[nounId] += amount;
+        _foundOnNoun[nounId] += amount;
         
-        if (_cashOnNoun[nounId] > minimum || minimum == 0) {
+        if (_foundOnNoun[nounId] > minimum || minimum == 0) {
             _coinToNoun[coinId] = nounId;
             _nounToCoin[nounId] = coinId;
-            _cashOnCoin[coinId] = _cashOnNoun[nounId];
+            _foundOnCoin[coinId] = _foundOnNoun[nounId];
         }
 
         return coinId;
@@ -266,7 +267,7 @@ contract NounBank is NounBase, ERC721 {
         uint nounId = _collectMint(coinId, found);
         uint minted = _bank.convertCoin(coinId, found);
 
-        _cash.transferFrom(payer, address(this), found);
+        _found.transferFrom(payer, address(this), found);
         _bank.mintCoin(minter, coinId, minted);
 
         emit Minted(
@@ -283,7 +284,7 @@ contract NounBank is NounBase, ERC721 {
         require(amount > 0, "Must mint some Nouns");
         
         uint nounId = _requireFoundNoun(coinId);
-        _cashOnNoun[nounId] += amount;
+        _foundOnNoun[nounId] += amount;
 
         return _coinToNoun[coinId];
     }
@@ -453,7 +454,7 @@ contract NounBank is NounBase, ERC721 {
     );
 
     function currentBalance() public view returns (uint) {
-        return _cash.balanceOf(address(this));
+        return _found.balanceOf(address(this));
     }
 
     function burn(address payee, uint stakeId) external {
@@ -479,11 +480,11 @@ contract NounBank is NounBase, ERC721 {
         _burn(token.id);
 
         if (revenue > 0) {
-            _cash.transferFrom(address(this), payee, revenue);
+            _found.transferFrom(address(this), payee, revenue);
         }
 
         if (taxes > 0) {
-            _cash.transferFrom(address(this), token.govt, taxes);
+            _found.transferFrom(address(this), token.govt, taxes);
         }
 
         emit Burned(token.id, token.noun, token.found, token.burnedAt);
@@ -513,7 +514,7 @@ contract NounBank is NounBase, ERC721 {
 
     function _calculatePenalty(Stake memory token, uint timestamp) internal pure returns (uint) {
         if (timestamp > token.expiresAt + 2 weeks) {
-            uint late = (timestamp - token.expiresAt - 2 weeks) / 1 coins;
+            uint late = (timestamp - token.expiresAt - 2 weeks) / 1 days;
             return late * token.found / 14;
         }
 

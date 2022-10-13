@@ -130,16 +130,7 @@ contract NounData is ERC721 {
             Base64.encode(_encodeSVG(noun.shapes))
         );
     }
-
-      /*$$$$$  /$$   /$$  /$$$$$$  /$$$$$$$  /$$$$$$$$  /$$$$$$ 
-     /$$__  $$| $$  | $$ /$$__  $$| $$__  $$| $$_____/ /$$__  $$
-    | $$  \__/| $$  | $$| $$  \ $$| $$  \ $$| $$      | $$  \__/
-    |  $$$$$$ | $$$$$$$$| $$$$$$$$| $$$$$$$/| $$$$$   |  $$$$$$ 
-     \____  $$| $$__  $$| $$__  $$| $$____/ | $$__/    \____  $$
-     /$$  \ $$| $$  | $$| $$  | $$| $$      | $$       /$$  \ $$
-    |  $$$$$$/| $$  | $$| $$  | $$| $$      | $$$$$$$$|  $$$$$$/
-     \______/ |__/  |__/|__/  |__/|__/      |________/ \_____*/ 
-
+    
     function _encodeJSON(Noun memory noun) internal pure returns (bytes memory) {
         return abi.encodePacked(
             '{',
@@ -181,13 +172,16 @@ contract NounData is ERC721 {
         return list;
     }
 
+      /*$$$$$  /$$   /$$  /$$$$$$  /$$$$$$$  /$$$$$$$$  /$$$$$$ 
+     /$$__  $$| $$  | $$ /$$__  $$| $$__  $$| $$_____/ /$$__  $$
+    | $$  \__/| $$  | $$| $$  \ $$| $$  \ $$| $$      | $$  \__/
+    |  $$$$$$ | $$$$$$$$| $$$$$$$$| $$$$$$$/| $$$$$   |  $$$$$$ 
+     \____  $$| $$__  $$| $$__  $$| $$____/ | $$__/    \____  $$
+     /$$  \ $$| $$  | $$| $$  | $$| $$      | $$       /$$  \ $$
+    |  $$$$$$/| $$  | $$| $$  | $$| $$      | $$$$$$$$|  $$$$$$/
+     \______/ |__/  |__/|__/  |__/|__/      |________/ \_____*/ 
+
     function _encodeSVG(uint64[] memory shapes) internal pure returns (bytes memory) {
-        bytes memory image;
-       
-        for (uint i = 0; i < shapes.length; i += 1) {
-            image = abi.encodePacked(image, _encodeSVGShape(shapes[i]));
-        }
-       
         return abi.encodePacked(
             '<svg',
             ' width="420"',
@@ -195,21 +189,90 @@ contract NounData is ERC721 {
             ' viewBox="0 0 255 255"',
             ' xmlns="http://www.w3.org/2000/svg"',
             ' shape-rendering="crispEdges">', 
-            string(image), 
+            string(_encodeSVGShapes(shapes)), 
             '</svg>'
         );
     }
 
-    function _encodeSVGShape(uint64 part) internal pure returns (bytes memory) {
-        uint8 x = uint8(part >> 56);
-        uint8 y = uint8(part >> 48);
-        uint8 w = uint8(part >> 40);
-        uint8 h = uint8(part >> 32);
-        uint8 r = uint8(part >> 24);
-        uint8 g = uint8(part >> 16);
-        uint8 b = uint8(part >> 8);
-        uint8 a = uint8(part);
+    function _encodeSVGShapes(uint64[] memory shapes) internal pure returns (bytes memory) {
+        bytes memory image;
 
+        for (uint i = 0; i < shapes.length; i += 1) {
+            uint64 part = shapes[i];
+            uint8 w = uint8(part >> 56);
+            uint8 h = uint8(part >> 48);
+            uint8 x = uint8(part >> 40);
+            uint8 y = uint8(part >> 32);
+            uint8 r = uint8(part >> 24);
+            uint8 g = uint8(part >> 16);
+            uint8 b = uint8(part >> 8);
+            uint8 a = uint8(part);
+    
+            // default, rect
+            // width = 0, ellipse
+            // height = 0, transform
+
+            bytes memory shape = _encodeSVGRect(w, h, x, y, r, g, b, a);
+            image = abi.encodePacked(image, shape);
+        }
+
+        return image;
+    }
+
+    // function _encodeSVGTransform(
+    //     uint8 rx,
+    //     uint8 ry,
+    //     uint8 rz,
+    //     uint8 sx,
+    //     uint8 sy
+    // ) internal returns (bytes memory) {
+    //     return abi.encodePacked(
+    //         'skewX(', sx.toString() ,')',
+    //         'skewY(', sy.toString() ,')',
+    //         'transform="rotate(',
+    //             rx.toString(), ' ',
+    //             ry.toString(), ' ',
+    //             rz.toString(), ' ',
+    //         ')',
+    //         '"'
+    //     );
+    // }
+
+    // function _encodeSVGEllipse(
+    //     uint8 cx, 
+    //     uint8 cy, 
+    //     uint8 rx, 
+    //     uint8 ry, 
+    //     uint8 g, 
+    //     uint8 b, 
+    //     uint8 a
+    // ) internal returns (bytes memory) {
+    //     return abi.encodePacked(
+    //         '<ellipse',
+    //             ' cx="', cx.toString(), '"',
+    //             ' cy="', cy.toString(), '"',
+    //             ' rx="', rx.toString(), '"',
+    //             ' ry="', ry.toString(), '"',
+    //             ' fill="rgba(',
+    //                 r.toString(), ',',
+    //                 g.toString(), ',',
+    //                 b.toString(), ',',
+    //                 a.toString(),
+    //             ')"',
+    //         '/>'
+    //     );
+    // }
+
+    function _encodeSVGRect(
+        uint8 w, 
+        uint8 h, 
+        uint8 x, 
+        uint8 y, 
+        uint8 r, 
+        uint8 g, 
+        uint8 b, 
+        uint8 a
+    ) internal pure returns (bytes memory) {
         return abi.encodePacked(
             '<rect',
                 ' width="', w.toString(), '"',

@@ -13,7 +13,7 @@ describe('Found', () => {
   beforeEach(async () => {
     [origin, alice, bob] = await ethers.getSigners()
     const Found = await ethers.getContractFactory('Found')
-    found = await Found.deploy()
+    found = await Found.deploy(alice.address)
   })
 
   it('Create FOUND with getters', async () => {

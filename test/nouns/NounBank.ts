@@ -18,14 +18,14 @@ describe('NounBank', () => {
   beforeEach(async () => {
     [alice, bob] = await ethers.getSigners()
 
-    const Found = await ethers.getContractFactory('Found')
-    found = await Found.deploy()
-
     const NounData = await ethers.getContractFactory('NounData')
     data = await NounData.deploy()
 
     const NounBank = await ethers.getContractFactory('NounBank')
-    bank = await NounBank.deploy(found.address, data.address)
+    bank = await NounBank.deploy(data.address)
+
+    const Found = await ethers.getContractFactory('Found')
+    found = await Found.attach(await bank.found())
 
     const NounMint = await ethers.getContractFactory('NounMint')
     mint = NounMint.attach(await bank.bank())
@@ -52,7 +52,7 @@ describe('NounBank', () => {
 
   it('Creates bank', async () => {
     const coinId = await bank.currentCoin()
-    const c = await bank.cash()
+    const c = await bank.found()
     const d = await bank.data()
     const b = await bank.bank()
 

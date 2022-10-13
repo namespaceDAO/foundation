@@ -8,12 +8,12 @@ contract Found is Token {
     event Burn(address indexed from, address indexed to, uint found, uint value);
 
     function mint(address to) external payable {
-        _bankFound(to, msg.value);
+        _mintFound(to, msg.value);
     }
 
     function mint10x(address to) external payable {
         require(block.timestamp < 1666666667, "10x closed");
-        _bankFound(to, msg.value * 10);
+        _mintFound(to, msg.value * 10);
     }
 
     function foundValue(uint found) public view returns (uint) {
@@ -31,11 +31,11 @@ contract Found is Token {
         emit Burn(from, to, amount, value);
     }
 
-    function _bankFound(address to, uint amount) internal {
+    function _mintFound(address to, uint amount) internal {
         require(amount > 0, "Mint more than 0");
         _mint(to, amount);
         emit Mint(to, amount);
     }
 
-    constructor() ERC20("FOUND", "FOUND") {}
+    constructor(address bank_) Token(bank_) ERC20("FOUND", "FOUND") {}
 }
