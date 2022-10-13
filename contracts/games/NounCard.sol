@@ -34,6 +34,18 @@ contract NounCard is ERC721 {
         uint coinId,
         uint amount
     );
+    
+    function bank() external view returns (NounMint) {
+        return _bank;
+    }
+    
+    function base() external view returns (NounBase) {
+        return _base;
+    }
+    
+    function cardCount() external view returns (uint) {
+        return _cardCount;
+    }
 
     function getCard(uint cardId) external view returns (Card memory) {
         return _requireCard(cardId);
@@ -42,10 +54,6 @@ contract NounCard is ERC721 {
     function _requireCard(uint cardId) internal view returns (Card memory) {
         require(cardId <= _cardCount, "Card not found");
         return _cards[cardId];
-    }
-
-    function coinToNoun(uint coinId) external view returns (uint nounId) {
-        return _base.coinToNoun(coinId);
     }
 
     function forge(uint coinId, uint amount) external {
@@ -69,6 +77,16 @@ contract NounCard is ERC721 {
         _mint(msg.sender, card.id);
 
         emit CardForged(card.id, card.coinId, card.amount);
+    }
+
+    function powerOfBatch(uint[] memory ids) external view returns (uint[] memory) {
+        uint[] memory powers = new uint[](ids.length);
+
+        for (uint i = 0; i < ids.length; i += 1) {
+            powers[i] = _requireCard(ids[i]).power;
+        }
+
+        return powers;
     }
 
     function ownerOfBatch(uint[] memory ids) external view returns (address[] memory) {
@@ -99,7 +117,7 @@ contract NounCard is ERC721 {
         }
     }
 
-    function transferBatch(
+    function safeBatchTransfer(
         address[] memory to,
         uint[] memory ids
     ) external {
@@ -110,7 +128,7 @@ contract NounCard is ERC721 {
         }
     }
 
-    function transferBatchFrom(
+    function safeBatchTransferFrom(
         address[] memory from,
         address[] memory to,
         uint[] memory ids
