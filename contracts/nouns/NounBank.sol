@@ -62,8 +62,8 @@ contract NounBank is NounBase, ERC721 {
         return _govt;
     }
 
-    function currentDay() external view returns (uint) {
-        return _currentDay();
+    function currentCoin() external view returns (uint) {
+        return _currentCoin();
     }
 
     function stakeCount() external view returns (uint) {
@@ -90,8 +90,8 @@ contract NounBank is NounBase, ERC721 {
         return _cashOnCoin[nounId];
     }
 
-    function _currentDay() internal view returns (uint) {
-        return (block.timestamp - _start) / 1 days + 1;
+    function _currentCoin() internal view returns (uint) {
+        return (block.timestamp - _start) / 1400 minutes + 1;
     }
     
     constructor(IERC20 cash_, NounData data_) 
@@ -99,13 +99,13 @@ contract NounBank is NounBase, ERC721 {
         _data = data_;
         _cash = cash_;
 
-        uint time = block.timestamp;
         uint mountainous = 7 hours;
+        uint time = block.timestamp;
         _start = time - mountainous;
         NounBase _base = NounBase(address(this));
 
-        _bank = new NounMint(data_, _base);
         _govt = new NounGovt();
+        _bank = new NounMint(data_, _base);
         _cash.approve(address(this), type(uint).max);
     }   
 
@@ -130,8 +130,8 @@ contract NounBank is NounBase, ERC721 {
         return string(_stakeJSON(_requireStake(stakeId)));
     }
     
-    function calculateShares(uint day, uint amount) public view returns (uint) {
-        uint last = _cashOnCoin[day - 1];
+    function calculateShares(uint coin, uint amount) public view returns (uint) {
+        uint last = _cashOnCoin[coin - 1];
         uint ampl = 10;
 
         if (last == 0) {
@@ -237,7 +237,7 @@ contract NounBank is NounBase, ERC721 {
             "Noun not found"
         );
         
-        uint coinId = _currentDay();
+        uint coinId = _currentCoin();
         uint existing = _nounToCoin[nounId];
         
         require(
@@ -289,7 +289,7 @@ contract NounBank is NounBase, ERC721 {
     }
 
     function _requireFoundNoun(uint coinId) internal view returns (uint nounId) {
-        bool found = coinId > 0 && coinId <= _currentDay();
+        bool found = coinId > 0 && coinId <= _currentCoin();
         require(found, "Coin has not been minted");
         return _coinToNoun[coinId];
     }          
@@ -322,7 +322,7 @@ contract NounBank is NounBase, ERC721 {
         uint coinId, 
         uint amount
     ) external {
-        require(coinId < _currentDay(), "Coin is not claimable yet");
+        require(coinId < _currentCoin(), "Coin is not claimable yet");
 
         uint nounId = _requireFoundNoun(coinId);
         address owner = _verifyClaim(nounId, coinId, amount);
@@ -411,8 +411,8 @@ contract NounBank is NounBase, ERC721 {
             token.govt = params.govt;
         }
 
-        uint day = _currentDay();
-        uint shares = calculateShares(day, params.found);
+        uint coinId = _currentCoin();
+        uint shares = calculateShares(coinId, params.found);
 
         _shares[token.id] = shares;
         _totalShares += shares;

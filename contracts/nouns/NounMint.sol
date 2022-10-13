@@ -17,7 +17,7 @@ import "./NounData.sol";
 |__/      |________/ \______/ |__/      |________/|_______*/
                                                                              
 interface NounBase {
-    function currentDay() external view returns (uint day);
+    function currentCoin() external view returns (uint coin);
     function coinToNoun(uint coinId) external view returns (uint nounId);
 }
 
@@ -101,7 +101,7 @@ contract NounMint is Bank {
         uint totalSupply = totalSupply();
         if (totalSupply == 0) return amount;
 
-        uint avgSupply = totalSupply / _base.currentDay();
+        uint avgSupply = totalSupply / _base.currentCoin();
         uint tokenSupply = totalSupplyOf(coinId);
 
         if (tokenSupply > avgSupply * _difficulty) {
@@ -153,7 +153,7 @@ contract NounMint is Bank {
 
     function deployCoin(uint coinId) external returns (Coin) {
         require(
-            coinId <= _base.currentDay(), 
+            coinId <= _base.currentCoin(), 
             "Coin has not been found"
         );
 

@@ -51,12 +51,12 @@ describe('NounBank', () => {
   })
 
   it('Creates bank', async () => {
-    const day = await bank.currentDay()
+    const coinId = await bank.currentCoin()
     const c = await bank.cash()
     const d = await bank.data()
     const b = await bank.bank()
 
-    expect(day).to.equal(1)
+    expect(coinId).to.equal(1)
     expect(c).to.equal(found.address)
     expect(d).to.equal(data.address)
     expect(b).to.equal(mint.address)
@@ -72,16 +72,16 @@ describe('NounBank', () => {
 
   // TODO: fully test this function with failure cases
   it('Votes on noun', async () => {
-    const day = await bank.currentDay()
+    const coinId = await bank.currentCoin()
 
     const value = parseEther(`${Math.random()}`)
-    await bank.connect(alice).vote(alice.address, alice.address, day, value)
+    await bank.connect(alice).vote(alice.address, alice.address, coinId, value)
 
-    const balance1 = await mint.balanceOf(alice.address, day)
-    const noun1 = await bank.coinToNoun(day)
+    const balance1 = await mint.balanceOf(alice.address, coinId)
+    const noun1 = await bank.coinToNoun(coinId)
 
     expect(value.mul(10)).to.equal(balance1)
-    expect(noun1).to.equal(day)
+    expect(noun1).to.equal(coinId)
   })
 
   // TODO: fully test this function with failure cases
@@ -173,14 +173,14 @@ describe('NounBank', () => {
   })
 
   it('Claims coin stake', async () => {
-    const day = await bank.currentDay()
+    const coinId = await bank.currentCoin()
 
     const value = parseEther(`${Math.random()}`)
-    await bank.connect(alice).vote(alice.address, alice.address, day, value)
+    await bank.connect(alice).vote(alice.address, alice.address, coinId, value)
 
     const time = Math.floor(new Date().getTime() / 1000) + 3600 * 24
     await ethers.provider.send('evm_mine', [time])
 
-    await bank.connect(alice).claim(alice.address, day, value)
+    await bank.connect(alice).claim(alice.address, coinId, value)
   })
 })
