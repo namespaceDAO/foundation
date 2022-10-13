@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "../token/Found.sol";
 import "./NounMint.sol";
 import "./NounData.sol";
+import "./NounToken.sol";
 
  /*$$$$$$   /$$$$$$  /$$   /$$ /$$   /$$        /$$$$$$  /$$$$$$$$       /$$   /$$  /$$$$$$  /$$   /$$ /$$   /$$  /$$$$$$ 
 | $$__  $$ /$$__  $$| $$$ | $$| $$  /$$/       /$$__  $$| $$_____/      | $$$ | $$ /$$__  $$| $$  | $$| $$$ | $$ /$$__  $$
@@ -27,11 +28,10 @@ struct Stake {
     address govt;
 }
 
-contract NounBank is NounBase, ERC721 {
+contract NounBank is NounBase, NounToken {
     using Strings for uint;
 
     Found private _found;
-    NounData private _data;
     NounMint private _bank;
     NounGovt private _govt;
 
@@ -94,10 +94,8 @@ contract NounBank is NounBase, ERC721 {
         return (block.timestamp - _start) / 1400 minutes + 1;
     }
     
-    constructor(NounData data_) 
-    ERC721("FOUND NOUN", "FOUND NOUN") {
-        _data = data_;
-
+    constructor(NounData data_)
+    NounToken("FOUND NOUN", "FOUND NOUN", data_) {
         uint mountainous = 7 hours;
         uint start = block.timestamp;
         _start = start - mountainous;
@@ -122,14 +120,6 @@ contract NounBank is NounBase, ERC721 {
     function getShares(uint stakeId) external view returns (uint) {
         return _shares[stakeId];
     }
-
-    function tokenURI(uint stakeId) public view virtual override returns (string memory) {
-        return string(_stakeURI(_requireStake(stakeId)));
-    }
-
-    function tokenData(uint stakeId) external view returns (string memory) {
-        return string(_stakeJSON(_requireStake(stakeId)));
-    }
     
     function calculateShares(uint coin, uint amount) public view returns (uint) {
         uint last = _foundOnCoin[coin - 1];
@@ -149,15 +139,13 @@ contract NounBank is NounBase, ERC721 {
 
         return amount * amount / last;
     }
-    
-    function _stakeURI(Stake memory token) internal view returns (bytes memory) {
-        return abi.encodePacked(
-            'data:application/json;base64,',
-            Base64.encode(_stakeJSON(token))
-        );
+
+    function _tokenToNoun(uint tokenId) internal override view returns (uint) {
+        return _requireStake(tokenId).noun;
     }
 
-    function _stakeJSON(Stake memory token) internal view returns (bytes memory) {
+    function _encodeData(uint tokenId) internal override view returns (bytes memory) {
+        Stake memory token = _requireStake(tokenId);
         Noun memory noun = _data.getNoun(token.noun); 
       
         return abi.encodePacked(

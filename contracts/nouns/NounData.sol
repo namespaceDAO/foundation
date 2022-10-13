@@ -14,6 +14,12 @@ import "@openzeppelin/contracts/utils/Base64.sol";
 | $$ \  $$|  $$$$$$/|  $$$$$$/| $$ \  $$|  $$$$$$/                                                                        
 |__/  \__/ \______/  \______/ |__/  \__/ \_____*/                                                                         
 
+interface INounToken is IERC721 {
+    function tokenData(uint nounId) external view virtual returns (string memory);
+    function tokenImage(uint nounId) external view virtual returns (string memory);
+    function tokenSVG(uint nounId) external view virtual returns (string memory);
+}
+
 struct Noun {
     uint id;
     string name;
@@ -22,7 +28,7 @@ struct Noun {
     string[] traits;
 }
 
-contract NounData is ERC721 {
+contract NounData is INounToken, ERC721 {
     using Strings for uint;
     using Strings for uint8;
     using Strings for uint64;
@@ -136,10 +142,18 @@ contract NounData is ERC721 {
             '{',
                 '"id":', noun.id.toString(), ',',
                 '"name":"', noun.name, '",',
-                '"description":"', noun.name, ' is a Noun coin.",',
+                '"image":"', string(_encodeImage(noun)), '"',
+                '"description":"', noun.name, ' is a Noun coin.",'
+                '"properties":"', string(_encodeProps(noun)), '"',
+            '}'
+        );
+    }
+
+    function _encodeProps(Noun memory noun) internal pure returns (bytes memory) {
+        return abi.encodePacked(
+            '{',
                 '"traits":[', string(_encodeTraits(noun)), '],',
                 '"shapes":[', string(_encodeShapes(noun)), '],',
-                '"image":"', string(_encodeImage(noun)), '"',
             '}'
         );
     }

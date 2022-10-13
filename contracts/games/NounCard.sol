@@ -2,6 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "../nouns/NounToken.sol";
 import "../nouns/NounMint.sol";
 
   /*$$$$$   /$$$$$$  /$$$$$$$  /$$$$$$$ 
@@ -15,13 +16,13 @@ import "../nouns/NounMint.sol";
 
 struct Card {
     uint id;
-    uint coinId;
-    uint nounId;
+    uint coin;
+    uint noun;
     uint amount;
     uint power;
 }
 
-contract NounCard is ERC721 {
+contract NounCard is NounToken {
     NounMint private _bank;
     NounBase private _base;
 
@@ -31,8 +32,9 @@ contract NounCard is ERC721 {
 
     event CardForged(
         uint id,
-        uint coinId,
-        uint amount
+        uint coin,
+        uint noun,
+        uint power
     );
     
     function bank() external view returns (NounMint) {
@@ -51,98 +53,46 @@ contract NounCard is ERC721 {
         return _requireCard(cardId);
     }
 
-    function _requireCard(uint cardId) internal view returns (Card memory) {
-        require(cardId <= _cardCount, "Card not found");
-        return _cards[cardId];
-    }
-
-    function forge(uint coinId, uint amount) external {
-        uint nounId = _base.coinToNoun(coinId);
+    function forge(uint coin, uint amount) external {
+        uint noun = _base.coinToNoun(coin);
         Card storage card = _cards[++_cardCount];
 
         card.id = _cardCount;
-        card.coinId = coinId;
-        card.nounId = nounId;
+        card.coin = coin;
+        card.noun = noun;
         card.amount = amount;
-        card.power = _bank.convertCoin(coinId, amount);
+        card.power = _bank.convertCoin(coin, amount);
 
         _bank.safeTransferFrom(
             msg.sender, 
             address(this), 
-            coinId, 
+            coin, 
             amount,
             new bytes(0)
         );
 
         _mint(msg.sender, card.id);
 
-        emit CardForged(card.id, card.coinId, card.amount);
+        emit CardForged(card.id, card.coin, card.noun, card.power);
     }
 
-    function powerOfBatch(uint[] memory ids) external view returns (uint[] memory) {
-        uint[] memory powers = new uint[](ids.length);
+    function _encodeData(uint tokenId) override internal view returns (bytes memory) {
+        Card memory card = _requireCard(tokenId);
 
-        for (uint i = 0; i < ids.length; i += 1) {
-            powers[i] = _requireCard(ids[i]).power;
-        }
-
-        return powers;
+        return abi.encodePacked();
     }
 
-    function ownerOfBatch(uint[] memory ids) external view returns (address[] memory) {
-        address[] memory owners = new address[](ids.length);
-
-        for (uint i = 0; i < ids.length; i += 1) {
-            owners[i] = ownerOf(ids[i]);
-        }
-
-        return owners;
+    function _tokenToNoun(uint tokenId) override internal view returns (uint) {
+        return _requireCard(tokenId).noun;
     }
 
-    function balanceOfBatch(address[] memory accounts) external view returns (uint[] memory) {
-        uint[] memory balances = new uint[](accounts.length);
-
-        for (uint i = 0; i < accounts.length; i += 1) {
-            balances[i] = balanceOf(accounts[i]);
-        }
-
-        return balances;
+    function _requireCard(uint cardId) internal view returns (Card memory) {
+        require(cardId <= _cardCount, "Card not found");
+        return _cards[cardId];
     }
 
-    function approveBatch(address[] memory accounts, uint[] memory ids) external {
-        require(accounts.length == ids.length, "Accounts and ids length mismatc");
-
-        for (uint i = 0; i < accounts.length; i += 1) {
-            approve(accounts[i], ids[i]);
-        }
-    }
-
-    function safeBatchTransfer(
-        address[] memory to,
-        uint[] memory ids
-    ) external {
-        require(to.length == ids.length, "Accounts and ids length mismatc");
-
-        for (uint i = 0; i < to.length; i += 1) {
-            safeTransferFrom(msg.sender, to[i], ids[i]);
-        }
-    }
-
-    function safeBatchTransferFrom(
-        address[] memory from,
-        address[] memory to,
-        uint[] memory ids
-    ) external {
-        require(to.length == to.length, "Accounts and ids length mismatc");
-        require(to.length == ids.length, "Accounts and ids length mismatc");
-
-        for (uint i = 0; i < to.length; i += 1) {
-            safeTransferFrom(from[i], to[i], ids[i]);
-        }
-    }
-
-    constructor(NounMint bank_, NounBase base_) 
-    ERC721("NOUN CARD", "NOUN CARD") {
+    constructor(NounData data_, NounMint bank_, NounBase base_) 
+    NounToken("NOUN CARD", "NOUN CARD", data_) {
         _bank = bank_;
         _base = base_;
     }
